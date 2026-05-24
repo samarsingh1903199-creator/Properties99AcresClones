@@ -37,6 +37,8 @@ function mapApiProperty(p: ApiProperty): Property {
     agentId:     p.ownerId,
     totalViews:  p.views,
     verified:    true,
+    tenantTypes: p.amenities?.preferred_tenants ?? [],
+    distanceKm:  p.amenities?.distanceFromLocation,
   };
 }
 
