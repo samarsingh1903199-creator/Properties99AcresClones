@@ -1,0 +1,8 @@
+{
+  "name": "Aetheria - Luxury Real Estate",
+  "description": "Futuristic, premium AI-powered real estate platform for high-end luxury properties.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "luxury-real-estate-monorepo",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently --kill-others-on-fail --prefix-colors \"cyan,magenta,yellow\" --names \"FRONTEND,DEALER,BACKEND\" \"npm run dev --prefix frontend\" \"npm run dev --prefix dealer-portal\" \"npm run dev --prefix backend\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
