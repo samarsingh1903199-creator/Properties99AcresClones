@@ -1,12 +1,24 @@
-import { MapPin, Bed, Bath, Ruler, ShieldCheck } from "lucide-react";
+import { MapPin, Bed, Bath, Ruler, ShieldCheck, Home, Heart, Users, User, UserCheck, Briefcase } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { Property } from "@/src/types";
 import { useState } from "react";
 import { cn, formatCurrency, formatMonthlyRent, toTitleCase } from "@/src/lib/utils";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/src/constants/routes";
 import { VideoPlayer } from "./VideoPlayer";
 import { useWishlistStore } from "@/src/store/useWishlistStore";
 import { WishlistButton } from "./WishlistButton";
+
+const TENANT_CHIP: Record<string, { pill: string; Icon: LucideIcon }> = {
+  "Family":                { pill: "bg-indigo-50 border-indigo-200 text-indigo-700",     Icon: Home },
+  "Couples":               { pill: "bg-rose-50 border-rose-200 text-rose-700",           Icon: Heart },
+  "Girls":                 { pill: "bg-pink-50 border-pink-200 text-pink-700",           Icon: Users },
+  "Boys":                  { pill: "bg-blue-50 border-blue-200 text-blue-700",           Icon: User },
+  "Independent":           { pill: "bg-emerald-50 border-emerald-200 text-emerald-700",  Icon: UserCheck },
+  "Working Professionals": { pill: "bg-amber-50 border-amber-200 text-amber-700",        Icon: Briefcase },
+};
+
+const MAX_VISIBLE_CHIPS = 3;
 
 interface PropertyCardProps {
   property: Property;
@@ -15,10 +27,18 @@ interface PropertyCardProps {
 
 export const PropertyCard = ({ property, index }: PropertyCardProps) => {
   void index;
+  const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
   const isInWishlist = useWishlistStore((state) => state.isInWishlist(property.id));
   const isRent = property.listingType === "rent";
   const sellerLabel = property.ownershipType?.toLowerCase().includes("owner") ? "By Owner" : "By Dealer";
+  const tenantTypes = property.tenantTypes ?? [];
+  const visibleTenants = tenantTypes.slice(0, MAX_VISIBLE_CHIPS);
+  const extraCount = tenantTypes.length - MAX_VISIBLE_CHIPS;
+
+  const handleBookNow = () => {
+    navigate(ROUTES.PROPERTY_DETAILS(property.id), { state: { openBook: true } });
+  };
 
   return (
     <div
@@ -100,7 +120,32 @@ export const PropertyCard = ({ property, index }: PropertyCardProps) => {
             </span>
           </div>
 
-          {/* Quick specs + CTA */}
+          {/* Preferred Tenant chips */}
+          {visibleTenants.length > 0 && (
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[9px] font-black uppercase tracking-wider text-luxury-black/30 mr-0.5">Preferred:</span>
+              {visibleTenants.map(t => {
+                const cfg = TENANT_CHIP[t];
+                return cfg ? (
+                  <span key={t} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${cfg.pill}`}>
+                    <cfg.Icon size={9} className="shrink-0" />
+                    {t}
+                  </span>
+                ) : (
+                  <span key={t} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border bg-gray-50 border-gray-200 text-gray-600">
+                    {t}
+                  </span>
+                );
+              })}
+              {extraCount > 0 && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-luxury-purple/8 border border-luxury-purple/15 text-luxury-purple/70">
+                  +{extraCount}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Quick specs */}
           <div className="flex items-center gap-2.5 pt-2.5 mt-auto border-t border-gray-100">
             <span className="flex items-center gap-1 text-[11px] text-luxury-black/45 font-semibold">
               <Bed size={11} className="text-luxury-black/25" />
@@ -116,12 +161,21 @@ export const PropertyCard = ({ property, index }: PropertyCardProps) => {
               <Ruler size={11} className="text-luxury-black/25" />
               {property.sqft} sqft
             </span>
+          </div>
 
-            <Link to={ROUTES.PROPERTY_DETAILS(property.id)} className="ml-auto shrink-0">
-              <div className="px-3 py-1.5 rounded-lg bg-luxury-purple text-white text-[10px] font-bold uppercase tracking-wider shadow-sm shadow-luxury-purple/20 hover:bg-luxury-purple/90 hover:scale-105 active:scale-95 transition-all duration-200">
-                {isRent ? "Book" : "View"}
+          {/* Action buttons */}
+          <div className="flex gap-2">
+            <Link to={ROUTES.PROPERTY_DETAILS(property.id)} className="flex-1">
+              <div className="w-full px-3 py-2 rounded-xl border border-luxury-purple/20 text-luxury-purple text-[10px] font-bold uppercase tracking-wider text-center hover:bg-luxury-purple/5 hover:border-luxury-purple/40 transition-all duration-200">
+                View Details
               </div>
             </Link>
+            <button
+              onClick={handleBookNow}
+              className="flex-1 px-3 py-2 rounded-xl bg-luxury-purple text-white text-[10px] font-bold uppercase tracking-wider shadow-sm shadow-luxury-purple/20 hover:bg-luxury-purple/90 hover:scale-[1.02] active:scale-95 transition-all duration-200"
+            >
+              {isRent ? "Book Now" : "Enquire"}
+            </button>
           </div>
         </div>
       </div>

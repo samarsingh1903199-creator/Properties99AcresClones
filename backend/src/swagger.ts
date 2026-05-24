@@ -1,4 +1,5 @@
 import swaggerJsdoc from "swagger-jsdoc";
+import { PREFERRED_TENANT_TYPES } from "./constants/tenants.js";
 
 const options: swaggerJsdoc.Options = {
   definition: {
@@ -54,6 +55,13 @@ const options: swaggerJsdoc.Options = {
             storage:                  { type: "boolean", default: false, description: "Dedicated storage space available" },
             securityDeposit:          { type: "number", minimum: 0, default: 0, description: "Refundable security deposit amount (₹)" },
             distanceFromLocation:     { type: "number", minimum: 0, default: 0, description: "Distance from the nearest landmark/metro (km)" },
+            preferred_tenants: {
+              type: "array",
+              items: { type: "string", enum: [...PREFERRED_TENANT_TYPES] },
+              default: [],
+              description: "Tenant types suitable for this property — multiple selections allowed, duplicates ignored",
+              example: ["Girls", "Family", "Working Professionals"],
+            },
           },
         },
         Property: {
@@ -433,6 +441,7 @@ const options: swaggerJsdoc.Options = {
                     storage: true,
                     securityDeposit: 150000,
                     distanceFromLocation: 0.8,
+                    preferred_tenants: ["Girls", "Family", "Working Professionals"],
                   },
                 },
               },

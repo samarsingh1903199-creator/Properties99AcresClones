@@ -7,6 +7,7 @@ import {
   TrendingUp, ArrowUpRight, Check, Loader2, RefreshCw,
   X, Users, Phone, Mail, Calendar, BookOpen,
   Building2, AlertCircle, ChevronRight,
+  Heart, User, UserCheck, Briefcase, type LucideIcon,
 } from "lucide-react";
 import {
   propertiesApi, viewsApi, inquiriesApi,
@@ -15,6 +16,44 @@ import {
 import { useAuthStore } from "../../store/useAuthStore";
 import { type PropertyStatus } from "../../store/usePropertyStore";
 import { ROUTES } from "../../constants/routes";
+
+const TENANT_CHIP: Record<string, { pill: string; Icon: LucideIcon }> = {
+  "Family":                { pill: "bg-indigo-50 border-indigo-200 text-indigo-700",    Icon: Home },
+  "Couples":               { pill: "bg-rose-50 border-rose-200 text-rose-700",          Icon: Heart },
+  "Girls":                 { pill: "bg-pink-50 border-pink-200 text-pink-700",          Icon: Users },
+  "Boys":                  { pill: "bg-blue-50 border-blue-200 text-blue-700",          Icon: User },
+  "Independent":           { pill: "bg-emerald-50 border-emerald-200 text-emerald-700", Icon: UserCheck },
+  "Working Professionals": { pill: "bg-amber-50 border-amber-200 text-amber-700",       Icon: Briefcase },
+};
+
+function TenantChips({ tenants }: { tenants: string[] | undefined }) {
+  if (!tenants || tenants.length === 0) return null;
+  const visible = tenants.slice(0, 3);
+  const extra = tenants.length - 3;
+  return (
+    <div className="flex items-center gap-1 flex-wrap">
+      <span className="text-[9px] font-black uppercase tracking-wider text-[#111111]/30 mr-0.5">Preferred:</span>
+      {visible.map(t => {
+        const cfg = TENANT_CHIP[t];
+        return cfg ? (
+          <span key={t} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold border ${cfg.pill}`}>
+            <cfg.Icon size={8} className="shrink-0" />
+            {t}
+          </span>
+        ) : (
+          <span key={t} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold border bg-gray-50 border-gray-200 text-gray-600">
+            {t}
+          </span>
+        );
+      })}
+      {extra > 0 && (
+        <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#5b21b6]/8 border border-[rgba(91,33,182,0.15)] text-[#5b21b6]/70">
+          +{extra}
+        </span>
+      )}
+    </div>
+  );
+}
 
 /* ── types ──────────────────────────────────────────────────────── */
 type ViewMode      = "grid" | "list";
@@ -183,9 +222,12 @@ function PropertyCard({ p, confirmDelete, onDelete, onStatusChange, onViewClick,
           <span className="text-[10px] font-black uppercase tracking-widest text-[#5b21b6]">{p.type}</span>
         </div>
         <h3 className="font-black text-[#111111] text-sm leading-tight mb-1 line-clamp-1" style={{ fontFamily: "Outfit, sans-serif" }}>{p.title}</h3>
-        <div className="flex items-center gap-1 text-xs font-medium text-[#111111]/40 mb-3">
+        <div className="flex items-center gap-1 text-xs font-medium text-[#111111]/40 mb-2">
           <MapPin className="w-3 h-3 shrink-0 text-[#5b21b6]/40" />
           <span className="truncate">{p.location}</span>
+        </div>
+        <div className="mb-3">
+          <TenantChips tenants={p.amenities?.preferred_tenants} />
         </div>
         <div className="flex items-center gap-3 pb-3 mb-3 border-b border-[rgba(91,33,182,0.06)]">
           <span className="flex items-center gap-1 text-xs font-semibold text-[#111111]/60"><BedDouble className="w-3.5 h-3.5 text-[#5b21b6]/40" />{p.bedrooms} Beds</span>
@@ -259,8 +301,11 @@ function PropertyRow({ p, confirmDelete, onDelete, onStatusChange, isLast, onVie
           <p className="text-sm font-black text-[#111111] truncate" style={{ fontFamily: "Outfit, sans-serif" }}>{p.title}</p>
           <StatusBadge s={p.status as PropertyStatus} />
         </div>
-        <div className="flex items-center gap-1 text-xs font-medium text-[#111111]/40 mb-2">
+        <div className="flex items-center gap-1 text-xs font-medium text-[#111111]/40 mb-1.5">
           <MapPin className="w-3 h-3 text-[#5b21b6]/30" /><span className="truncate">{p.location}</span>
+        </div>
+        <div className="mb-2">
+          <TenantChips tenants={p.amenities?.preferred_tenants} />
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <span className="flex items-center gap-1 text-xs font-semibold text-[#111111]/40"><BedDouble className="w-3 h-3" />{p.bedrooms}</span>

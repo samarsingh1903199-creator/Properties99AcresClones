@@ -3,6 +3,7 @@ import { PropertyModel } from "../models/Property.model.js";
 import { AuthRequest } from "../middleware/auth.js";
 import { asyncHandler } from "../middleware/errorHandler.js";
 import { PropertyType, ListingType, PropertyStatus } from "../types/index.js";
+import { PREFERRED_TENANT_TYPES } from "../constants/tenants.js";
 
 export const getProperties = asyncHandler(async (req: Request, res: Response) => {
   const authReq = req as AuthRequest;
@@ -111,10 +112,25 @@ export const upsertPropertyAmenities = asyncHandler(async (req: Request, res: Re
     "almirah", "storage", "securityDeposit", "distanceFromLocation",
   ];
 
+  const VALID_TENANT_TYPES = PREFERRED_TENANT_TYPES;
+
   const updates: Record<string, unknown> = {};
   ALLOWED_AMENITY_FIELDS.forEach((field) => {
     if (req.body[field] !== undefined) updates[`amenities.${field}`] = req.body[field];
   });
+
+  if (req.body.preferred_tenants !== undefined) {
+    if (!Array.isArray(req.body.preferred_tenants)) {
+      res.status(400).json({ success: false, message: "preferred_tenants must be an array" });
+      return;
+    }
+    const invalid = req.body.preferred_tenants.filter((t: unknown) => !VALID_TENANT_TYPES.includes(t as string));
+    if (invalid.length > 0) {
+      res.status(400).json({ success: false, message: `Invalid tenant type(s): ${invalid.join(", ")}. Allowed: ${VALID_TENANT_TYPES.join(", ")}` });
+      return;
+    }
+    updates["amenities.preferred_tenants"] = [...new Set(req.body.preferred_tenants as string[])];
+  }
 
   if (Object.keys(updates).length === 0) {
     res.status(400).json({ success: false, message: "No valid amenity fields provided" });

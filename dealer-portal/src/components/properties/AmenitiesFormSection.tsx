@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import {
   Car, Zap, Shield, Wifi, Dumbbell, Droplets, Building2,
   Wind, BedDouble, Archive, Lock, MapPin, Check, SkipForward,
-  Save, Loader2,
+  Save, Loader2, Users,
 } from "lucide-react";
 import type { ApiPropertyAmenities } from "../../services/api";
+import { PREFERRED_TENANT_TYPES } from "../../constants/tenants";
 
 /* ── Types ─────────────────────────────────────────────────── */
 export type AmenitiesFormData = {
@@ -25,6 +26,7 @@ export type AmenitiesFormData = {
   waterSupply: "municipal" | "borewell" | "both" | "none";
   securityDeposit: string;
   distanceFromLocation: string;
+  preferred_tenants: string[];
 };
 
 export const AMENITIES_DEFAULT: AmenitiesFormData = {
@@ -34,6 +36,7 @@ export const AMENITIES_DEFAULT: AmenitiesFormData = {
   airConditioning: false, acCount: 0,
   furnishingStatus: "unfurnished", bedsCount: 0, almirah: false, storage: false,
   waterSupply: "none", securityDeposit: "", distanceFromLocation: "",
+  preferred_tenants: [],
 };
 
 /** Convert API amenities object → form state */
@@ -56,6 +59,7 @@ export function amenitiesFromApi(a: Partial<ApiPropertyAmenities>): AmenitiesFor
     waterSupply: a.waterSupply ?? "none",
     securityDeposit: a.securityDeposit ? String(a.securityDeposit) : "",
     distanceFromLocation: a.distanceFromLocation ? String(a.distanceFromLocation) : "",
+    preferred_tenants: a.preferred_tenants ?? [],
   };
 }
 
@@ -79,6 +83,7 @@ export function amenitiesToApi(data: AmenitiesFormData): Partial<ApiPropertyAmen
     waterSupply: data.waterSupply,
     securityDeposit: data.securityDeposit ? Number(data.securityDeposit) : 0,
     distanceFromLocation: data.distanceFromLocation ? Number(data.distanceFromLocation) : 0,
+    preferred_tenants: data.preferred_tenants,
   };
 }
 
@@ -179,7 +184,48 @@ export function AmenitiesFormSection({
   return (
     <div className="space-y-5 pb-28">
 
-      {/* ── 1. Parking ── */}
+      {/* ── 1. Preferred Tenants ── */}
+      <div className="dp-card p-6">
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className="w-8 h-8 rounded-xl bg-[#5b21b6]/10 flex items-center justify-center">
+            <Users className="w-4 h-4 text-[#5b21b6]" />
+          </div>
+          <div>
+            <h3 className={SH} style={{ fontFamily: "Outfit, sans-serif" }}>Preferred Tenants</h3>
+            <p className="text-[11px] text-[#111111]/35 font-medium mt-0.5">Select all tenant types suitable for this property</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {PREFERRED_TENANT_TYPES.map(tenant => {
+            const selected = form.preferred_tenants.includes(tenant);
+            return (
+              <button
+                key={tenant}
+                type="button"
+                onClick={() => {
+                  const next = selected
+                    ? form.preferred_tenants.filter(t => t !== tenant)
+                    : [...form.preferred_tenants, tenant];
+                  set("preferred_tenants", next);
+                }}
+                className={`px-4 py-2 rounded-2xl text-[13px] font-bold border transition-all ${
+                  selected
+                    ? "bg-[#5b21b6] text-white border-[#5b21b6] shadow-sm"
+                    : "bg-white text-[#111111]/50 border-gray-200 hover:border-[#5b21b6]/30 hover:text-[#5b21b6]"
+                }`}
+              >
+                {selected && <Check className="w-3 h-3 inline mr-1.5 -mt-0.5" />}
+                {tenant}
+              </button>
+            );
+          })}
+        </div>
+        {form.preferred_tenants.length === 0 && (
+          <p className="text-[11px] text-[#111111]/30 font-medium mt-3">No preference selected — property will be open to all tenant types</p>
+        )}
+      </div>
+
+      {/* ── 2. Parking ── */}
       <div className="dp-card p-6">
         <div className="flex items-center gap-2.5 mb-4">
           <div className="w-8 h-8 rounded-xl bg-[#5b21b6]/10 flex items-center justify-center">
@@ -197,7 +243,7 @@ export function AmenitiesFormSection({
         </div>
       </div>
 
-      {/* ── 2. Basic Amenities ── */}
+      {/* ── 3. Basic Amenities ── */}
       <div className="dp-card p-6">
         <div className="flex items-center gap-2.5 mb-4">
           <div className="w-8 h-8 rounded-xl bg-[#5b21b6]/10 flex items-center justify-center">
@@ -219,7 +265,7 @@ export function AmenitiesFormSection({
         </div>
       </div>
 
-      {/* ── 3. Air Conditioning ── */}
+      {/* ── 4. Air Conditioning ── */}
       <div className="dp-card p-6">
         <div className="flex items-center gap-2.5 mb-4">
           <div className="w-8 h-8 rounded-xl bg-[#5b21b6]/10 flex items-center justify-center">
@@ -260,7 +306,7 @@ export function AmenitiesFormSection({
         )}
       </div>
 
-      {/* ── 4. Furnishing ── */}
+      {/* ── 5. Furnishing ── */}
       <div className="dp-card p-6">
         <div className="flex items-center gap-2.5 mb-4">
           <div className="w-8 h-8 rounded-xl bg-[#5b21b6]/10 flex items-center justify-center">
@@ -303,7 +349,7 @@ export function AmenitiesFormSection({
         )}
       </div>
 
-      {/* ── 5. Water Supply ── */}
+      {/* ── 6. Water Supply ── */}
       <div className="dp-card p-6">
         <div className="flex items-center gap-2.5 mb-4">
           <div className="w-8 h-8 rounded-xl bg-[#5b21b6]/10 flex items-center justify-center">
@@ -340,7 +386,7 @@ export function AmenitiesFormSection({
         </div>
       </div>
 
-      {/* ── 6 & 7. Security Deposit + Distance ── */}
+      {/* ── 7 & 8. Security Deposit + Distance ── */}
       <div className="dp-card p-6 space-y-5">
         <h3 className={SH} style={{ fontFamily: "Outfit, sans-serif" }}>Additional Details</h3>
         <div>

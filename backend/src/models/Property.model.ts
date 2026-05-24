@@ -1,5 +1,6 @@
 import { Schema, model, Document } from "mongoose";
 import { PropertyStatus, PropertyType, ListingType } from "../types/index.js";
+import { PREFERRED_TENANT_TYPES } from "../constants/tenants.js";
 
 export interface IPropertyAmenities {
   /* Parking */
@@ -34,6 +35,9 @@ export interface IPropertyAmenities {
 
   /* Location */
   distanceFromLocation: number;
+
+  /* Tenant Preferences */
+  preferred_tenants: string[];
 }
 
 export interface IProperty extends Document {
@@ -74,6 +78,7 @@ const AmenitiesSchema = new Schema<IPropertyAmenities>(
     storage:                  { type: Boolean, default: false },
     securityDeposit:          { type: Number, default: 0, min: 0 },
     distanceFromLocation:     { type: Number, default: 0, min: 0 },
+    preferred_tenants:        { type: [String], enum: [...PREFERRED_TENANT_TYPES], default: [] },
   },
   { _id: false }
 );

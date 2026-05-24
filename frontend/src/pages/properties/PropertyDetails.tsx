@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
 import {
   MapPin, Calendar, Bath, Ruler, Building2, Home, Video, Share2,
@@ -8,6 +8,7 @@ import {
   Car, Zap, Shield, Wifi, Wind, Dumbbell, Waves, Users,
   Star, Phone, MessageSquare, Camera, X, Droplets, Package,
   TrendingUp, Clock, CheckCircle2, Sparkles, ChevronDown,
+  Heart, User, UserCheck, Briefcase,
 } from "lucide-react";
 import { propertiesApi, type ApiProperty, type ApiPropertyAmenities } from "@/src/services/api";
 import { cn, formatCurrency, formatMonthlyRent, toTitleCase } from "@/src/lib/utils";
@@ -43,6 +44,22 @@ function buildAmenityChips(a?: ApiPropertyAmenities): { icon: LucideIcon; label:
   return out;
 }
 
+/* ─── Tenant config ──────────────────────────────────────────────────── */
+const TENANT_CONFIG: Record<string, {
+  Icon: LucideIcon;
+  card: string;
+  iconWrap: string;
+  label: string;
+  badge: string;
+}> = {
+  "Family":                { Icon: Home,      card: "from-indigo-50 to-indigo-100/60 border-indigo-200 hover:border-indigo-400 hover:shadow-indigo-100",   iconWrap: "bg-indigo-100 text-indigo-600",   label: "text-indigo-900", badge: "bg-indigo-100 text-indigo-600 border-indigo-200" },
+  "Couples":               { Icon: Heart,     card: "from-rose-50 to-rose-100/60 border-rose-200 hover:border-rose-400 hover:shadow-rose-100",             iconWrap: "bg-rose-100 text-rose-600",       label: "text-rose-900",   badge: "bg-rose-100 text-rose-600 border-rose-200" },
+  "Girls":                 { Icon: Users,     card: "from-pink-50 to-pink-100/60 border-pink-200 hover:border-pink-400 hover:shadow-pink-100",             iconWrap: "bg-pink-100 text-pink-600",       label: "text-pink-900",   badge: "bg-pink-100 text-pink-600 border-pink-200" },
+  "Boys":                  { Icon: User,      card: "from-blue-50 to-blue-100/60 border-blue-200 hover:border-blue-400 hover:shadow-blue-100",             iconWrap: "bg-blue-100 text-blue-600",       label: "text-blue-900",   badge: "bg-blue-100 text-blue-600 border-blue-200" },
+  "Independent":           { Icon: UserCheck, card: "from-emerald-50 to-emerald-100/60 border-emerald-200 hover:border-emerald-400 hover:shadow-emerald-100", iconWrap: "bg-emerald-100 text-emerald-600", label: "text-emerald-900", badge: "bg-emerald-100 text-emerald-600 border-emerald-200" },
+  "Working Professionals": { Icon: Briefcase, card: "from-amber-50 to-amber-100/60 border-amber-200 hover:border-amber-400 hover:shadow-amber-100",       iconWrap: "bg-amber-100 text-amber-600",     label: "text-amber-900",  badge: "bg-amber-100 text-amber-600 border-amber-200" },
+};
+
 /* ─── Helpers ────────────────────────────────────────────────────────── */
 const calcEMI = (principal: number, annualRate: number, yrs: number) => {
   const r = annualRate / 12 / 100, n = yrs * 12;
@@ -61,6 +78,7 @@ function mapToLocal(p: ApiProperty): Property {
     beds: p.bedrooms, baths: p.bathrooms, sqft: p.area, type: p.type,
     status: p.status, listingType: p.listingType === "sale" ? "buy" : "rent",
     features: [], agentId: p.ownerId, totalViews: p.views, verified: true,
+    tenantTypes: p.amenities?.preferred_tenants ?? [],
   };
 }
 
@@ -134,7 +152,8 @@ const SectionCard = ({
 /* ─── Main Component ─────────────────────────────────────────────────── */
 export const PropertyDetails = () => {
   const { id } = useParams<{ id: string }>();
-  const [enquiryOpen, setEnquiryOpen]           = useState(false);
+  const location = useLocation();
+  const [enquiryOpen, setEnquiryOpen]           = useState(() => !!(location.state as { openBook?: boolean } | null)?.openBook);
   const [enquiryVisitType, setEnquiryVisitType] = useState<"physical" | "video">("physical");
 
   const openEnquiry = (type: "physical" | "video" = "physical") => {
@@ -343,7 +362,7 @@ export const PropertyDetails = () => {
                 {([
                   { href: "#overview",  label: "Overview" },
                   { href: "#amenities", label: "Amenities" },
-                  { href: "#details",   label: "Details" },
+                  (property.amenities?.preferred_tenants?.length ?? 0) > 0 ? { href: "#tenants", label: "Tenants" } : null,
                   isBuy         ? { href: "#emi",      label: "EMI" }      : null,
                   fullLocation  ? { href: "#location", label: "Location" } : null,
                 ] as ({ href: string; label: string } | null)[])
@@ -514,6 +533,83 @@ export const PropertyDetails = () => {
             </motion.div>
           )}
 
+          {/* Preferred Tenants */}
+          {(property.amenities?.preferred_tenants?.length ?? 0) > 0 && (
+            <SectionCard
+              id="tenants"
+              title="Preferred Tenants"
+              icon={Users}
+              badge={`${property.amenities!.preferred_tenants!.length} ${property.amenities!.preferred_tenants!.length === 1 ? "Type" : "Types"}`}
+            >
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {property.amenities!.preferred_tenants!.map((tenant, i) => {
+                  const cfg = TENANT_CONFIG[tenant] ?? {
+                    Icon: Users, card: "from-gray-50 to-gray-100/60 border-gray-200 hover:border-gray-400 hover:shadow-gray-100",
+                    iconWrap: "bg-gray-100 text-gray-500", label: "text-gray-800",
+                    badge: "bg-gray-100 text-gray-500 border-gray-200",
+                  };
+                  return (
+                    <motion.div
+                      key={tenant}
+                      initial={{ opacity: 0, y: 12 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.07 }}
+                      whileHover={{ y: -3, boxShadow: "0 10px 28px rgba(0,0,0,0.08)" }}
+                      className={`flex flex-col items-center gap-3 p-5 rounded-2xl bg-gradient-to-br border cursor-default transition-all duration-200 ${cfg.card}`}
+                    >
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm ${cfg.iconWrap}`}>
+                        <cfg.Icon size={22} strokeWidth={1.8} />
+                      </div>
+                      <div className="text-center">
+                        <p className={`text-[13px] font-black leading-tight ${cfg.label}`}>{tenant}</p>
+                        <p className="text-[10px] font-medium text-luxury-black/35 mt-0.5 uppercase tracking-wider">Suitable</p>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+              <div className="mt-5 flex items-start gap-2.5 p-4 rounded-2xl bg-luxury-purple/5 border border-luxury-purple/10">
+                <UserCheck size={14} className="text-luxury-purple shrink-0 mt-0.5" />
+                <p className="text-[12px] text-luxury-black/55 font-medium leading-relaxed">
+                  This property is best suited for the tenant types shown above. Contact the dealer to confirm availability.
+                </p>
+              </div>
+            </SectionCard>
+          )}
+
+          {/* Amenities */}
+          <SectionCard id="amenities" title="Amenities & Features" icon={Star}>
+            {amenityChips.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {amenityChips.map((a, i) => (
+                  <motion.div key={i}
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.04 }}
+                    className="flex items-center gap-3 p-3.5 rounded-2xl bg-gray-50/80 border border-gray-100 hover:bg-luxury-purple/5 hover:border-luxury-purple/20 transition-all group cursor-default"
+                  >
+                    <div className="w-8 h-8 rounded-xl bg-white border border-gray-100 shadow-sm flex items-center justify-center shrink-0 group-hover:bg-luxury-purple/10 group-hover:border-luxury-purple/20 transition-all">
+                      <a.icon size={14} className="text-luxury-black/45 group-hover:text-luxury-purple transition-colors" />
+                    </div>
+                    <span className="text-[11px] font-bold text-luxury-black/55 group-hover:text-luxury-black transition-colors leading-tight">
+                      {a.label}
+                    </span>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <div className="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center mb-3">
+                  <Star size={20} className="text-gray-300" />
+                </div>
+                <p className="text-[13px] font-bold text-luxury-black/35">No amenities listed yet</p>
+                <p className="text-[11px] text-luxury-black/25 mt-1">Contact the dealer for more details</p>
+              </div>
+            )}
+          </SectionCard>
+
           {/* Why this Property — highlights */}
           {highlights.length > 0 && (
             <SectionCard title="Why This Property?" icon={Sparkles}>
@@ -560,115 +656,6 @@ export const PropertyDetails = () => {
               </div>
             </SectionCard>
           )}
-
-          {/* Amenities */}
-          <SectionCard id="amenities" title="Amenities & Features" icon={Star}>
-            {amenityChips.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {amenityChips.map((a, i) => (
-                  <motion.div key={i}
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.04 }}
-                    className="flex items-center gap-3 p-3.5 rounded-2xl bg-gray-50/80 border border-gray-100 hover:bg-luxury-purple/5 hover:border-luxury-purple/20 transition-all group cursor-default"
-                  >
-                    <div className="w-8 h-8 rounded-xl bg-white border border-gray-100 shadow-sm flex items-center justify-center shrink-0 group-hover:bg-luxury-purple/10 group-hover:border-luxury-purple/20 transition-all">
-                      <a.icon size={14} className="text-luxury-black/45 group-hover:text-luxury-purple transition-colors" />
-                    </div>
-                    <span className="text-[11px] font-bold text-luxury-black/55 group-hover:text-luxury-black transition-colors leading-tight">
-                      {a.label}
-                    </span>
-                  </motion.div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <div className="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center mb-3">
-                  <Star size={20} className="text-gray-300" />
-                </div>
-                <p className="text-[13px] font-bold text-luxury-black/35">No amenities listed yet</p>
-                <p className="text-[11px] text-luxury-black/25 mt-1">Contact the dealer for more details</p>
-              </div>
-            )}
-          </SectionCard>
-
-          {/* Property Details */}
-          {detailRows.length > 0 && (
-            <SectionCard id="details" title="Property Details" icon={Building2}>
-              {/* BHK banner */}
-              {property.bedrooms > 0 && (
-                <div className="flex items-center gap-6 p-5 rounded-2xl bg-gradient-to-br from-luxury-purple/6 to-indigo-50/60 border border-luxury-purple/10 mb-5 flex-wrap">
-                  <div className="text-center pr-6 border-r border-luxury-purple/15 shrink-0">
-                    <p className="text-3xl font-display font-black text-luxury-purple">{property.bedrooms} BHK</p>
-                    <p className="text-[9px] uppercase font-bold text-luxury-black/35 tracking-wider mt-0.5">Configuration</p>
-                  </div>
-                  <div className="flex flex-wrap gap-5">
-                    <div className="flex items-center gap-2 text-[12px] font-bold text-luxury-black/60">
-                      <Bed size={13} className="text-luxury-purple" />
-                      {property.bedrooms} Bed{property.bedrooms !== 1 ? "s" : ""}
-                    </div>
-                    {property.bathrooms > 0 && (
-                      <div className="flex items-center gap-2 text-[12px] font-bold text-luxury-black/60">
-                        <Bath size={13} className="text-luxury-purple" />
-                        {property.bathrooms} Bath{property.bathrooms !== 1 ? "s" : ""}
-                      </div>
-                    )}
-                    {property.area > 0 && (
-                      <div className="flex items-center gap-2 text-[12px] font-bold text-luxury-black/60">
-                        <Ruler size={13} className="text-luxury-purple" />
-                        {property.area.toLocaleString("en-IN")} sqft
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {detailRows.map((row, i) => (
-                  <motion.div key={i}
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.03 }}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-50/80 border border-gray-100 hover:bg-luxury-purple/4 hover:border-luxury-purple/15 transition-all group">
-                    <row.icon size={13} className="shrink-0 text-luxury-purple/55 group-hover:text-luxury-purple transition-colors" />
-                    <span className="text-[10px] text-luxury-black/40 font-bold uppercase tracking-wide w-28 shrink-0">
-                      {row.label}
-                    </span>
-                    <span className="text-[13px] font-bold text-luxury-black ml-auto text-right">{row.val}</span>
-                  </motion.div>
-                ))}
-              </div>
-            </SectionCard>
-          )}
-
-          {/* Price Details */}
-          <SectionCard title="Price Details" icon={IndianRupee}>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="p-6 rounded-2xl bg-gradient-to-br from-luxury-purple to-indigo-600 text-white">
-                <p className="text-[9px] uppercase font-black tracking-widest opacity-70 mb-1.5">
-                  {isRent ? "Monthly Rent" : "Sale Price"}
-                </p>
-                <p className="text-3xl font-display font-black">
-                  {isRent ? formatMonthlyRent(property.price) : formatCurrency(property.price)}
-                </p>
-                {isBuy && pricePerSqft > 0 && (
-                  <p className="text-[11px] opacity-60 mt-1.5">₹{pricePerSqft.toLocaleString("en-IN")} / sqft</p>
-                )}
-              </div>
-              <div className="flex items-center gap-4 p-6 rounded-2xl bg-emerald-50 border border-emerald-100">
-                <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                <div>
-                  <p className="text-[11px] font-black text-emerald-700 uppercase tracking-wider">
-                    {property.status === "active" ? "Available Now" : toTitleCase(property.status)}
-                  </p>
-                  <p className="text-[11px] text-emerald-600/70 font-medium mt-1">
-                    {isRent ? "Contact us for availability" : "Schedule a visit today"}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </SectionCard>
 
           {/* EMI Calculator — buy only */}
           {isBuy && property.price > 0 && loanAmt > 0 && (

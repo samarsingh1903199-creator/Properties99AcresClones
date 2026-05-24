@@ -122,6 +122,7 @@ export interface ApiPropertyAmenities {
   storage: boolean;
   securityDeposit: number;
   distanceFromLocation: number;
+  preferred_tenants: string[];
 }
 
 export interface ApiProperty {

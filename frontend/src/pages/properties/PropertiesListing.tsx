@@ -404,6 +404,7 @@ function mapApiToProperty(p: ApiProperty): Property {
     totalViews: p.views,
     furnishingStatus: undefined,
     ownershipType: undefined,
+    tenantTypes: p.amenities?.preferred_tenants ?? [],
   };
 }
 
