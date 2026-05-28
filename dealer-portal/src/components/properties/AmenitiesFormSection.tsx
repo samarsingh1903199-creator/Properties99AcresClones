@@ -63,27 +63,37 @@ export function amenitiesFromApi(a: Partial<ApiPropertyAmenities>): AmenitiesFor
   };
 }
 
-/** Convert form state → API payload */
-export function amenitiesToApi(data: AmenitiesFormData): Partial<ApiPropertyAmenities> {
+/** Convert form state → API payload.
+ *  Sale listings omit rent-only fields (security deposit, tenant prefs,
+ *  furnishing inventory) that are not shown in the sale UI. */
+export function amenitiesToApi(
+  data: AmenitiesFormData,
+  listingType: "sale" | "rent" = "rent",
+): Partial<ApiPropertyAmenities> {
+  const isSale = listingType === "sale";
   return {
+    /* ── shared fields ── */
     parking: data.parking,
     powerBackup: data.powerBackup,
     security24x7: data.security24x7,
+    separateElectricityMeter: data.separateElectricityMeter,
     highSpeedWifi: data.highSpeedWifi,
     gymnasium: data.gymnasium,
     swimmingPool: data.swimmingPool,
     clubHouse: data.clubHouse,
-    separateElectricityMeter: data.separateElectricityMeter,
     airConditioning: data.airConditioning,
     acCount: data.airConditioning ? data.acCount : 0,
     furnishingStatus: data.furnishingStatus,
-    bedsCount: data.bedsCount,
-    almirah: data.almirah,
-    storage: data.storage,
     waterSupply: data.waterSupply,
-    securityDeposit: data.securityDeposit ? Number(data.securityDeposit) : 0,
     distanceFromLocation: data.distanceFromLocation ? Number(data.distanceFromLocation) : 0,
-    preferred_tenants: data.preferred_tenants,
+    /* ── rent-only fields ── */
+    ...(!isSale && {
+      bedsCount: data.bedsCount,
+      almirah: data.almirah,
+      storage: data.storage,
+      securityDeposit: data.securityDeposit ? Number(data.securityDeposit) : 0,
+      preferred_tenants: data.preferred_tenants,
+    }),
   };
 }
 
@@ -151,11 +161,12 @@ interface AmenitiesFormSectionProps {
   saving?: boolean;
   onSkip?: () => void;
   successMessage?: string;
+  listingType?: "sale" | "rent";
 }
 
 /* ── Main export ───────────────────────────────────────────── */
 export function AmenitiesFormSection({
-  initialValues, onSave, saving = false, onSkip, successMessage,
+  initialValues, onSave, saving = false, onSkip, successMessage, listingType = "rent",
 }: AmenitiesFormSectionProps) {
   const [form, setForm] = useState<AmenitiesFormData>({ ...AMENITIES_DEFAULT, ...initialValues });
   const [saved, setSaved] = useState(false);
@@ -184,46 +195,48 @@ export function AmenitiesFormSection({
   return (
     <div className="space-y-5 pb-28">
 
-      {/* ── 1. Preferred Tenants ── */}
-      <div className="dp-card p-6">
-        <div className="flex items-center gap-2.5 mb-4">
-          <div className="w-8 h-8 rounded-xl bg-[#5b21b6]/10 flex items-center justify-center">
-            <Users className="w-4 h-4 text-[#5b21b6]" />
+      {/* ── 1. Preferred Tenants (rent only) ── */}
+      {listingType !== "sale" && (
+        <div className="dp-card p-6">
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className="w-8 h-8 rounded-xl bg-[#5b21b6]/10 flex items-center justify-center">
+              <Users className="w-4 h-4 text-[#5b21b6]" />
+            </div>
+            <div>
+              <h3 className={SH} style={{ fontFamily: "Outfit, sans-serif" }}>Preferred Tenants</h3>
+              <p className="text-[11px] text-[#111111]/35 font-medium mt-0.5">Select all tenant types suitable for this property</p>
+            </div>
           </div>
-          <div>
-            <h3 className={SH} style={{ fontFamily: "Outfit, sans-serif" }}>Preferred Tenants</h3>
-            <p className="text-[11px] text-[#111111]/35 font-medium mt-0.5">Select all tenant types suitable for this property</p>
+          <div className="flex flex-wrap gap-2">
+            {PREFERRED_TENANT_TYPES.map(tenant => {
+              const selected = form.preferred_tenants.includes(tenant);
+              return (
+                <button
+                  key={tenant}
+                  type="button"
+                  onClick={() => {
+                    const next = selected
+                      ? form.preferred_tenants.filter(t => t !== tenant)
+                      : [...form.preferred_tenants, tenant];
+                    set("preferred_tenants", next);
+                  }}
+                  className={`px-4 py-2 rounded-2xl text-[13px] font-bold border transition-all ${
+                    selected
+                      ? "bg-[#5b21b6] text-white border-[#5b21b6] shadow-sm"
+                      : "bg-white text-[#111111]/50 border-gray-200 hover:border-[#5b21b6]/30 hover:text-[#5b21b6]"
+                  }`}
+                >
+                  {selected && <Check className="w-3 h-3 inline mr-1.5 -mt-0.5" />}
+                  {tenant}
+                </button>
+              );
+            })}
           </div>
+          {form.preferred_tenants.length === 0 && (
+            <p className="text-[11px] text-[#111111]/30 font-medium mt-3">No preference selected — property will be open to all tenant types</p>
+          )}
         </div>
-        <div className="flex flex-wrap gap-2">
-          {PREFERRED_TENANT_TYPES.map(tenant => {
-            const selected = form.preferred_tenants.includes(tenant);
-            return (
-              <button
-                key={tenant}
-                type="button"
-                onClick={() => {
-                  const next = selected
-                    ? form.preferred_tenants.filter(t => t !== tenant)
-                    : [...form.preferred_tenants, tenant];
-                  set("preferred_tenants", next);
-                }}
-                className={`px-4 py-2 rounded-2xl text-[13px] font-bold border transition-all ${
-                  selected
-                    ? "bg-[#5b21b6] text-white border-[#5b21b6] shadow-sm"
-                    : "bg-white text-[#111111]/50 border-gray-200 hover:border-[#5b21b6]/30 hover:text-[#5b21b6]"
-                }`}
-              >
-                {selected && <Check className="w-3 h-3 inline mr-1.5 -mt-0.5" />}
-                {tenant}
-              </button>
-            );
-          })}
-        </div>
-        {form.preferred_tenants.length === 0 && (
-          <p className="text-[11px] text-[#111111]/30 font-medium mt-3">No preference selected — property will be open to all tenant types</p>
-        )}
-      </div>
+      )}
 
       {/* ── 2. Parking ── */}
       <div className="dp-card p-6">
@@ -328,7 +341,7 @@ export function AmenitiesFormSection({
             </button>
           ))}
         </div>
-        {form.furnishingStatus !== "unfurnished" && (
+        {form.furnishingStatus !== "unfurnished" && listingType !== "sale" && (
           <div className="space-y-3 pt-3 border-t border-[rgba(91,33,182,0.06)]">
             <div>
               <label className={label}>Total Beds Across All Rooms</label>
@@ -388,21 +401,25 @@ export function AmenitiesFormSection({
 
       {/* ── 7 & 8. Security Deposit + Distance ── */}
       <div className="dp-card p-6 space-y-5">
-        <h3 className={SH} style={{ fontFamily: "Outfit, sans-serif" }}>Additional Details</h3>
-        <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <Lock className="w-3.5 h-3.5 text-[#5b21b6]/60" />
-            <label className={label.replace("mb-1.5", "mb-0")}>Security Deposit Amount (₹)</label>
+        <h3 className={SH} style={{ fontFamily: "Outfit, sans-serif" }}>
+          {listingType === "sale" ? "Location & Accessibility" : "Additional Details"}
+        </h3>
+        {listingType !== "sale" && (
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <Lock className="w-3.5 h-3.5 text-[#5b21b6]/60" />
+              <label className={label.replace("mb-1.5", "mb-0")}>Security Deposit Amount (₹)</label>
+            </div>
+            <div className="relative">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#111111]/30 font-bold text-sm">₹</span>
+              <input type="number" min="0" value={form.securityDeposit}
+                onChange={e => set("securityDeposit", e.target.value)}
+                placeholder="Enter security deposit amount"
+                className="dp-input pl-8" style={{ borderRadius: "0.875rem" }} />
+            </div>
+            <p className="text-[11px] text-[#111111]/30 font-medium mt-1.5">Refundable amount collected from tenant</p>
           </div>
-          <div className="relative">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#111111]/30 font-bold text-sm">₹</span>
-            <input type="number" min="0" value={form.securityDeposit}
-              onChange={e => set("securityDeposit", e.target.value)}
-              placeholder="Enter security deposit amount"
-              className="dp-input pl-8" style={{ borderRadius: "0.875rem" }} />
-          </div>
-          <p className="text-[11px] text-[#111111]/30 font-medium mt-1.5">Refundable amount collected from tenant / buyer</p>
-        </div>
+        )}
         <div>
           <div className="flex items-center gap-2 mb-1.5">
             <MapPin className="w-3.5 h-3.5 text-[#5b21b6]/60" />
@@ -441,7 +458,7 @@ export function AmenitiesFormSection({
           className="premium-btn flex items-center gap-2 px-6 h-11 text-xs tracking-widest disabled:opacity-60 disabled:cursor-not-allowed">
           {saving
             ? <><Loader2 className="w-4 h-4 animate-spin" />SAVING…</>
-            : <><Save className="w-4 h-4" /><span>SAVE AMENITIES</span></>
+            : <><Save className="w-4 h-4" /><span>{listingType === "sale" ? "SAVE FEATURES" : "SAVE AMENITIES"}</span></>
           }
         </button>
       </div>

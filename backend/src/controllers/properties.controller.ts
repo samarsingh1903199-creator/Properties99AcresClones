@@ -42,7 +42,7 @@ export const getProperty = asyncHandler(async (req: Request, res: Response) => {
 
 export const createProperty = asyncHandler(async (req: Request, res: Response) => {
   const authReq = req as AuthRequest;
-  const { title, type, listingType, price, area, bedrooms, bathrooms, location, city, description, images, status, amenities } = req.body;
+  const { title, type, listingType, price, area, bedrooms, bathrooms, location, city, description, images, status, amenities, saleDetails } = req.body;
 
   if (!title || !type || !listingType || !price || !area || !location || !city) {
     res.status(400).json({ success: false, message: "title, type, listingType, price, area, location and city are required" });
@@ -65,6 +65,7 @@ export const createProperty = asyncHandler(async (req: Request, res: Response) =
     status: (status ?? "draft") as PropertyStatus,
     ownerId: authReq.user!.userId,
     amenities: amenities ?? {},
+    ...(listingType === "sale" && saleDetails ? { saleDetails } : {}),
   });
 
   res.status(201).json({ success: true, data: property });
@@ -72,7 +73,7 @@ export const createProperty = asyncHandler(async (req: Request, res: Response) =
 
 export const updateProperty = asyncHandler(async (req: Request, res: Response) => {
   const authReq = req as AuthRequest;
-  const allowed = ["title","type","listingType","price","area","bedrooms","bathrooms","location","city","description","images","status","amenities"];
+  const allowed = ["title","type","listingType","price","area","bedrooms","bathrooms","location","city","description","images","status","amenities","saleDetails"];
   const updates: Record<string, unknown> = {};
   allowed.forEach((k) => { if (req.body[k] !== undefined) updates[k] = req.body[k]; });
 

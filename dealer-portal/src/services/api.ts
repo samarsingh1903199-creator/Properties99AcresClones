@@ -53,6 +53,7 @@ export const propertiesApi = {
     location: string; city: string; description: string;
     images: string[]; status: string;
     amenities?: Partial<ApiPropertyAmenities>;
+    saleDetails?: ApiSaleDetails;
   }) =>
     request<{ success: boolean; data: ApiProperty }>("/api/properties", {
       method: "POST",
@@ -78,6 +79,7 @@ export const propertiesApi = {
     location: string; city: string; description: string;
     images: string[]; status: string;
     amenities: Partial<ApiPropertyAmenities>;
+    saleDetails: ApiSaleDetails;
   }>) =>
     request<{ success: boolean; data: ApiProperty }>(`/api/properties/${id}`, {
       method: "PATCH",
@@ -103,6 +105,33 @@ export const propertiesApi = {
       body: JSON.stringify(data),
     }),
 };
+
+export interface ApiSaleDetails {
+  /* Pricing */
+  pricePerSqft?: number;
+  bookingAmount?: number;
+  maintenanceCharges?: number;
+  negotiable?: boolean;
+  loanAvailable?: boolean;
+  /* Ownership & Possession */
+  ownershipType?: "freehold" | "leasehold" | "builder-owned" | "resale";
+  propertyAge?: number;
+  possessionStatus?: "ready-to-move" | "under-construction";
+  possessionDate?: string;
+  /* Location Details */
+  floorNumber?: string;
+  totalFloors?: number;
+  facing?: "north" | "south" | "east" | "west" | "north-east" | "north-west" | "south-east" | "south-west";
+  vastuCompliant?: boolean;
+  /* Area Breakdown */
+  carpetArea?: number;
+  builtUpArea?: number;
+  superBuiltUpArea?: number;
+  /* Legal */
+  reraNumber?: string;
+  registryStatus?: "clear" | "pending" | "disputed";
+  legalApprovals?: "approved" | "pending" | "disputed";
+}
 
 export interface ApiPropertyAmenities {
   parking: 0 | 1 | 2 | 3;
@@ -143,6 +172,7 @@ export interface ApiProperty {
   inquiries: number;
   ownerId: string;
   amenities: ApiPropertyAmenities;
+  saleDetails?: ApiSaleDetails;
   createdAt: string;
   updatedAt: string;
 }

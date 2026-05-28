@@ -652,6 +652,96 @@ const options: swaggerJsdoc.Options = {
         },
       },
 
+      /* ── Liked / Saved Properties ── */
+      "/api/liked": {
+        get: {
+          tags: ["Liked Properties"],
+          summary: "Get liked property IDs for the authenticated user",
+          description: "Returns an array of property IDs that the user has saved/liked.",
+          security: [{ bearerAuth: [] }],
+          responses: {
+            "200": {
+              description: "Array of liked property IDs",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: { type: "boolean", example: true },
+                      data: {
+                        type: "array",
+                        items: { type: "string" },
+                        example: ["64a1b2c3d4e5f6789abcdef0"],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            "401": { description: "Unauthorized — JWT required" },
+            "404": { description: "User not found" },
+          },
+        },
+      },
+      "/api/liked/properties": {
+        get: {
+          tags: ["Liked Properties"],
+          summary: "Get full property objects for all liked properties",
+          description: "Returns the full property documents for every property the user has saved/liked.",
+          security: [{ bearerAuth: [] }],
+          responses: {
+            "200": {
+              description: "List of liked property objects",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: { type: "boolean", example: true },
+                      count: { type: "number" },
+                      data: { type: "array", items: { $ref: "#/components/schemas/Property" } },
+                    },
+                  },
+                },
+              },
+            },
+            "401": { description: "Unauthorized — JWT required" },
+            "404": { description: "User not found" },
+          },
+        },
+      },
+      "/api/liked/{propertyId}": {
+        post: {
+          tags: ["Liked Properties"],
+          summary: "Toggle like/save for a property",
+          description: "If the property is not yet liked it gets added; if it is already liked it gets removed. Returns the updated list of liked IDs and a `liked` boolean.",
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: "propertyId", in: "path", required: true, schema: { type: "string" }, description: "Property _id to toggle" },
+          ],
+          responses: {
+            "200": {
+              description: "Like toggled successfully",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: { type: "boolean", example: true },
+                      liked:   { type: "boolean", description: "true = property was just liked, false = property was just unliked" },
+                      data:    { type: "array", items: { type: "string" }, description: "Updated full list of liked property IDs" },
+                    },
+                  },
+                },
+              },
+            },
+            "400": { description: "Invalid property ID" },
+            "401": { description: "Unauthorized — JWT required" },
+            "404": { description: "Property or user not found" },
+          },
+        },
+      },
+
       /* ── Upload ── */
       "/api/upload": {
         post: {

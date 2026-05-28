@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, SlidersHorizontal, X, Check, ChevronDown,
   Home, Building2, Bed, IndianRupee, Layers, RotateCcw,
-  ArrowUpDown, MapPin, Tag, Users, Star, Loader2,
+  ArrowUpDown, MapPin, Tag, Users, Loader2,
 } from "lucide-react";
+import { BGPattern } from "@/src/components/ui/bg-pattern";
 import { PropertyCard } from "@/src/components/ui/PropertyCard";
 import { cn, formatCurrency } from "@/src/lib/utils";
 import { propertiesApi, ApiProperty } from "@/src/services/api";
@@ -18,7 +19,6 @@ interface Filters {
   types: string[];
   bedrooms: string;
   furnishing: string[];
-  ownerOnly: boolean;
 }
 
 const MAX_PRICE = 200_000_000;
@@ -30,7 +30,6 @@ const DEFAULT_FILTERS: Filters = {
   types: [],
   bedrooms: "any",
   furnishing: [],
-  ownerOnly: false,
 };
 
 const PROPERTY_TYPES = [
@@ -43,10 +42,11 @@ const PROPERTY_TYPES = [
   { id: "plot",      label: "Plot / Land",    icon: MapPin },
 ];
 
+// IDs match backend amenities.furnishingStatus values exactly
 const FURNISHING_OPTS = [
-  { id: "Fully-Furnished", label: "Fully Furnished" },
-  { id: "Semi-Furnished",  label: "Semi Furnished"  },
-  { id: "Unfurnished",     label: "Unfurnished"      },
+  { id: "fully-furnished", label: "Fully Furnished" },
+  { id: "semi-furnished",  label: "Semi Furnished"  },
+  { id: "unfurnished",     label: "Unfurnished"      },
 ];
 
 const BED_OPTIONS = ["Any", "1", "2", "3", "4", "5+"];
@@ -136,26 +136,6 @@ function FilterCheckbox({
   );
 }
 
-/* ─── Filter Toggle (owner only etc.) ───────────────────────────── */
-function FilterToggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: () => void }) {
-  return (
-    <label className="flex items-center justify-between cursor-pointer py-1 select-none" onClick={onChange}>
-      <span className={cn("text-[13px] font-medium", checked ? "text-luxury-black font-bold" : "text-luxury-black/55")}>
-        {label}
-      </span>
-      <div className={cn(
-        "w-10 h-5.5 rounded-full relative transition-colors duration-200 shrink-0",
-        checked ? "bg-luxury-purple" : "bg-gray-200",
-      )} style={{ height: "22px" }}>
-        <div className={cn(
-          "absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-200",
-          checked ? "left-5" : "left-0.5",
-        )} />
-      </div>
-    </label>
-  );
-}
-
 /* ─── Sidebar Filter Panel (shared between desktop & mobile sheet) ─ */
 function FilterPanel({
   filters,
@@ -185,8 +165,7 @@ function FilterPanel({
     (filters.minPrice > 0 || filters.maxPrice < MAX_PRICE ? 1 : 0) +
     filters.types.length +
     (filters.bedrooms !== "any" ? 1 : 0) +
-    filters.furnishing.length +
-    (filters.ownerOnly ? 1 : 0);
+    filters.furnishing.length;
 
   return (
     <div className="flex flex-col h-full">
@@ -367,14 +346,6 @@ function FilterPanel({
           </div>
         </AccordionSection>
 
-        {/* By Owner */}
-        <AccordionSection title="Ownership" icon={Star} defaultOpen={false}>
-          <FilterToggle
-            label="Owner Properties Only"
-            checked={filters.ownerOnly}
-            onChange={() => setFilters(f => ({ ...f, ownerOnly: !f.ownerOnly }))}
-          />
-        </AccordionSection>
 
       </div>
     </div>
@@ -402,8 +373,7 @@ function mapApiToProperty(p: ApiProperty): Property {
     agentId: p.ownerId,
     verified: false,
     totalViews: p.views,
-    furnishingStatus: undefined,
-    ownershipType: undefined,
+    furnishingStatus: p.amenities?.furnishingStatus ?? undefined,
     tenantTypes: p.amenities?.preferred_tenants ?? [],
   };
 }
@@ -455,7 +425,6 @@ export const PropertiesListing = () => {
         else if (beds !== Number(filters.bedrooms)) return false;
       }
       if (filters.furnishing.length && !filters.furnishing.includes(p.furnishingStatus ?? "")) return false;
-      if (filters.ownerOnly && p.ownershipType?.toLowerCase() !== "owner") return false;
       if (q && !p.title.toLowerCase().includes(q) && !p.location.toLowerCase().includes(q)) return false;
       return true;
     });
@@ -473,14 +442,20 @@ export const PropertiesListing = () => {
     (filters.minPrice > 0 || filters.maxPrice < MAX_PRICE ? 1 : 0) +
     filters.types.length +
     (filters.bedrooms !== "any" ? 1 : 0) +
-    filters.furnishing.length +
-    (filters.ownerOnly ? 1 : 0);
+    filters.furnishing.length;
 
   return (
-    <div className="min-h-screen bg-[#f5f5f7]">
+    <div className="relative isolate min-h-screen overflow-hidden bg-[#f5f5f7]">
+      <BGPattern
+        variant="dots"
+        mask="fade-y"
+        size={28}
+        fill="rgba(91, 33, 182, 0.11)"
+        className="z-0 opacity-60"
+      />
 
       {/* ── Page Header ── */}
-      <div className="bg-white border-b border-gray-100 shadow-sm pt-28 pb-6 px-6 md:px-12">
+      <div className="relative z-10 bg-white/92 border-b border-gray-100 shadow-sm pt-28 pb-6 px-6 md:px-12 backdrop-blur-sm">
         <div className="max-w-[1700px] mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <div>
@@ -533,7 +508,7 @@ export const PropertiesListing = () => {
       </div>
 
       {/* ── Body: sidebar + grid ── */}
-      <div className="max-w-[1700px] mx-auto px-6 md:px-12 py-8">
+      <div className="relative z-10 max-w-[1700px] mx-auto px-6 md:px-12 py-8">
         <div className="flex gap-8">
 
           {/* ════ LEFT SIDEBAR (desktop only) ════ */}
@@ -595,12 +570,6 @@ export const PropertiesListing = () => {
                         onRemove={() => setFilters(prev => ({ ...prev, furnishing: prev.furnishing.filter(x => x !== f) }))}
                       />
                     ))}
-                    {filters.ownerOnly && (
-                      <ActiveChip
-                        label="Owner Only"
-                        onRemove={() => setFilters(f => ({ ...f, ownerOnly: false }))}
-                      />
-                    )}
                   </motion.div>
                 )}
               </div>

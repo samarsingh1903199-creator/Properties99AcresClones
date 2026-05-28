@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, Landmark } from "lucide-react";
 import { ROUTES } from "@/src/constants/routes";
 import { useAuthStore } from "@/src/store/useAuthStore";
+import { useWishlistStore } from "@/src/store/useWishlistStore";
 import { authApi } from "@/src/services/api";
 
 const inputBase =
@@ -16,6 +17,7 @@ export const LoginPage = () => {
   const [error, setError]       = useState<string | null>(null);
   const navigate                = useNavigate();
   const { setAuthFromApi }      = useAuthStore();
+  const { syncFromServer }      = useWishlistStore();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,6 +26,7 @@ export const LoginPage = () => {
     try {
       const res = await authApi.login(email, password);
       setAuthFromApi(res.user, res.token);
+      syncFromServer(res.token);
       navigate(ROUTES.HOME);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed. Please try again.");

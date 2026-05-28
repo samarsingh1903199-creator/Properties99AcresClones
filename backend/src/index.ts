@@ -15,6 +15,7 @@ import visitEnquiryRoutes    from "./routes/visitEnquiries.routes.js";
 import analyticsRoutes       from "./routes/analytics.routes.js";
 import uploadRoutes          from "./routes/upload.routes.js";
 import publicRoutes          from "./routes/public.routes.js";
+import likedRoutes           from "./routes/liked.routes.js";
 
 const app  = express();
 const PORT = Number(process.env.PORT) || 3002;
@@ -43,6 +44,7 @@ app.use("/api/visit-enquiries",  visitEnquiryRoutes);
 app.use("/api/analytics",        analyticsRoutes);
 app.use("/api/upload",     uploadRoutes);
 app.use("/api/public",    publicRoutes);
+app.use("/api/liked",     likedRoutes);
 
 /* ── 404 ── */
 app.use((_req, res) => {

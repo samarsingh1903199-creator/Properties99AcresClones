@@ -4,10 +4,11 @@ import {
   Plus, Eye, MessageSquare, Pencil, Trash2, Home,
   LayoutGrid, List, Search, BedDouble, Bath,
   Maximize2, MapPin, ChevronDown, ImageOff,
-  TrendingUp, ArrowUpRight, Check, Loader2, RefreshCw,
+  TrendingUp, Check, Loader2, RefreshCw,
   X, Users, Phone, Mail, Calendar, BookOpen,
   Building2, AlertCircle, ChevronRight,
   Heart, User, UserCheck, Briefcase, type LucideIcon,
+  Info, Tag, Car, Zap, Shield, Wifi, Dumbbell, Droplets, Wind,
 } from "lucide-react";
 import {
   propertiesApi, viewsApi, inquiriesApi,
@@ -51,6 +52,66 @@ function TenantChips({ tenants }: { tenants: string[] | undefined }) {
           +{extra}
         </span>
       )}
+    </div>
+  );
+}
+
+/* ── Sale info chips (shown on sale cards instead of tenant chips) ── */
+function SaleInfoChips({ sd }: { sd?: ApiProperty["saleDetails"] }) {
+  if (!sd) return null;
+  return (
+    <div className="flex items-center gap-1 flex-wrap">
+      {sd.possessionStatus && (
+        <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[9px] font-bold border ${
+          sd.possessionStatus === "ready-to-move"
+            ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+            : "bg-amber-50 border-amber-200 text-amber-700"
+        }`}>
+          {sd.possessionStatus === "ready-to-move" ? "Ready to Move" : "Under Construction"}
+        </span>
+      )}
+      {sd.ownershipType && (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold border bg-violet-50 border-violet-200 text-violet-700">
+          {sd.ownershipType.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}
+        </span>
+      )}
+    </div>
+  );
+}
+
+/* ── Detail row helper (label + value pair) ─────────────────────── */
+function DetailRow({ label, value }: { label: string; value?: string | null }) {
+  if (!value) return null;
+  return (
+    <div className="flex flex-col py-2.5 border-b border-[rgba(91,33,182,0.04)] last:border-0">
+      <span className="text-[10px] font-black uppercase tracking-wider text-[#111111]/30">{label}</span>
+      <span className="text-sm font-semibold text-[#111111] mt-0.5">{value}</span>
+    </div>
+  );
+}
+
+/* ── Amenity chip (active/inactive) ─────────────────────────────── */
+function AmenityChip({ icon: Icon, label, active }: { icon: React.ElementType; label: string; active: boolean }) {
+  return (
+    <div className={`flex items-center gap-2 px-2.5 py-2 rounded-xl border text-[11px] font-bold ${
+      active
+        ? "bg-[#5b21b6]/[0.06] border-[#5b21b6]/20 text-[#5b21b6]"
+        : "bg-gray-50 border-gray-100 text-[#111111]/25"
+    }`}>
+      <Icon className={`w-3.5 h-3.5 shrink-0 ${active ? "text-[#5b21b6]" : "text-[#111111]/20"}`} />
+      <span className={active ? "" : "line-through"}>{label}</span>
+    </div>
+  );
+}
+
+/* ── Section heading helper ──────────────────────────────────────── */
+function SectionHeading({ label, color }: { label: string; color: "emerald" | "blue" | "purple" }) {
+  const lineColor = color === "emerald" ? "bg-emerald-100" : color === "blue" ? "bg-blue-100" : "bg-[#5b21b6]/10";
+  return (
+    <div className="flex items-center gap-2 mb-3">
+      <span className={`flex-1 h-px ${lineColor}`} />
+      <span className="text-[10px] font-black uppercase tracking-widest text-[#111111]/30 whitespace-nowrap">{label}</span>
+      <span className={`flex-1 h-px ${lineColor}`} />
     </div>
   );
 }
@@ -177,12 +238,13 @@ function StatBtn({ icon: Icon, count, label, color, onClick }: {
 }
 
 /* ── GRID CARD ───────────────────────────────────────────────────── */
-function PropertyCard({ p, confirmDelete, onDelete, onStatusChange, onViewClick, onInquiryClick }: {
+function PropertyCard({ p, confirmDelete, onDelete, onStatusChange, onViewClick, onInquiryClick, onDetailClick }: {
   p: Property; confirmDelete: string | null;
   onDelete: (id: string) => void;
   onStatusChange: (id: string, status: PropertyStatus) => void;
   onViewClick: (p: Property) => void;
   onInquiryClick: (p: Property) => void;
+  onDetailClick: (p: Property) => void;
 }) {
   const [imgIdx, setImgIdx] = useState(0);
   return (
@@ -227,7 +289,9 @@ function PropertyCard({ p, confirmDelete, onDelete, onStatusChange, onViewClick,
           <span className="truncate">{p.location}</span>
         </div>
         <div className="mb-3">
-          <TenantChips tenants={p.amenities?.preferred_tenants} />
+          {p.listingType === "sale"
+            ? <SaleInfoChips sd={p.saleDetails} />
+            : <TenantChips tenants={p.amenities?.preferred_tenants} />}
         </div>
         <div className="flex items-center gap-3 pb-3 mb-3 border-b border-[rgba(91,33,182,0.06)]">
           <span className="flex items-center gap-1 text-xs font-semibold text-[#111111]/60"><BedDouble className="w-3.5 h-3.5 text-[#5b21b6]/40" />{p.bedrooms} Beds</span>
@@ -258,12 +322,16 @@ function PropertyCard({ p, confirmDelete, onDelete, onStatusChange, onViewClick,
           <StatusDropdown property={p} onStatusChange={onStatusChange} />
         </div>
         <div className="flex gap-2 mt-auto">
+          <button onClick={(e) => { e.stopPropagation(); onDetailClick(p); }}
+            className="flex items-center justify-center gap-1.5 h-9 px-3 rounded-xl text-xs font-black uppercase tracking-wider border border-[rgba(91,33,182,0.08)] text-[#111111]/40 hover:bg-[#5b21b6]/8 hover:text-[#5b21b6] hover:border-[rgba(91,33,182,0.2)] transition-all duration-200">
+            <Info className="w-3.5 h-3.5" />Details
+          </button>
           <Link to={`/properties/${p.id}/edit`}
             className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-xl text-xs font-black uppercase tracking-wider border border-[rgba(91,33,182,0.15)] text-[#5b21b6] hover:bg-[#5b21b6] hover:text-white hover:border-[#5b21b6] transition-all duration-200">
             <Pencil className="w-3.5 h-3.5" />Edit
           </Link>
           <button onClick={() => onDelete(p.id)}
-            className={`flex-1 flex items-center justify-center gap-1.5 h-9 rounded-xl text-xs font-black uppercase tracking-wider border transition-all duration-200 ${
+            className={`flex items-center justify-center gap-1.5 h-9 px-3 rounded-xl text-xs font-black uppercase tracking-wider border transition-all duration-200 ${
               confirmDelete === p.id ? "bg-red-500 text-white border-red-500" : "border-gray-200 text-[#111111]/40 hover:bg-red-50 hover:text-red-500 hover:border-red-100"
             }`}>
             <Trash2 className="w-3.5 h-3.5" />
@@ -276,12 +344,13 @@ function PropertyCard({ p, confirmDelete, onDelete, onStatusChange, onViewClick,
 }
 
 /* ── LIST ROW ────────────────────────────────────────────────────── */
-function PropertyRow({ p, confirmDelete, onDelete, onStatusChange, isLast, onViewClick, onInquiryClick }: {
+function PropertyRow({ p, confirmDelete, onDelete, onStatusChange, isLast, onViewClick, onInquiryClick, onDetailClick }: {
   p: Property; confirmDelete: string | null; isLast: boolean;
   onDelete: (id: string) => void;
   onStatusChange: (id: string, status: PropertyStatus) => void;
   onViewClick: (p: Property) => void;
   onInquiryClick: (p: Property) => void;
+  onDetailClick: (p: Property) => void;
 }) {
   return (
     <div className="flex items-center gap-4 px-5 py-4 hover:bg-[#f8f9fa] transition-colors"
@@ -305,7 +374,9 @@ function PropertyRow({ p, confirmDelete, onDelete, onStatusChange, isLast, onVie
           <MapPin className="w-3 h-3 text-[#5b21b6]/30" /><span className="truncate">{p.location}</span>
         </div>
         <div className="mb-2">
-          <TenantChips tenants={p.amenities?.preferred_tenants} />
+          {p.listingType === "sale"
+            ? <SaleInfoChips sd={p.saleDetails} />
+            : <TenantChips tenants={p.amenities?.preferred_tenants} />}
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <span className="flex items-center gap-1 text-xs font-semibold text-[#111111]/40"><BedDouble className="w-3 h-3" />{p.bedrooms}</span>
@@ -326,6 +397,10 @@ function PropertyRow({ p, confirmDelete, onDelete, onStatusChange, isLast, onVie
       </div>
       <div className="shrink-0 hidden md:block"><StatusDropdown property={p} onStatusChange={onStatusChange} /></div>
       <div className="flex items-center gap-1 shrink-0">
+        <button onClick={(e) => { e.stopPropagation(); onDetailClick(p); }}
+          className="p-2 rounded-xl text-[#111111]/30 hover:text-[#5b21b6] hover:bg-[#5b21b6]/8 border border-transparent hover:border-[rgba(91,33,182,0.12)] transition-all duration-200" title="View Details">
+          <Info className="w-4 h-4" />
+        </button>
         <Link to={`/properties/${p.id}/edit`}
           className="p-2 rounded-xl text-[#111111]/30 hover:text-[#5b21b6] hover:bg-[#5b21b6]/8 border border-transparent hover:border-[rgba(91,33,182,0.12)] transition-all duration-200" title="Edit">
           <Pencil className="w-4 h-4" />
@@ -617,6 +692,273 @@ function InquiriesModal({ target, token, onClose }: { target: NonNullable<ModalT
   );
 }
 
+/* ── Property Detail Modal ───────────────────────────────────────── */
+function PropertyDetailModal({ p, onClose }: { p: Property; onClose: () => void }) {
+  const [imgIdx, setImgIdx] = useState(0);
+  const isSale = p.listingType === "sale";
+  const am = p.amenities;
+  const sd = p.saleDetails;
+  const accentColor: "emerald" | "blue" = isSale ? "emerald" : "blue";
+  const accentBar    = isSale ? "bg-emerald-500"    : "bg-blue-500";
+  const accentText   = isSale ? "text-emerald-700"  : "text-blue-700";
+  const accentBg     = isSale ? "bg-emerald-50"     : "bg-blue-50";
+  const accentBorder = isSale ? "border-emerald-100": "border-blue-100";
+  const accentDiv    = isSale ? "bg-emerald-200"    : "bg-blue-200";
+
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", h);
+    return () => document.removeEventListener("keydown", h);
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="relative w-full sm:max-w-3xl lg:max-w-4xl bg-white rounded-t-2xl sm:rounded-2xl flex flex-col max-h-[95vh] sm:max-h-[90vh] overflow-hidden"
+        style={{ boxShadow: "0 32px 80px -16px rgba(0,0,0,0.4)" }}
+      >
+        {/* colour bar */}
+        <div className={`h-1 w-full shrink-0 ${accentBar}`} />
+
+        {/* header */}
+        <div className="flex items-center gap-3 px-5 py-3.5 border-b border-gray-100 shrink-0">
+          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border ${accentBg} ${accentBorder}`}>
+            <Info className={`w-4 h-4 ${accentText}`} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[9px] font-black uppercase tracking-wider text-[#5b21b6]">{p.type}</span>
+              <span className={`text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full border ${accentBg} ${accentBorder} ${accentText}`}>
+                For {p.listingType}
+              </span>
+              <StatusBadge s={p.status as PropertyStatus} />
+            </div>
+            <h2 className="text-sm font-black text-[#111111] leading-tight truncate mt-0.5" style={{ fontFamily: "Outfit, sans-serif" }}>{p.title}</h2>
+          </div>
+          <button onClick={onClose}
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-[#111111]/30 hover:text-[#111111] hover:bg-gray-100 transition-all shrink-0">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* image gallery */}
+        {p.images.length > 0 && (
+          <div className="relative shrink-0 bg-[#111111]" style={{ aspectRatio: "16/8" }}>
+            <img src={p.images[imgIdx]} alt={p.title} className="w-full h-full object-cover opacity-90" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            {p.images.length > 1 && (
+              <>
+                <button onClick={() => setImgIdx(i => (i - 1 + p.images.length) % p.images.length)}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/40 font-bold text-sm transition-all">‹</button>
+                <button onClick={() => setImgIdx(i => (i + 1) % p.images.length)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/40 font-bold text-sm transition-all">›</button>
+                <span className="absolute top-2.5 left-2.5 bg-black/40 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  {imgIdx + 1} / {p.images.length}
+                </span>
+                <ImageDots count={p.images.length} active={imgIdx} />
+              </>
+            )}
+            <div className="absolute bottom-3 left-4 right-4 pointer-events-none">
+              <span className="flex items-center gap-1 text-white/65 text-[11px] font-medium">
+                <MapPin className="w-3 h-3 shrink-0" />{p.location}{p.city ? `, ${p.city}` : ""}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* scrollable body */}
+        <div className="flex-1 overflow-y-auto overscroll-contain">
+          <div className="p-5 space-y-6">
+
+            {/* Price + key stats */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                {p.images.length === 0 && (
+                  <div className="flex items-center gap-1 text-xs font-medium text-[#111111]/40 mb-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-[#5b21b6]/30 shrink-0" />
+                    {p.location}{p.city ? `, ${p.city}` : ""}
+                  </div>
+                )}
+                <p className="text-2xl font-black text-[#111111]" style={{ fontFamily: "Outfit, sans-serif" }}>
+                  ₹{p.price.toLocaleString("en-IN")}
+                  {!isSale && <span className="text-base font-semibold text-[#111111]/40">/mo</span>}
+                </p>
+                {isSale && sd?.pricePerSqft && (
+                  <p className="text-xs text-[#111111]/40 font-medium mt-0.5">₹{sd.pricePerSqft.toLocaleString("en-IN")}/sq.ft</p>
+                )}
+              </div>
+              <div className={`flex items-center gap-3 ${accentBg} ${accentBorder} border rounded-2xl px-4 py-2.5`}>
+                <span className="flex items-center gap-1.5 text-xs font-bold text-[#111111]/60">
+                  <BedDouble className={`w-4 h-4 ${accentText}`} />{p.bedrooms} Beds
+                </span>
+                <span className={`w-px h-4 ${accentDiv}`} />
+                <span className="flex items-center gap-1.5 text-xs font-bold text-[#111111]/60">
+                  <Bath className={`w-4 h-4 ${accentText}`} />{p.bathrooms} Baths
+                </span>
+                <span className={`w-px h-4 ${accentDiv}`} />
+                <span className="flex items-center gap-1.5 text-xs font-bold text-[#111111]/60">
+                  <Maximize2 className={`w-4 h-4 ${accentText}`} />{p.area.toLocaleString()} sq.ft
+                </span>
+              </div>
+            </div>
+
+            {/* ── SALE: details sections ── */}
+            {isSale && sd && (
+              <>
+                {(sd.possessionStatus || sd.ownershipType) && <SaleInfoChips sd={sd} />}
+
+                {(sd.bookingAmount != null || sd.maintenanceCharges != null || sd.negotiable != null || sd.loanAvailable != null) && (
+                  <div>
+                    <SectionHeading label="Pricing & Financials" color="emerald" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 bg-gray-50/70 rounded-2xl p-4 border border-gray-100">
+                      <DetailRow label="Booking / Token Amount"  value={sd.bookingAmount      != null ? `₹${sd.bookingAmount.toLocaleString("en-IN")}` : null} />
+                      <DetailRow label="Maintenance Charges"     value={sd.maintenanceCharges != null ? `₹${sd.maintenanceCharges.toLocaleString("en-IN")}/mo` : null} />
+                      <DetailRow label="Negotiable"              value={sd.negotiable         != null ? (sd.negotiable ? "Yes" : "No") : null} />
+                      <DetailRow label="Loan Available"          value={sd.loanAvailable      != null ? (sd.loanAvailable ? "Yes" : "No") : null} />
+                    </div>
+                  </div>
+                )}
+
+                {(sd.ownershipType || sd.propertyAge != null || sd.possessionStatus || sd.possessionDate || sd.floorNumber || sd.totalFloors != null || sd.facing || sd.vastuCompliant != null) && (
+                  <div>
+                    <SectionHeading label="Property Details" color="emerald" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 bg-gray-50/70 rounded-2xl p-4 border border-gray-100">
+                      <DetailRow label="Ownership Type"      value={sd.ownershipType    ? sd.ownershipType.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") : null} />
+                      <DetailRow label="Property Age"        value={sd.propertyAge      != null ? `${sd.propertyAge} year${sd.propertyAge !== 1 ? "s" : ""}` : null} />
+                      <DetailRow label="Possession Status"   value={sd.possessionStatus === "ready-to-move" ? "Ready to Move" : sd.possessionStatus === "under-construction" ? "Under Construction" : null} />
+                      <DetailRow label="Possession Date"     value={sd.possessionDate   ? fmtDate(sd.possessionDate) : null} />
+                      <DetailRow label="Floor"               value={sd.floorNumber      != null ? `${sd.floorNumber}${sd.totalFloors != null ? ` of ${sd.totalFloors}` : ""}` : sd.totalFloors != null ? `Total ${sd.totalFloors} floors` : null} />
+                      <DetailRow label="Facing"              value={sd.facing           ? sd.facing.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") : null} />
+                      <DetailRow label="Vastu Compliant"     value={sd.vastuCompliant   != null ? (sd.vastuCompliant ? "Yes" : "No") : null} />
+                    </div>
+                  </div>
+                )}
+
+                {(sd.carpetArea != null || sd.builtUpArea != null || sd.superBuiltUpArea != null) && (
+                  <div>
+                    <SectionHeading label="Area Breakdown" color="emerald" />
+                    <div className="grid grid-cols-3 gap-3">
+                      {([ { label: "Carpet Area", value: sd.carpetArea }, { label: "Built-up Area", value: sd.builtUpArea }, { label: "Super Built-up", value: sd.superBuiltUpArea } ] as { label: string; value: number | undefined }[])
+                        .filter(x => x.value != null)
+                        .map(({ label, value }) => (
+                          <div key={label} className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 text-center">
+                            <p className="text-lg font-black text-emerald-700" style={{ fontFamily: "Outfit, sans-serif" }}>{value!.toLocaleString()}</p>
+                            <p className="text-[10px] font-bold text-[#111111]/35 mt-0.5">{label}</p>
+                            <p className="text-[9px] font-medium text-[#111111]/25">sq.ft</p>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
+                {(sd.reraNumber || sd.registryStatus || sd.legalApprovals) && (
+                  <div>
+                    <SectionHeading label="Legal & Documentation" color="emerald" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 bg-gray-50/70 rounded-2xl p-4 border border-gray-100">
+                      <DetailRow label="RERA Number"                 value={sd.reraNumber       ?? null} />
+                      <DetailRow label="Registry / Mutation Status"  value={sd.registryStatus   ? sd.registryStatus.charAt(0).toUpperCase()  + sd.registryStatus.slice(1)  : null} />
+                      <DetailRow label="Legal Approvals"             value={sd.legalApprovals   ? sd.legalApprovals.charAt(0).toUpperCase()   + sd.legalApprovals.slice(1)   : null} />
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* ── RENT: tenants & deposit ── */}
+            {!isSale && (
+              <>
+                {am?.preferred_tenants && am.preferred_tenants.length > 0 && (
+                  <div>
+                    <SectionHeading label="Preferred Tenants" color="blue" />
+                    <TenantChips tenants={am.preferred_tenants} />
+                  </div>
+                )}
+                {am?.securityDeposit != null && am.securityDeposit > 0 && (
+                  <div className="flex items-center justify-between bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+                    <span className="text-xs font-black uppercase tracking-wider text-blue-700">Security Deposit</span>
+                    <span className="text-base font-black text-blue-700" style={{ fontFamily: "Outfit, sans-serif" }}>
+                      ₹{am.securityDeposit.toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* ── Shared: features & amenities ── */}
+            {am && (
+              <div>
+                <SectionHeading label={isSale ? "Features" : "Amenities"} color={accentColor} />
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
+                  <AmenityChip icon={Car}       label={am.parking === 0 ? "No Parking" : am.parking === 1 ? "1 Parking Spot" : am.parking === 2 ? "2 Parking Spots" : "3+ Parking Spots"} active={am.parking > 0} />
+                  <AmenityChip icon={Zap}       label="Power Backup"          active={am.powerBackup} />
+                  <AmenityChip icon={Shield}    label="24×7 Security"         active={am.security24x7} />
+                  <AmenityChip icon={Wifi}      label="High-Speed WiFi"       active={am.highSpeedWifi} />
+                  <AmenityChip icon={Dumbbell}  label="Gymnasium"             active={am.gymnasium} />
+                  <AmenityChip icon={Droplets}  label="Swimming Pool"         active={am.swimmingPool} />
+                  <AmenityChip icon={Building2} label="Club House"            active={am.clubHouse} />
+                  <AmenityChip icon={Wind}      label={am.airConditioning && am.acCount > 0 ? `AC (${am.acCount} units)` : "Air Conditioning"} active={am.airConditioning} />
+                  <AmenityChip icon={Home}      label="Sep. Electricity Meter" active={am.separateElectricityMeter} />
+                  {!isSale && am.furnishingStatus !== "unfurnished" && am.bedsCount > 0 && (
+                    <AmenityChip icon={BedDouble} label={`${am.bedsCount} Bed${am.bedsCount !== 1 ? "s" : ""} (furnished)`} active />
+                  )}
+                  {!isSale && am.furnishingStatus !== "unfurnished" && (
+                    <AmenityChip icon={Home} label="Almirah"  active={am.almirah} />
+                  )}
+                  {!isSale && am.furnishingStatus !== "unfurnished" && (
+                    <AmenityChip icon={Home} label="Storage"  active={am.storage} />
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold ${accentBg} ${accentBorder} ${accentText}`}>
+                    <Tag className="w-3.5 h-3.5" />
+                    {am.furnishingStatus === "fully-furnished" ? "Fully Furnished" : am.furnishingStatus === "semi-furnished" ? "Semi Furnished" : "Unfurnished"}
+                  </span>
+                  <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold ${accentBg} ${accentBorder} ${accentText}`}>
+                    <Droplets className="w-3.5 h-3.5" />
+                    Water: {am.waterSupply === "both" ? "Municipal + Borewell" : am.waterSupply === "municipal" ? "Municipal" : am.waterSupply === "borewell" ? "Borewell" : "None"}
+                  </span>
+                  {am.distanceFromLocation > 0 && (
+                    <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold ${accentBg} ${accentBorder} ${accentText}`}>
+                      <MapPin className="w-3.5 h-3.5" />{am.distanceFromLocation} km from landmark
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ── Description ── */}
+            {p.description && (
+              <div>
+                <SectionHeading label="Description" color={accentColor} />
+                <p className="text-sm text-[#111111]/60 leading-relaxed font-medium bg-gray-50/60 rounded-2xl p-4 border border-gray-100">{p.description}</p>
+              </div>
+            )}
+
+            {/* ── Meta ── */}
+            <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-gray-100">
+              <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#111111]/35">
+                <Eye className="w-3.5 h-3.5" />{p.views} views
+              </span>
+              <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#111111]/35">
+                <MessageSquare className="w-3.5 h-3.5" />{p.inquiries} inquiries
+              </span>
+              <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#111111]/35">
+                <Calendar className="w-3.5 h-3.5" />Listed {fmtDate(p.createdAt)}
+              </span>
+              <Link to={`/properties/${p.id}/edit`}
+                className="ml-auto flex items-center gap-1.5 text-xs font-black text-[#5b21b6] hover:underline">
+                <Pencil className="w-3.5 h-3.5" />Edit Property
+              </Link>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── MAIN PAGE ───────────────────────────────────────────────────── */
 export function PropertiesPage() {
   const { token } = useAuthStore();
@@ -633,6 +975,7 @@ export function PropertiesPage() {
   const [sortOpen, setSortOpen]           = useState(false);
   const [viewersTarget, setViewersTarget] = useState<ModalTarget>(null);
   const [inquiriesTarget, setInquiriesTarget] = useState<ModalTarget>(null);
+  const [detailTarget, setDetailTarget] = useState<Property | null>(null);
 
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -685,6 +1028,7 @@ export function PropertiesPage() {
 
   const openViewers   = (p: Property) => setViewersTarget({ propertyId: p.id, propertyTitle: p.title });
   const openInquiries = (p: Property) => setInquiriesTarget({ propertyId: p.id, propertyTitle: p.title });
+  const openDetail    = (p: Property) => setDetailTarget(p);
 
   const sortLabel      = SORT_OPTIONS.find((o) => o.value === sort)?.label ?? "Sort";
   const totalInquiries = properties.reduce((s, p) => s + p.inquiries, 0);
@@ -824,7 +1168,8 @@ export function PropertiesPage() {
           {sorted.map((p) => (
             <PropertyCard key={p.id} p={p} confirmDelete={confirmDelete}
               onDelete={handleDelete} onStatusChange={handleStatusChange}
-              onViewClick={openViewers} onInquiryClick={openInquiries} />
+              onViewClick={openViewers} onInquiryClick={openInquiries}
+              onDetailClick={openDetail} />
           ))}
         </div>
       )}
@@ -834,7 +1179,8 @@ export function PropertiesPage() {
           {sorted.map((p, i) => (
             <PropertyRow key={p.id} p={p} confirmDelete={confirmDelete} isLast={i === sorted.length - 1}
               onDelete={handleDelete} onStatusChange={handleStatusChange}
-              onViewClick={openViewers} onInquiryClick={openInquiries} />
+              onViewClick={openViewers} onInquiryClick={openInquiries}
+              onDetailClick={openDetail} />
           ))}
         </div>
       )}
@@ -851,6 +1197,9 @@ export function PropertiesPage() {
       )}
       {inquiriesTarget && token && (
         <InquiriesModal target={inquiriesTarget} token={token} onClose={() => setInquiriesTarget(null)} />
+      )}
+      {detailTarget && (
+        <PropertyDetailModal p={detailTarget} onClose={() => setDetailTarget(null)} />
       )}
     </div>
   );

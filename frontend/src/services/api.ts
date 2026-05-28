@@ -173,6 +173,28 @@ export const inquiriesApi = {
     }),
 };
 
+function authHeader(token: string) {
+  return { Authorization: `Bearer ${token}` };
+}
+
+export const likedApi = {
+  getIds: (token: string) =>
+    request<{ success: boolean; data: string[] }>("/api/liked", {
+      headers: authHeader(token),
+    }),
+
+  toggle: (propertyId: string, token: string) =>
+    request<{ success: boolean; liked: boolean; data: string[] }>(`/api/liked/${propertyId}`, {
+      method: "POST",
+      headers: authHeader(token),
+    }),
+
+  getProperties: (token: string) =>
+    request<{ success: boolean; count: number; data: ApiProperty[] }>("/api/liked/properties", {
+      headers: authHeader(token),
+    }),
+};
+
 export const authApi = {
   register: (data: { name: string; email: string; password: string; phone?: string }) =>
     request<{ success: boolean; token: string; user: ApiUser }>("/api/auth/register", {

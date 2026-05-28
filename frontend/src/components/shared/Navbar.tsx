@@ -1,5 +1,5 @@
 import { Search, User, Heart, Menu, X, Landmark, Bell } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Button } from "@/src/components/ui/Button";
 import { ROUTES } from "@/src/constants/routes";
@@ -12,7 +12,14 @@ export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuthStore();
-  const { savedPropertyIds } = useWishlistStore();
+  const { savedPropertyIds, clearWishlist } = useWishlistStore();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    clearWishlist();
+    navigate(ROUTES.HOME);
+  };
   const location = useLocation();
 
   const savedCount = savedPropertyIds.length;
@@ -73,6 +80,11 @@ export const Navbar = () => {
               <Link
                 key={link.href}
                 to={link.href}
+                onClick={() => {
+                  if (link.href === ROUTES.HOME && location.pathname === ROUTES.HOME) {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }
+                }}
                 className={cn(
                   "text-[10px] font-black uppercase tracking-widest hover:text-luxury-purple transition-colors",
                   location.pathname === link.href ? "text-luxury-purple" : "text-luxury-black/40"
@@ -123,10 +135,10 @@ export const Navbar = () => {
                           <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white" />
                       </div>
                   </Link>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => logout()}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleLogout}
                     className="text-[9px] font-black uppercase tracking-wider text-luxury-black/30 hover:text-red-500 hidden sm:block"
                   >
                     Logout
@@ -209,10 +221,10 @@ export const Navbar = () => {
                       <Button variant="outline" className="w-full text-[10px] uppercase tracking-widest font-black" asChild onClick={() => setIsMobileMenuOpen(false)}>
                         <Link to={ROUTES.DASHBOARD.PROFILE}>Profile</Link>
                       </Button>
-                      <Button 
-                        variant="premium" 
+                      <Button
+                        variant="premium"
                         className="w-full text-[10px] uppercase tracking-widest font-black"
-                        onClick={() => { logout(); setIsMobileMenuOpen(false); }}
+                        onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}
                       >
                         LOGOUT
                       </Button>

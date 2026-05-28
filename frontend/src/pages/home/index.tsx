@@ -1,18 +1,26 @@
 import {
   CategoryTabs,
   SmartFilterSidebar,
+  SaleSmartFilterSidebar,
   DEFAULT_SMART_FILTERS,
+  DEFAULT_SALE_SMART_FILTERS,
   type HomeCategoryId,
   type SmartFilterGroup,
   type SmartFilters,
+  type SaleSmartFilterGroup,
+  type SaleSmartFilters,
 } from "@/src/components/home/CategoryTabs";
 import { PropertyCard } from "@/src/components/ui/PropertyCard";
 import { ArrowUpRight, Loader2, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/src/components/ui/Button";
+import { BGPattern } from "@/src/components/ui/bg-pattern";
 import { Hero } from "./sections/Hero";
 import { SmartLoanCalculator } from "@/src/components/home/SmartLoanCalculator";
 import { useMemo, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/src/constants/routes";
 import { useHomeCategoryStore } from "@/src/store/useHomeCategoryStore";
+import { usePropertiesStore } from "@/src/store/usePropertiesStore";
 import { propertiesApi, type ApiProperty } from "@/src/services/api";
 import type { Property } from "@/src/types";
 import { motion, AnimatePresence } from "framer-motion";
@@ -53,31 +61,65 @@ const DISTANCE_LIMITS: Record<string, number> = {
   "Near Me": 5, "Within 10 KM": 10, "Within 15 KM": 15, "Within 20 KM": 20,
 };
 
+const SALE_PRICE_RANGES: Record<string, [number, number]> = {
+  "Under ₹50L":   [0,          5_000_000],
+  "₹50L - ₹1Cr":  [5_000_000,  10_000_000],
+  "₹1Cr - ₹2Cr":  [10_000_000, 20_000_000],
+  "₹2Cr+":         [20_000_000, Infinity],
+};
+
+const SALE_DISTANCE_LIMITS: Record<string, number> = {
+  "Near Me": 5, "Within 5 KM": 5, "Within 10 KM": 10, "Within 20 KM": 20,
+};
+
+const SALE_PROPERTY_TYPE_MAP: Record<string, string> = {
+  "Apartment": "apartment", "Villa": "villa", "Plot": "plot",
+  "Commercial": "commercial", "Penthouse": "penthouse",
+};
+
 const categoryMatches = (category: HomeCategoryId, propertyType: string, listingType?: string) => {
   if (category === "rent")        return listingType === "rent";
   if (category === "sale")        return listingType === "buy";
+  // Lease = long-term rent (backend stores as "rent")
+  if (category === "lease")       return listingType === "rent";
   if (category === "apartments")  return propertyType === "apartment";
   if (category === "co-living")   return ["pg", "co-living"].includes(propertyType);
   if (category === "villas" || category === "luxury") return ["villa", "independent"].includes(propertyType);
   if (category === "commercial")  return propertyType === "commercial";
   if (category === "plots")       return propertyType === "plot";
-  return true;
+  // "projects" tab has its own page — show nothing here
+  if (category === "projects")    return false;
+  return false;
 };
 
 export const Home = () => {
-  const [activeTab, setActiveTab]       = useState<HomeCategoryId>("rent");
-  const [activeFilters, setActiveFilters] = useState<SmartFilters>(DEFAULT_SMART_FILTERS);
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab]           = useState<HomeCategoryId>("rent");
+  const [activeFilters, setActiveFilters]   = useState<SmartFilters>(DEFAULT_SMART_FILTERS);
+  const [activeSaleFilters, setActiveSaleFilters] = useState<SaleSmartFilters>(DEFAULT_SALE_SMART_FILTERS);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const { pendingCategory, setPendingCategory }  = useHomeCategoryStore();
 
-  const [allProperties, setAllProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { properties: cachedProperties, lastFetched, setProperties } = usePropertiesStore();
+
+  // Use cached data immediately — no spinner flash on return visits
+  const [allProperties, setAllProperties] = useState<Property[]>(cachedProperties);
+  const [loading, setLoading] = useState(cachedProperties.length === 0);
 
   useEffect(() => {
+    const CACHE_TTL = 60_000; // 1 minute
+    const isFresh = lastFetched && Date.now() - lastFetched < CACHE_TTL;
+    if (isFresh && cachedProperties.length > 0) return; // already fresh
+
     propertiesApi.listPublic()
-      .then((res) => setAllProperties(res.data.map(mapApiProperty)))
-      .catch(() => setAllProperties([]))
+      .then((res) => {
+        const mapped = res.data.map(mapApiProperty);
+        setAllProperties(mapped);
+        setProperties(mapped);
+      })
+      .catch(() => {})
       .finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -90,7 +132,8 @@ export const Home = () => {
 
   const handleTabChange = (tab: HomeCategoryId) => {
     setActiveTab(tab);
-    if (tab !== "rent") setActiveFilters(DEFAULT_SMART_FILTERS);
+    setActiveFilters(DEFAULT_SMART_FILTERS);
+    setActiveSaleFilters(DEFAULT_SALE_SMART_FILTERS);
     setMobileFilterOpen(false);
   };
 
@@ -100,41 +143,82 @@ export const Home = () => {
       [groupId]: current[groupId] === option ? "" : option,
     }));
 
-  const handleClearAll = () => setActiveFilters(DEFAULT_SMART_FILTERS);
+  const handleSaleFilterChange = (groupId: SaleSmartFilterGroup, option: string) =>
+    setActiveSaleFilters(current => ({
+      ...current,
+      [groupId]: current[groupId] === option ? "" : option,
+    }));
+
+  const handleClearAll = () => {
+    if (activeTab === "sale") setActiveSaleFilters(DEFAULT_SALE_SMART_FILTERS);
+    else setActiveFilters(DEFAULT_SMART_FILTERS);
+  };
 
   const filteredProperties = useMemo(() => {
     return allProperties.filter((property) => {
       if (!categoryMatches(activeTab, property.type, property.listingType)) return false;
-      if (activeTab !== "rent") return true;
 
-      const rent = property.rent || property.price;
-      const selectedPrice    = activeFilters.price    ? PRICE_RANGES[activeFilters.price]          : null;
-      const selectedDistance = activeFilters.distance ? DISTANCE_LIMITS[activeFilters.distance]    : null;
-      const selectedTenant   = activeFilters.tenant;
+      /* ── Rent filters ── */
+      if (activeTab === "rent") {
+        const rent = property.rent || property.price;
+        const selectedPrice    = activeFilters.price    ? PRICE_RANGES[activeFilters.price]       : null;
+        const selectedDistance = activeFilters.distance ? DISTANCE_LIMITS[activeFilters.distance] : null;
+        const selectedTenant   = activeFilters.tenant;
 
-      const matchesPrice    = !selectedPrice    || (rent >= selectedPrice[0] && rent <= selectedPrice[1]);
-      const matchesTenant   = !selectedTenant   || property.tenantTypes?.includes(selectedTenant);
-      const matchesDistance = selectedDistance == null || (property.distanceKm ?? Infinity) <= selectedDistance;
+        const matchesPrice    = !selectedPrice    || (rent >= selectedPrice[0] && rent <= selectedPrice[1]);
+        const matchesTenant   = !selectedTenant   || property.tenantTypes?.includes(selectedTenant);
+        const matchesDistance = selectedDistance == null || (property.distanceKm ?? Infinity) <= selectedDistance;
+        return matchesPrice && matchesTenant && matchesDistance;
+      }
 
-      return matchesPrice && matchesTenant && matchesDistance;
+      /* ── Sale filters ── */
+      if (activeTab === "sale") {
+        const price = property.price;
+
+        const selectedSalePrice  = activeSaleFilters.salePrice    ? SALE_PRICE_RANGES[activeSaleFilters.salePrice]       : null;
+        const selectedPropType   = activeSaleFilters.propertyType ? SALE_PROPERTY_TYPE_MAP[activeSaleFilters.propertyType] : null;
+        const selectedBedrooms   = activeSaleFilters.bedrooms;
+        const selectedSaleDist   = activeSaleFilters.saleDistance  ? SALE_DISTANCE_LIMITS[activeSaleFilters.saleDistance] : null;
+
+        const matchesSalePrice   = !selectedSalePrice  || (price >= selectedSalePrice[0] && price <= selectedSalePrice[1]);
+        const matchesPropType    = !selectedPropType   || (property.type ?? "").toLowerCase() === selectedPropType;
+        const matchesBedrooms    = !selectedBedrooms   || (() => {
+          const beds = property.beds ?? 0;
+          if (selectedBedrooms === "5+ BHK") return beds >= 5;
+          return beds === parseInt(selectedBedrooms.replace(" BHK", ""), 10);
+        })();
+        const matchesSaleDist    = selectedSaleDist == null || (property.distanceKm ?? Infinity) <= selectedSaleDist;
+
+        return matchesSalePrice && matchesPropType && matchesBedrooms && matchesSaleDist;
+      }
+
+      return true;
     });
-  }, [allProperties, activeFilters, activeTab]);
+  }, [allProperties, activeFilters, activeSaleFilters, activeTab]);
 
-  const activeFilterCount = Object.values(activeFilters).filter(Boolean).length;
-  const showSidebar = activeTab === "rent";
+  const activeFilterCount = activeTab === "sale"
+    ? Object.values(activeSaleFilters).filter(Boolean).length
+    : Object.values(activeFilters).filter(Boolean).length;
+  const showSidebar = activeTab === "rent" || activeTab === "sale";
 
   return (
     <div className="overflow-x-hidden">
       <Hero />
 
-      <div id="properties-listing" className="bg-luxury-gray pb-20">
+      <div id="properties-listing" className="relative isolate overflow-hidden bg-luxury-gray pb-20">
+        <BGPattern
+          variant="grid"
+          mask="fade-y"
+          size={48}
+          fill="rgba(91, 33, 182, 0.12)"
+        />
 
         {/* ── Category tab strip (full width, sticky) ── */}
         <div className="sticky top-0 z-40">
           <CategoryTabs activeTab={activeTab} onTabChange={handleTabChange} />
         </div>
 
-        <div className="max-w-[1700px] mx-auto px-6 md:px-12 pt-8">
+        <div className="relative z-10 max-w-[1700px] mx-auto px-6 md:px-12 pt-8">
           <div className={cn("flex gap-8", showSidebar && "xl:grid xl:grid-cols-[280px_1fr]")}>
 
             {/* ── Left sidebar (desktop, rent only) ── */}
@@ -149,11 +233,19 @@ export const Home = () => {
                   className="hidden xl:block"
                 >
                   <div className="sticky top-20">
-                    <SmartFilterSidebar
-                      activeFilters={activeFilters}
-                      onFilterChange={handleFilterChange}
-                      onClearAll={handleClearAll}
-                    />
+                    {activeTab === "sale" ? (
+                      <SaleSmartFilterSidebar
+                        activeFilters={activeSaleFilters}
+                        onFilterChange={handleSaleFilterChange}
+                        onClearAll={handleClearAll}
+                      />
+                    ) : (
+                      <SmartFilterSidebar
+                        activeFilters={activeFilters}
+                        onFilterChange={handleFilterChange}
+                        onClearAll={handleClearAll}
+                      />
+                    )}
                   </div>
                 </motion.aside>
               )}
@@ -165,7 +257,7 @@ export const Home = () => {
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <p className="text-[11px] font-black uppercase tracking-[0.2em] text-luxury-purple mb-1">
-                    {activeTab === "rent" ? "Available Rentals" : "Properties"}
+                    {activeTab === "rent" ? "Available Rentals" : activeTab === "sale" ? "Sale Properties" : "Properties"}
                   </p>
                   <p className="text-[13px] font-medium text-luxury-black/45">
                     {loading ? "Loading…" : `${filteredProperties.length} ${filteredProperties.length === 1 ? "property" : "properties"} found`}
@@ -221,19 +313,36 @@ export const Home = () => {
                 ) : (
                   <div className="min-h-[320px] rounded-2xl bg-white border border-luxury-purple/5 flex items-center justify-center text-center px-6 shadow-sm">
                     <div>
-                      <p className="text-xl font-display font-black text-luxury-black">No matching properties</p>
-                      <p className="text-sm text-luxury-black/45 mt-2">
-                        {allProperties.length === 0
-                          ? "No active listings found. Check back soon."
-                          : "Try another filter or category."}
-                      </p>
-                      {activeFilterCount > 0 && (
-                        <button
-                          onClick={handleClearAll}
-                          className="mt-4 px-5 py-2.5 rounded-xl bg-luxury-purple text-white text-[12px] font-bold hover:opacity-90 transition-opacity"
-                        >
-                          Clear Filters
-                        </button>
+                      {activeTab === "projects" ? (
+                        <>
+                          <p className="text-xl font-display font-black text-luxury-black">Explore New Projects</p>
+                          <p className="text-sm text-luxury-black/45 mt-2 mb-5">
+                            Browse upcoming and under-construction developments.
+                          </p>
+                          <button
+                            onClick={() => navigate("/projects")}
+                            className="px-5 py-2.5 rounded-xl bg-luxury-purple text-white text-[12px] font-bold hover:opacity-90 transition-opacity"
+                          >
+                            View All Projects
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-xl font-display font-black text-luxury-black">No matching properties</p>
+                          <p className="text-sm text-luxury-black/45 mt-2">
+                            {allProperties.length === 0
+                              ? "No active listings found. Check back soon."
+                              : "Try another filter or category."}
+                          </p>
+                          {activeFilterCount > 0 && (
+                            <button
+                              onClick={handleClearAll}
+                              className="mt-4 px-5 py-2.5 rounded-xl bg-luxury-purple text-white text-[12px] font-bold hover:opacity-90 transition-opacity"
+                            >
+                              Clear Filters
+                            </button>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
@@ -245,6 +354,7 @@ export const Home = () => {
                 <div className="w-24 h-1 bg-luxury-purple/20 rounded-full mb-10" />
                 <Button
                   variant="outline"
+                  onClick={() => navigate(ROUTES.PROPERTIES)}
                   className="px-10 py-7 rounded-2xl border-luxury-purple/10 font-display font-black text-lg hover:border-luxury-purple hover:bg-white transition-all group shadow-sm hover:shadow-xl hover:shadow-luxury-purple/10"
                 >
                   Explore More Properties{" "}
@@ -304,11 +414,19 @@ export const Home = () => {
 
                 {/* Sheet body */}
                 <div className="flex-1 overflow-y-auto">
-                  <SmartFilterSidebar
-                    activeFilters={activeFilters}
-                    onFilterChange={handleFilterChange}
-                    onClearAll={handleClearAll}
-                  />
+                  {activeTab === "sale" ? (
+                    <SaleSmartFilterSidebar
+                      activeFilters={activeSaleFilters}
+                      onFilterChange={handleSaleFilterChange}
+                      onClearAll={handleClearAll}
+                    />
+                  ) : (
+                    <SmartFilterSidebar
+                      activeFilters={activeFilters}
+                      onFilterChange={handleFilterChange}
+                      onClearAll={handleClearAll}
+                    />
+                  )}
                 </div>
 
                 {/* Sheet footer */}

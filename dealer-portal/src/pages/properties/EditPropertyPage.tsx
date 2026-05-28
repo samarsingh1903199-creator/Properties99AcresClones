@@ -20,7 +20,7 @@ const lbl = "block text-xs font-black text-[#111111]/50 uppercase tracking-wide 
 const sh  = "text-sm font-black text-[#111111] uppercase tracking-widest mb-4";
 
 /* ── Step bar ──────────────────────────────────────────────── */
-function StepBar({ step }: { step: 1 | 2 }) {
+function StepBar({ step, step2Label = "Amenities" }: { step: 1 | 2; step2Label?: string }) {
   return (
     <div className="flex items-center mb-8">
       <div className="flex items-center gap-2.5">
@@ -51,7 +51,7 @@ function StepBar({ step }: { step: 1 | 2 }) {
           <p className={`text-[11px] font-black uppercase tracking-wide leading-none ${step === 2 ? "text-[#5b21b6]" : "text-[#111111]/40"}`}>
             Step 2
           </p>
-          <p className="text-[11px] font-medium text-[#111111]/40 leading-tight">Amenities</p>
+          <p className="text-[11px] font-medium text-[#111111]/40 leading-tight">{step2Label}</p>
         </div>
       </div>
     </div>
@@ -85,8 +85,19 @@ export function EditPropertyPage() {
   const [amenitiesInit, setAmenitiesInit]     = useState<Partial<AmenitiesFormData> | undefined>(undefined);
   const [savingAmenities, setSavingAmenities] = useState(false);
 
+  /* sale-specific fields */
+  const [saleDetails, setSaleDetails] = useState({
+    pricePerSqft: "", bookingAmount: "", ownershipType: "freehold",
+    propertyAge: "", possessionStatus: "ready-to-move", possessionDate: "",
+    reraNumber: "", registryStatus: "clear", loanAvailable: "yes",
+    negotiable: "yes", maintenanceCharges: "", floorNumber: "", totalFloors: "",
+    facing: "east", vastuCompliant: "yes", carpetArea: "", builtUpArea: "",
+    superBuiltUpArea: "", legalApprovals: "approved",
+  });
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const setField = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));
+  const setSale  = (k: string, v: string) => setSaleDetails(p => ({ ...p, [k]: v }));
 
   /* ── Fetch property + amenities on mount ── */
   useEffect(() => {
@@ -118,6 +129,31 @@ export function EditPropertyPage() {
         setCoverIndex(0);
         /* prefill amenities — always set (even to empty defaults) so Step 2 never shows blanks */
         setAmenitiesInit(aRes?.data ? amenitiesFromApi(aRes.data) : {});
+        /* prefill sale details if this is a sale listing */
+        if (p.listingType === "sale" && p.saleDetails) {
+          const sd = p.saleDetails;
+          setSaleDetails({
+            pricePerSqft: sd.pricePerSqft != null ? String(sd.pricePerSqft) : "",
+            bookingAmount: sd.bookingAmount != null ? String(sd.bookingAmount) : "",
+            ownershipType: sd.ownershipType ?? "freehold",
+            propertyAge: sd.propertyAge != null ? String(sd.propertyAge) : "",
+            possessionStatus: sd.possessionStatus ?? "ready-to-move",
+            possessionDate: sd.possessionDate ?? "",
+            reraNumber: sd.reraNumber ?? "",
+            registryStatus: sd.registryStatus ?? "clear",
+            loanAvailable: sd.loanAvailable != null ? (sd.loanAvailable ? "yes" : "no") : "yes",
+            negotiable: sd.negotiable != null ? (sd.negotiable ? "yes" : "no") : "yes",
+            maintenanceCharges: sd.maintenanceCharges != null ? String(sd.maintenanceCharges) : "",
+            floorNumber: sd.floorNumber ?? "",
+            totalFloors: sd.totalFloors != null ? String(sd.totalFloors) : "",
+            facing: sd.facing ?? "east",
+            vastuCompliant: sd.vastuCompliant != null ? (sd.vastuCompliant ? "yes" : "no") : "yes",
+            carpetArea: sd.carpetArea != null ? String(sd.carpetArea) : "",
+            builtUpArea: sd.builtUpArea != null ? String(sd.builtUpArea) : "",
+            superBuiltUpArea: sd.superBuiltUpArea != null ? String(sd.superBuiltUpArea) : "",
+            legalApprovals: sd.legalApprovals ?? "approved",
+          });
+        }
       })
       .catch(err => setFetchError(err instanceof Error ? err.message : "Failed to load property"))
       .finally(() => setFetching(false));
@@ -167,6 +203,27 @@ export function EditPropertyPage() {
         location: form.location, city: form.city,
         description: form.description, status: form.status,
         images: ordered,
+        ...(form.listingType === "sale" && { saleDetails: {
+          pricePerSqft: saleDetails.pricePerSqft ? Number(saleDetails.pricePerSqft) : undefined,
+          bookingAmount: saleDetails.bookingAmount ? Number(saleDetails.bookingAmount) : undefined,
+          ownershipType: saleDetails.ownershipType || undefined,
+          propertyAge: saleDetails.propertyAge ? Number(saleDetails.propertyAge) : undefined,
+          possessionStatus: saleDetails.possessionStatus || undefined,
+          possessionDate: saleDetails.possessionDate || undefined,
+          reraNumber: saleDetails.reraNumber || undefined,
+          registryStatus: saleDetails.registryStatus || undefined,
+          loanAvailable: saleDetails.loanAvailable === "yes",
+          negotiable: saleDetails.negotiable === "yes",
+          maintenanceCharges: saleDetails.maintenanceCharges ? Number(saleDetails.maintenanceCharges) : undefined,
+          floorNumber: saleDetails.floorNumber || undefined,
+          totalFloors: saleDetails.totalFloors ? Number(saleDetails.totalFloors) : undefined,
+          facing: saleDetails.facing || undefined,
+          vastuCompliant: saleDetails.vastuCompliant === "yes",
+          carpetArea: saleDetails.carpetArea ? Number(saleDetails.carpetArea) : undefined,
+          builtUpArea: saleDetails.builtUpArea ? Number(saleDetails.builtUpArea) : undefined,
+          superBuiltUpArea: saleDetails.superBuiltUpArea ? Number(saleDetails.superBuiltUpArea) : undefined,
+          legalApprovals: saleDetails.legalApprovals || undefined,
+        } as import("../../services/api").ApiSaleDetails}),
       });
 
       /* convert uploaded files back to url items so state stays consistent */
@@ -187,7 +244,7 @@ export function EditPropertyPage() {
     if (!token || !id) return;
     setSavingAmenities(true);
     try {
-      await propertiesApi.updateAmenities(token, id, amenitiesToApi(data));
+      await propertiesApi.updateAmenities(token, id, amenitiesToApi(data, form.listingType));
       setAmenitiesInit(data);
       navigate(ROUTES.PROPERTIES);
     } finally {
@@ -245,12 +302,16 @@ export function EditPropertyPage() {
             Edit Property
           </h1>
           <p className="text-sm font-medium text-[#111111]/40 mt-0.5 truncate max-w-xs">
-            {step === 1 ? `Editing "${form.title}"` : `Amenities for "${form.title}"`}
+            {step === 1
+              ? `Editing "${form.title}"`
+              : form.listingType === "sale"
+                ? `Features & Amenities for "${form.title}"`
+                : `Amenities for "${form.title}"`}
           </p>
         </div>
       </div>
 
-      <StepBar step={step} />
+      <StepBar step={step} step2Label={form.listingType === "sale" ? "Features" : "Amenities"} />
 
       {/* ══ STEP 1 — Property Details ══ */}
       {step === 1 && (
@@ -360,6 +421,182 @@ export function EditPropertyPage() {
               </div>
             </div>
           </div>
+
+          {/* Sale-only sections */}
+          {form.listingType === "sale" && (
+            <>
+              {/* Pricing & Financials */}
+              <div className="dp-card p-6 space-y-4">
+                <h2 className={sh} style={{ fontFamily: "Outfit, sans-serif" }}>Pricing & Financials</h2>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={lbl}>Price per sq.ft (₹)</label>
+                    <input type="number" min="0" value={saleDetails.pricePerSqft}
+                      onChange={e => setSale("pricePerSqft", e.target.value)}
+                      placeholder="e.g. 8500" className="dp-input" style={{ borderRadius: "0.875rem" }} />
+                  </div>
+                  <div>
+                    <label className={lbl}>Booking / Token Amount (₹)</label>
+                    <input type="number" min="0" value={saleDetails.bookingAmount}
+                      onChange={e => setSale("bookingAmount", e.target.value)}
+                      placeholder="e.g. 500000" className="dp-input" style={{ borderRadius: "0.875rem" }} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={lbl}>Maintenance Charges (₹/mo)</label>
+                    <input type="number" min="0" value={saleDetails.maintenanceCharges}
+                      onChange={e => setSale("maintenanceCharges", e.target.value)}
+                      placeholder="e.g. 5000" className="dp-input" style={{ borderRadius: "0.875rem" }} />
+                  </div>
+                  <div>
+                    <label className={lbl}>Negotiable</label>
+                    <select value={saleDetails.negotiable} onChange={e => setSale("negotiable", e.target.value)}
+                      className="dp-input dp-select" style={{ borderRadius: "0.875rem" }}>
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className={lbl}>Loan Availability</label>
+                  <select value={saleDetails.loanAvailable} onChange={e => setSale("loanAvailable", e.target.value)}
+                    className="dp-input dp-select" style={{ borderRadius: "0.875rem" }}>
+                    <option value="yes">Available</option>
+                    <option value="no">Not Available</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Property Details */}
+              <div className="dp-card p-6 space-y-4">
+                <h2 className={sh} style={{ fontFamily: "Outfit, sans-serif" }}>Property Details</h2>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={lbl}>Ownership Type</label>
+                    <select value={saleDetails.ownershipType} onChange={e => setSale("ownershipType", e.target.value)}
+                      className="dp-input dp-select" style={{ borderRadius: "0.875rem" }}>
+                      <option value="freehold">Freehold</option>
+                      <option value="leasehold">Leasehold</option>
+                      <option value="builder-owned">Builder-Owned</option>
+                      <option value="resale">Resale</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className={lbl}>Property Age (years)</label>
+                    <input type="number" min="0" value={saleDetails.propertyAge}
+                      onChange={e => setSale("propertyAge", e.target.value)}
+                      placeholder="e.g. 5" className="dp-input" style={{ borderRadius: "0.875rem" }} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={lbl}>Possession Status</label>
+                    <select value={saleDetails.possessionStatus} onChange={e => setSale("possessionStatus", e.target.value)}
+                      className="dp-input dp-select" style={{ borderRadius: "0.875rem" }}>
+                      <option value="ready-to-move">Ready to Move</option>
+                      <option value="under-construction">Under Construction</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className={lbl}>Possession Date</label>
+                    <input type="date" value={saleDetails.possessionDate}
+                      onChange={e => setSale("possessionDate", e.target.value)}
+                      className="dp-input" style={{ borderRadius: "0.875rem" }} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={lbl}>Floor Number</label>
+                    <input type="text" value={saleDetails.floorNumber}
+                      onChange={e => setSale("floorNumber", e.target.value)}
+                      placeholder="e.g. 4" className="dp-input" style={{ borderRadius: "0.875rem" }} />
+                  </div>
+                  <div>
+                    <label className={lbl}>Total Floors</label>
+                    <input type="number" min="1" value={saleDetails.totalFloors}
+                      onChange={e => setSale("totalFloors", e.target.value)}
+                      placeholder="e.g. 12" className="dp-input" style={{ borderRadius: "0.875rem" }} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={lbl}>Facing</label>
+                    <select value={saleDetails.facing} onChange={e => setSale("facing", e.target.value)}
+                      className="dp-input dp-select" style={{ borderRadius: "0.875rem" }}>
+                      {["north","south","east","west","north-east","north-west","south-east","south-west"].map(d => (
+                        <option key={d} value={d}>{d.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join("-")}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={lbl}>Vastu Compliant</label>
+                    <select value={saleDetails.vastuCompliant} onChange={e => setSale("vastuCompliant", e.target.value)}
+                      className="dp-input dp-select" style={{ borderRadius: "0.875rem" }}>
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Area Breakdown */}
+              <div className="dp-card p-6 space-y-4">
+                <h2 className={sh} style={{ fontFamily: "Outfit, sans-serif" }}>Area Breakdown</h2>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className={lbl}>Carpet Area (sq.ft)</label>
+                    <input type="number" min="1" value={saleDetails.carpetArea}
+                      onChange={e => setSale("carpetArea", e.target.value)}
+                      placeholder="1800" className="dp-input" style={{ borderRadius: "0.875rem" }} />
+                  </div>
+                  <div>
+                    <label className={lbl}>Built-up Area (sq.ft)</label>
+                    <input type="number" min="1" value={saleDetails.builtUpArea}
+                      onChange={e => setSale("builtUpArea", e.target.value)}
+                      placeholder="2000" className="dp-input" style={{ borderRadius: "0.875rem" }} />
+                  </div>
+                  <div>
+                    <label className={lbl}>Super Built-up (sq.ft)</label>
+                    <input type="number" min="1" value={saleDetails.superBuiltUpArea}
+                      onChange={e => setSale("superBuiltUpArea", e.target.value)}
+                      placeholder="2400" className="dp-input" style={{ borderRadius: "0.875rem" }} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Legal & Documentation */}
+              <div className="dp-card p-6 space-y-4">
+                <h2 className={sh} style={{ fontFamily: "Outfit, sans-serif" }}>Legal & Documentation</h2>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={lbl}>RERA Number</label>
+                    <input type="text" value={saleDetails.reraNumber}
+                      onChange={e => setSale("reraNumber", e.target.value)}
+                      placeholder="RERA/GGM/2024/XXXXX" className="dp-input" style={{ borderRadius: "0.875rem" }} />
+                  </div>
+                  <div>
+                    <label className={lbl}>Registry / Mutation Status</label>
+                    <select value={saleDetails.registryStatus} onChange={e => setSale("registryStatus", e.target.value)}
+                      className="dp-input dp-select" style={{ borderRadius: "0.875rem" }}>
+                      <option value="clear">Clear</option>
+                      <option value="pending">Pending</option>
+                      <option value="disputed">Disputed</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className={lbl}>Legal Approvals / Title Status</label>
+                  <select value={saleDetails.legalApprovals} onChange={e => setSale("legalApprovals", e.target.value)}
+                    className="dp-input dp-select" style={{ borderRadius: "0.875rem" }}>
+                    <option value="approved">Approved / Title Clear</option>
+                    <option value="pending">Pending Approval</option>
+                    <option value="disputed">Disputed</option>
+                  </select>
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Location */}
           <div className="dp-card p-6 space-y-4">
@@ -510,7 +747,8 @@ export function EditPropertyPage() {
           onSave={handleSaveAmenities}
           saving={savingAmenities}
           onSkip={() => navigate(ROUTES.PROPERTIES)}
-          successMessage="Amenities updated successfully!"
+          successMessage={form.listingType === "sale" ? "Features saved successfully!" : "Amenities updated successfully!"}
+          listingType={form.listingType}
         />
       )}
     </div>

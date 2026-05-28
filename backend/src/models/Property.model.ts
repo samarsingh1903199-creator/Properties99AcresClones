@@ -2,6 +2,37 @@ import { Schema, model, Document } from "mongoose";
 import { PropertyStatus, PropertyType, ListingType } from "../types/index.js";
 import { PREFERRED_TENANT_TYPES } from "../constants/tenants.js";
 
+export interface ISaleDetails {
+  /* Pricing */
+  pricePerSqft?: number;
+  bookingAmount?: number;
+  maintenanceCharges?: number;
+  negotiable?: boolean;
+  loanAvailable?: boolean;
+
+  /* Ownership & Possession */
+  ownershipType?: "freehold" | "leasehold" | "builder-owned" | "resale";
+  propertyAge?: number;
+  possessionStatus?: "ready-to-move" | "under-construction";
+  possessionDate?: string;
+
+  /* Location Details */
+  floorNumber?: string;
+  totalFloors?: number;
+  facing?: "north" | "south" | "east" | "west" | "north-east" | "north-west" | "south-east" | "south-west";
+  vastuCompliant?: boolean;
+
+  /* Area Breakdown */
+  carpetArea?: number;
+  builtUpArea?: number;
+  superBuiltUpArea?: number;
+
+  /* Legal */
+  reraNumber?: string;
+  registryStatus?: "clear" | "pending" | "disputed";
+  legalApprovals?: "approved" | "pending" | "disputed";
+}
+
 export interface IPropertyAmenities {
   /* Parking */
   parking: 0 | 1 | 2 | 3;
@@ -57,6 +88,7 @@ export interface IProperty extends Document {
   inquiries: number;
   ownerId: string;
   amenities: IPropertyAmenities;
+  saleDetails?: ISaleDetails;
 }
 
 const AmenitiesSchema = new Schema<IPropertyAmenities>(
@@ -83,6 +115,40 @@ const AmenitiesSchema = new Schema<IPropertyAmenities>(
   { _id: false }
 );
 
+const SaleDetailsSchema = new Schema<ISaleDetails>(
+  {
+    /* Pricing */
+    pricePerSqft:      { type: Number, min: 0 },
+    bookingAmount:     { type: Number, min: 0 },
+    maintenanceCharges:{ type: Number, min: 0 },
+    negotiable:        { type: Boolean },
+    loanAvailable:     { type: Boolean },
+
+    /* Ownership & Possession */
+    ownershipType:    { type: String, enum: ["freehold", "leasehold", "builder-owned", "resale"] },
+    propertyAge:      { type: Number, min: 0 },
+    possessionStatus: { type: String, enum: ["ready-to-move", "under-construction"] },
+    possessionDate:   { type: String, trim: true },
+
+    /* Location Details */
+    floorNumber:    { type: String, trim: true },
+    totalFloors:    { type: Number, min: 1 },
+    facing:         { type: String, enum: ["north", "south", "east", "west", "north-east", "north-west", "south-east", "south-west"] },
+    vastuCompliant: { type: Boolean },
+
+    /* Area Breakdown */
+    carpetArea:       { type: Number, min: 0 },
+    builtUpArea:      { type: Number, min: 0 },
+    superBuiltUpArea: { type: Number, min: 0 },
+
+    /* Legal */
+    reraNumber:     { type: String, trim: true },
+    registryStatus: { type: String, enum: ["clear", "pending", "disputed"] },
+    legalApprovals: { type: String, enum: ["approved", "pending", "disputed"] },
+  },
+  { _id: false }
+);
+
 const PropertySchema = new Schema<IProperty>(
   {
     title:       { type: String, required: true, trim: true },
@@ -101,6 +167,7 @@ const PropertySchema = new Schema<IProperty>(
     inquiries:   { type: Number, default: 0 },
     ownerId:     { type: String, required: true },
     amenities:   { type: AmenitiesSchema, default: () => ({}) },
+    saleDetails: { type: SaleDetailsSchema },
   },
   { timestamps: true }
 );

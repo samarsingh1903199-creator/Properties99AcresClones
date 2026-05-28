@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { User, Mail, Lock, Phone, Landmark } from "lucide-react";
 import { ROUTES } from "@/src/constants/routes";
 import { useAuthStore } from "@/src/store/useAuthStore";
+import { useWishlistStore } from "@/src/store/useWishlistStore";
 import { authApi } from "@/src/services/api";
 
 const inputBase =
@@ -15,6 +16,7 @@ export const RegisterPage = () => {
   const [error, setError]     = useState<string | null>(null);
   const navigate              = useNavigate();
   const { setAuthFromApi }    = useAuthStore();
+  const { syncFromServer }    = useWishlistStore();
 
   const set = (key: keyof typeof form, val: string) => {
     setForm((prev) => ({ ...prev, [key]: val }));
@@ -39,6 +41,7 @@ export const RegisterPage = () => {
         phone:    form.phone ? `+91${form.phone}` : undefined,
       });
       setAuthFromApi(res.user, res.token);
+      syncFromServer(res.token);
       navigate(ROUTES.HOME);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed. Please try again.");

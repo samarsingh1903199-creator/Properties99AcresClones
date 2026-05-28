@@ -5,7 +5,7 @@ import {
   Home, Key, Building2, Palmtree, Hotel, Warehouse,
   Tent, Trees, Layers, Sparkles, IndianRupee, Users, MapPin,
   Check, ChevronLeft, ChevronRight, ChevronDown,
-  SlidersHorizontal, RotateCcw, type LucideIcon,
+  SlidersHorizontal, RotateCcw, Bed, type LucideIcon,
 } from "lucide-react";
 
 /* ─── Data ───────────────────────────────────────────────────────── */
@@ -223,6 +223,43 @@ export const CategoryTabs = ({ activeTab, onTabChange }: CategoryTabsProps) => {
   );
 };
 
+/* ─── Sale Smart Filter Types & Data ────────────────────────────── */
+export type SaleSmartFilterGroup = "salePrice" | "propertyType" | "bedrooms" | "saleDistance";
+export type SaleSmartFilters     = Record<SaleSmartFilterGroup, string>;
+export const DEFAULT_SALE_SMART_FILTERS: SaleSmartFilters = {
+  salePrice: "", propertyType: "", bedrooms: "", saleDistance: "",
+};
+
+const SALE_SMART_FILTERS: {
+  id: SaleSmartFilterGroup; label: string; icon: LucideIcon; options: string[];
+}[] = [
+  {
+    id: "salePrice", label: "Price Range", icon: IndianRupee,
+    options: ["Under ₹50L", "₹50L - ₹1Cr", "₹1Cr - ₹2Cr", "₹2Cr+"],
+  },
+  {
+    id: "propertyType", label: "Property Type", icon: Building2,
+    options: ["Apartment", "Villa", "Plot", "Commercial", "Penthouse"],
+  },
+  {
+    id: "bedrooms", label: "Bedrooms", icon: Bed,
+    options: ["1 BHK", "2 BHK", "3 BHK", "4 BHK", "5+ BHK"],
+  },
+  {
+    id: "saleDistance", label: "Distance & Nearby", icon: MapPin,
+    options: ["Near Me", "Within 5 KM", "Within 10 KM", "Within 20 KM"],
+  },
+];
+
+const SALE_GROUP_META: Record<SaleSmartFilterGroup, {
+  iconColor: string; activeFrom: string; activeTo: string; glowColor: string;
+}> = {
+  salePrice:    { iconColor: "text-emerald-600", activeFrom: "#059669", activeTo: "#0d9488", glowColor: "rgba(5,150,105,0.25)"   },
+  propertyType: { iconColor: "text-amber-600",   activeFrom: "#d97706", activeTo: "#ea580c", glowColor: "rgba(217,119,6,0.25)"   },
+  bedrooms:     { iconColor: "text-violet-600",  activeFrom: "#7c3aed", activeTo: "#4f46e5", glowColor: "rgba(124,58,237,0.25)"  },
+  saleDistance: { iconColor: "text-teal-600",    activeFrom: "#0d9488", activeTo: "#0891b2", glowColor: "rgba(13,148,136,0.25)"  },
+};
+
 /* ─── SmartFilterSidebar ─────────────────────────────────────────── */
 interface SmartFilterSidebarProps {
   activeFilters: SmartFilters;
@@ -281,6 +318,137 @@ export const SmartFilterSidebar = ({ activeFilters, onFilterChange, onClearAll }
                 className="w-full flex items-center justify-between py-4 text-left group"
               >
                 <span className="flex items-center gap-2.5 text-[11px] font-black uppercase tracking-widest text-luxury-black/70 group-hover:text-luxury-purple transition-colors">
+                  <group.icon size={13} className={cn(meta.iconColor, "group-hover:scale-110 transition-transform")} />
+                  {group.label}
+                  {activeValue && (
+                    <span
+                      className="w-4 h-4 rounded-full flex items-center justify-center text-white text-[8px] font-black"
+                      style={{ background: `linear-gradient(135deg, ${meta.activeFrom}, ${meta.activeTo})` }}
+                    >
+                      1
+                    </span>
+                  )}
+                </span>
+                <ChevronDown
+                  size={14}
+                  className={cn("text-luxury-black/30 transition-transform duration-200", isOpen && "rotate-180")}
+                />
+              </button>
+
+              <AnimatePresence initial={false}>
+                {isOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex flex-wrap gap-2 pb-4">
+                      {group.options.map((option) => {
+                        const isSelected = activeValue === option;
+                        return (
+                          <motion.button
+                            key={option}
+                            onClick={() => onFilterChange(group.id, option)}
+                            whileHover={{ scale: 1.04 }}
+                            whileTap={{ scale: 0.95 }}
+                            className={cn(
+                              "px-3 py-2 rounded-xl text-[11px] font-bold border transition-all flex items-center gap-1.5",
+                              isSelected
+                                ? "text-white border-transparent shadow-md"
+                                : "bg-gray-50 border-gray-100 text-luxury-black/55 hover:border-gray-200 hover:text-luxury-black",
+                            )}
+                            style={isSelected ? {
+                              background: `linear-gradient(135deg, ${meta.activeFrom}, ${meta.activeTo})`,
+                              boxShadow: `0 4px 12px ${meta.glowColor}`,
+                            } : {}}
+                          >
+                            <AnimatePresence mode="wait">
+                              {isSelected && (
+                                <motion.span
+                                  key="check"
+                                  initial={{ width: 0, opacity: 0 }}
+                                  animate={{ width: 12, opacity: 1 }}
+                                  exit={{ width: 0, opacity: 0 }}
+                                  className="overflow-hidden flex items-center"
+                                >
+                                  <Check size={10} strokeWidth={3.5} />
+                                </motion.span>
+                              )}
+                            </AnimatePresence>
+                            {option}
+                          </motion.button>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+/* ─── SaleSmartFilterSidebar ─────────────────────────────────────── */
+interface SaleSmartFilterSidebarProps {
+  activeFilters: SaleSmartFilters;
+  onFilterChange: (groupId: SaleSmartFilterGroup, option: string) => void;
+  onClearAll: () => void;
+}
+
+export const SaleSmartFilterSidebar = ({ activeFilters, onFilterChange, onClearAll }: SaleSmartFilterSidebarProps) => {
+  const [openSections, setOpenSections] = useState<Record<SaleSmartFilterGroup, boolean>>({
+    salePrice: true, propertyType: true, bedrooms: true, saleDistance: false,
+  });
+
+  const toggle = (id: SaleSmartFilterGroup) =>
+    setOpenSections(s => ({ ...s, [id]: !s[id] }));
+
+  const activeCount = Object.values(activeFilters).filter(Boolean).length;
+
+  return (
+    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="h-[3px] bg-gradient-to-r from-emerald-500 via-green-500 to-teal-400" />
+
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 pt-5 pb-3">
+        <div className="flex items-center gap-2">
+          <SlidersHorizontal size={14} className="text-emerald-600" />
+          <span className="text-[11px] font-black uppercase tracking-widest text-luxury-black">Smart Filters</span>
+          {activeCount > 0 && (
+            <span className="w-5 h-5 rounded-full bg-emerald-600 text-white text-[9px] font-black flex items-center justify-center">
+              {activeCount}
+            </span>
+          )}
+        </div>
+        {activeCount > 0 && (
+          <button
+            onClick={onClearAll}
+            className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-red-400 hover:text-red-500 transition-colors"
+          >
+            <RotateCcw size={11} /> Clear All
+          </button>
+        )}
+      </div>
+
+      {/* Accordion sections */}
+      <div className="px-5 pb-5 space-y-0 divide-y divide-gray-100">
+        {SALE_SMART_FILTERS.map((group) => {
+          const meta        = SALE_GROUP_META[group.id];
+          const activeValue = activeFilters[group.id];
+          const isOpen      = openSections[group.id];
+
+          return (
+            <div key={group.id}>
+              <button
+                onClick={() => toggle(group.id)}
+                className="w-full flex items-center justify-between py-4 text-left group"
+              >
+                <span className="flex items-center gap-2.5 text-[11px] font-black uppercase tracking-widest text-luxury-black/70 group-hover:text-emerald-600 transition-colors">
                   <group.icon size={13} className={cn(meta.iconColor, "group-hover:scale-110 transition-transform")} />
                   {group.label}
                   {activeValue && (
