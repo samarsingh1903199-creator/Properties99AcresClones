@@ -152,8 +152,8 @@ const SaleDetailsSchema = new Schema<ISaleDetails>(
 const PropertySchema = new Schema<IProperty>(
   {
     title:       { type: String, required: true, trim: true },
-    type:        { type: String, enum: ["apartment", "villa", "plot", "commercial", "penthouse"], required: true },
-    listingType: { type: String, enum: ["sale", "rent"], required: true },
+    type:        { type: String, required: true, trim: true },
+    listingType: { type: String, required: true, trim: true },
     price:       { type: Number, required: true, min: 0 },
     area:        { type: Number, required: true, min: 0 },
     bedrooms:    { type: Number, default: 1, min: 0 },

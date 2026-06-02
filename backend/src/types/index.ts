@@ -1,6 +1,6 @@
 export type PropertyStatus      = "active" | "pending" | "sold" | "rented" | "draft";
-export type PropertyType        = "apartment" | "villa" | "plot" | "commercial" | "penthouse";
-export type ListingType         = "sale" | "rent";
+export type PropertyType        = string;
+export type ListingType         = string;
 export type UserRole            = "visitor" | "dealer" | "admin";
 export type InquiryStatus       = "new" | "responded" | "closed";
 export type VisitType           = "physical" | "video";

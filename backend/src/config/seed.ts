@@ -3,8 +3,34 @@ import { UserModel } from "../models/User.model.js";
 import { PropertyModel } from "../models/Property.model.js";
 import { InquiryModel } from "../models/Inquiry.model.js";
 import { VisitEnquiryModel } from "../models/VisitEnquiry.model.js";
+import { CategoryModel } from "../models/Category.model.js";
+
+const DEFAULT_CATEGORIES = [
+  /* Listing types */
+  { name: "For Rent",  slug: "rent",    categoryType: "listing", icon: "key",       order: 1 },
+  { name: "For Sale",  slug: "sale",    categoryType: "listing", icon: "home",      order: 2 },
+  { name: "Lease",     slug: "lease",   categoryType: "listing", icon: "layers",    order: 3 },
+
+  /* Property types */
+  { name: "Luxury Homes",   slug: "luxury-homes",  categoryType: "property", icon: "crown",    order: 1 },
+  { name: "Apartments",     slug: "apartment",     categoryType: "property", icon: "building2", order: 2 },
+  { name: "Villas",         slug: "villa",         categoryType: "property", icon: "tree-palm", order: 3 },
+  { name: "Commercial",     slug: "commercial",    categoryType: "property", icon: "briefcase", order: 4 },
+  { name: "Plots",          slug: "plot",          categoryType: "property", icon: "map",       order: 5 },
+  { name: "New Projects",   slug: "new-projects",  categoryType: "property", icon: "sparkles",  order: 6 },
+  { name: "PG / Co-Living", slug: "pg-co-living",  categoryType: "property", icon: "users",     order: 7 },
+];
+
+async function seedCategories() {
+  const count = await CategoryModel.countDocuments();
+  if (count > 0) return;
+  await CategoryModel.insertMany(DEFAULT_CATEGORIES);
+  console.log(`  Seeding   → inserted ${DEFAULT_CATEGORIES.length} default categories`);
+}
 
 export async function seedIfEmpty(): Promise<void> {
+  await seedCategories();
+
   const userCount = await UserModel.countDocuments();
 
   /* ── Full seed when DB is completely empty ── */

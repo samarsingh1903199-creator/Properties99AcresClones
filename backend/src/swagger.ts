@@ -148,6 +148,20 @@ const options: swaggerJsdoc.Options = {
             viewedAt:      { type: "string", format: "date-time" },
           },
         },
+        Category: {
+          type: "object",
+          properties: {
+            _id:          { type: "string" },
+            name:         { type: "string", example: "For Rent" },
+            slug:         { type: "string", example: "rent", description: "Unique key stored on Property documents as listingType or type" },
+            categoryType: { type: "string", enum: ["listing", "property"], example: "listing" },
+            icon:         { type: "string", example: "key" },
+            order:        { type: "integer", example: 1 },
+            isActive:     { type: "boolean", example: true },
+            createdAt:    { type: "string", format: "date-time" },
+            updatedAt:    { type: "string", format: "date-time" },
+          },
+        },
         Error: {
           type: "object",
           properties: {
@@ -738,6 +752,104 @@ const options: swaggerJsdoc.Options = {
             "400": { description: "Invalid property ID" },
             "401": { description: "Unauthorized — JWT required" },
             "404": { description: "Property or user not found" },
+          },
+        },
+      },
+
+      /* ── Categories ── */
+      "/api/categories": {
+        get: {
+          tags: ["Categories"],
+          summary: "List all active categories (public)",
+          description: "Returns listing-type and property-type categories used to populate the frontend tabs and property forms. Pass `?type=listing` or `?type=property` to filter.",
+          parameters: [
+            { name: "type", in: "query", schema: { type: "string", enum: ["listing", "property"] }, description: "Filter by category type" },
+          ],
+          responses: {
+            "200": {
+              description: "List of categories",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: { type: "boolean" },
+                      count:   { type: "number" },
+                      data:    { type: "array", items: { $ref: "#/components/schemas/Category" } },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        post: {
+          tags: ["Categories"],
+          summary: "Create a new category",
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["name", "slug", "categoryType"],
+                  properties: {
+                    name:         { type: "string", example: "Lease" },
+                    slug:         { type: "string", example: "lease", description: "Unique lowercase identifier stored on Property documents" },
+                    categoryType: { type: "string", enum: ["listing", "property"], example: "listing" },
+                    icon:         { type: "string", example: "layers", description: "Lucide icon name" },
+                    order:        { type: "integer", example: 3, description: "Sort order in UI tabs" },
+                    isActive:     { type: "boolean", example: true },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "201": { description: "Category created" },
+            "400": { description: "Missing required fields or invalid categoryType" },
+            "409": { description: "Slug already exists" },
+          },
+        },
+      },
+      "/api/categories/{id}": {
+        patch: {
+          tags: ["Categories"],
+          summary: "Update a category",
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+          requestBody: {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    name:         { type: "string" },
+                    slug:         { type: "string" },
+                    categoryType: { type: "string", enum: ["listing", "property"] },
+                    icon:         { type: "string" },
+                    order:        { type: "integer" },
+                    isActive:     { type: "boolean" },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "200": { description: "Category updated" },
+            "404": { description: "Category not found" },
+            "409": { description: "Slug conflict" },
+          },
+        },
+        delete: {
+          tags: ["Categories"],
+          summary: "Delete a category",
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+          responses: {
+            "200": { description: "Category deleted" },
+            "404": { description: "Category not found" },
           },
         },
       },

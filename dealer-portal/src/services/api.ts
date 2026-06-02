@@ -288,6 +288,52 @@ export const inquiriesApi = {
     }),
 };
 
+/* ── Categories ── */
+export interface ApiCategory {
+  _id: string;
+  name: string;
+  slug: string;
+  categoryType: "listing" | "property";
+  icon: string;
+  order: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const categoriesApi = {
+  list: (params?: { type?: "listing" | "property" }) => {
+    const qs = params?.type ? `?type=${params.type}` : "";
+    return request<{ success: boolean; count: number; data: ApiCategory[] }>(`/api/categories${qs}`);
+  },
+
+  create: (token: string, data: {
+    name: string; slug: string; categoryType: "listing" | "property";
+    icon?: string; order?: number; isActive?: boolean;
+  }) =>
+    request<{ success: boolean; data: ApiCategory }>("/api/categories", {
+      method: "POST",
+      headers: authHeader(token),
+      body: JSON.stringify(data),
+    }),
+
+  update: (token: string, id: string, data: Partial<{
+    name: string; slug: string; categoryType: "listing" | "property";
+    icon: string; order: number; isActive: boolean;
+  }>) =>
+    request<{ success: boolean; data: ApiCategory }>(`/api/categories/${id}`, {
+      method: "PATCH",
+      headers: authHeader(token),
+      body: JSON.stringify(data),
+    }),
+
+  delete: (token: string, id: string) =>
+    request<{ success: boolean; message: string }>(`/api/categories/${id}`, {
+      method: "DELETE",
+      headers: authHeader(token),
+    }),
+};
+
 /* ── Shared API user shape returned by the backend ── */
 export interface ApiUser {
   _id: string;

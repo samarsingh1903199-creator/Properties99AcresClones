@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   Building2, LayoutDashboard, Home, MessageSquare,
-  BarChart3, User, LogOut, ShieldCheck,
+  BarChart3, User, LogOut, ShieldCheck, Tag,
 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { ROUTES } from "../constants/routes";
@@ -9,6 +9,7 @@ import { ROUTES } from "../constants/routes";
 const NAV = [
   { to: ROUTES.DASHBOARD,  icon: LayoutDashboard, label: "Dashboard"     },
   { to: ROUTES.PROPERTIES, icon: Home,             label: "My Properties" },
+  { to: ROUTES.CATEGORIES, icon: Tag,              label: "Categories"    },
   { to: ROUTES.INQUIRIES,  icon: MessageSquare,    label: "Inquiries"     },
   { to: ROUTES.ANALYTICS,  icon: BarChart3,        label: "Analytics"     },
   { to: ROUTES.PROFILE,    icon: User,             label: "Profile"       },

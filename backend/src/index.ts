@@ -16,6 +16,7 @@ import analyticsRoutes       from "./routes/analytics.routes.js";
 import uploadRoutes          from "./routes/upload.routes.js";
 import publicRoutes          from "./routes/public.routes.js";
 import likedRoutes           from "./routes/liked.routes.js";
+import categoryRoutes        from "./routes/categories.routes.js";
 
 const app  = express();
 const PORT = Number(process.env.PORT) || 3002;
@@ -44,7 +45,8 @@ app.use("/api/visit-enquiries",  visitEnquiryRoutes);
 app.use("/api/analytics",        analyticsRoutes);
 app.use("/api/upload",     uploadRoutes);
 app.use("/api/public",    publicRoutes);
-app.use("/api/liked",     likedRoutes);
+app.use("/api/liked",      likedRoutes);
+app.use("/api/categories", categoryRoutes);
 
 /* ── 404 ── */
 app.use((_req, res) => {
@@ -75,6 +77,7 @@ app.use(errorHandler);
     console.log(`   Properties  → http://localhost:${PORT}/api/properties`);
     console.log(`   Inquiries   → http://localhost:${PORT}/api/inquiries`);
     console.log(`   Analytics   → http://localhost:${PORT}/api/analytics`);
-    console.log(`   Upload      → http://localhost:${PORT}/api/upload\n`);
+    console.log(`   Upload      → http://localhost:${PORT}/api/upload`);
+    console.log(`   Categories  → http://localhost:${PORT}/api/categories\n`);
   });
 })();

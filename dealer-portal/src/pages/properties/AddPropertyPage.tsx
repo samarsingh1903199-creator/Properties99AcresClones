@@ -1,11 +1,11 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, ImagePlus, X, Star, Loader2, ChevronRight, Check } from "lucide-react";
 import {
   usePropertyStore, type PropertyType, type ListingType, type PropertyStatus,
 } from "../../store/usePropertyStore";
 import { useAuthStore } from "../../store/useAuthStore";
-import { uploadApi, propertiesApi } from "../../services/api";
+import { uploadApi, propertiesApi, categoriesApi, type ApiCategory } from "../../services/api";
 import { ROUTES } from "../../constants/routes";
 import {
   AmenitiesFormSection, amenitiesToApi, type AmenitiesFormData,
@@ -56,6 +56,27 @@ export function AddPropertyPage() {
 
   const [step, setStep] = useState<1 | 2>(1);
   const [createdPropertyId, setCreatedPropertyId] = useState<string | null>(null);
+
+  const [listingCategories, setListingCategories] = useState<ApiCategory[]>([]);
+  const [propertyCategories, setPropertyCategories] = useState<ApiCategory[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      categoriesApi.list({ type: "listing" }),
+      categoriesApi.list({ type: "property" }),
+    ]).then(([listingRes, propertyRes]) => {
+      const listing = listingRes.data.filter(c => c.isActive);
+      const property = propertyRes.data.filter(c => c.isActive);
+      setListingCategories(listing);
+      setPropertyCategories(property);
+      setForm(prev => ({
+        ...prev,
+        listingType: (listing[0]?.slug ?? prev.listingType) as ListingType,
+        type: (property[0]?.slug ?? prev.type) as PropertyType,
+      }));
+    }).catch(() => {}).finally(() => setCategoriesLoading(false));
+  }, []);
 
   const [form, setForm] = useState({
     title: "", type: "apartment" as PropertyType, listingType: "sale" as ListingType,
@@ -212,9 +233,19 @@ export function AddPropertyPage() {
             <h2 className={sh} style={{ fontFamily: "Outfit, sans-serif" }}>Basic Information</h2>
             <div>
               <label className={lbl}>Listing Type</label>
-              <select value={form.listingType} onChange={e => set("listingType", e.target.value)} className="dp-input dp-select" style={{ borderRadius: "0.875rem" }}>
-                <option value="sale">For Sale</option>
-                <option value="rent">For Rent</option>
+              <select
+                value={form.listingType}
+                onChange={e => set("listingType", e.target.value)}
+                disabled={categoriesLoading}
+                className="dp-input dp-select disabled:opacity-60"
+                style={{ borderRadius: "0.875rem" }}
+              >
+                {categoriesLoading
+                  ? <option value="">Loading…</option>
+                  : listingCategories.map(c => (
+                      <option key={c._id} value={c.slug}>{c.name}</option>
+                    ))
+                }
               </select>
             </div>
             <div>
@@ -224,8 +255,19 @@ export function AddPropertyPage() {
             </div>
             <div>
               <label className={lbl}>Property Type</label>
-              <select value={form.type} onChange={e => set("type", e.target.value)} className="dp-input dp-select" style={{ borderRadius: "0.875rem" }}>
-                {["apartment","villa","plot","commercial","penthouse"].map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
+              <select
+                value={form.type}
+                onChange={e => set("type", e.target.value)}
+                disabled={categoriesLoading}
+                className="dp-input dp-select disabled:opacity-60"
+                style={{ borderRadius: "0.875rem" }}
+              >
+                {categoriesLoading
+                  ? <option value="">Loading…</option>
+                  : propertyCategories.map(c => (
+                      <option key={c._id} value={c.slug}>{c.name}</option>
+                    ))
+                }
               </select>
             </div>
             <div className="grid grid-cols-2 gap-3">

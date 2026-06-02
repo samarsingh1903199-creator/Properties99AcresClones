@@ -12,6 +12,7 @@ import { EditPropertyPage } from "./pages/properties/EditPropertyPage";
 import { InquiriesPage } from "./pages/inquiries/InquiriesPage";
 import { AnalyticsPage } from "./pages/analytics/AnalyticsPage";
 import { ProfilePage } from "./pages/profile/ProfilePage";
+import { CategoriesPage } from "./pages/categories/CategoriesPage";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
@@ -39,6 +40,7 @@ export function AppRoutes() {
         <Route path="/properties/:id/edit" element={<EditPropertyPage />} />
         <Route path={ROUTES.INQUIRIES} element={<InquiriesPage />} />
         <Route path={ROUTES.ANALYTICS} element={<AnalyticsPage />} />
+        <Route path={ROUTES.CATEGORIES} element={<CategoriesPage />} />
         <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
       </Route>
       <Route path="*" element={<Navigate to={ROUTES.DASHBOARD} replace />} />
