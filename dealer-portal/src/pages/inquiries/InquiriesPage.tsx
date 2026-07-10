@@ -26,14 +26,14 @@ function initials(name: string) {
 }
 
 const STATUS_CONFIG = {
-  new:       { label: "New",        cls: "bg-purple-50 text-purple-700 border-purple-200",  dot: "bg-purple-500" },
+  new:       { label: "New",        cls: "bg-emerald-50 text-emerald-700 border-emerald-200",  dot: "bg-emerald-600" },
   responded: { label: "Responded",  cls: "bg-emerald-50 text-emerald-600 border-emerald-200", dot: "bg-emerald-500" },
   closed:    { label: "Closed",     cls: "bg-gray-100 text-gray-400 border-gray-200",        dot: "bg-gray-400" },
 } as const;
 
 const AVATAR_COLORS = [
-  "bg-purple-600", "bg-indigo-600", "bg-sky-600",
-  "bg-rose-600",   "bg-amber-600",  "bg-teal-600",
+  "bg-emerald-600", "bg-teal-600", "bg-sky-600",
+  "bg-rose-600",   "bg-amber-600",  "bg-lime-600",
 ];
 function avatarColor(name: string) {
   let n = 0;
@@ -161,17 +161,17 @@ export function InquiriesPage() {
       {/* ── Header ── */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-black text-[#111111] tracking-tight" style={{ fontFamily: "Outfit, sans-serif" }}>
+          <h1 className="text-2xl font-black text-[#0c2417] tracking-tight" style={{ fontFamily: "Outfit, sans-serif" }}>
             Inquiries
           </h1>
-          <p className="text-sm font-medium text-[#111111]/40 mt-0.5">
+          <p className="text-sm font-medium text-[#0c2417]/40 mt-0.5">
             {loading ? "Loading…" : `${counts.all} total · ${counts.new} new`}
           </p>
         </div>
         <button
           onClick={load}
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border border-gray-200 bg-white text-[#111111]/50 hover:text-[#5b21b6] hover:border-[#5b21b6]/30 transition-all disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border border-gray-200 bg-white text-[#0c2417]/50 hover:text-[#166534] hover:border-[#166534]/30 transition-all disabled:opacity-50"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
           Refresh
@@ -188,16 +188,16 @@ export function InquiriesPage() {
               onClick={() => setTab(t.id)}
               className={`relative flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12px] font-bold transition-all ${
                 tab === t.id
-                  ? "bg-white text-[#5b21b6] shadow-sm shadow-black/5"
-                  : "text-[#111111]/40 hover:text-[#111111]/70"
+                  ? "bg-white text-[#166534] shadow-sm shadow-black/5"
+                  : "text-[#0c2417]/40 hover:text-[#0c2417]/70"
               }`}
             >
               {t.label}
               {counts[t.id] > 0 && (
                 <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center ${
                   tab === t.id
-                    ? "bg-[#5b21b6] text-white"
-                    : "bg-[#111111]/10 text-[#111111]/50"
+                    ? "bg-[#166534] text-white"
+                    : "bg-[#0c2417]/10 text-[#0c2417]/50"
                 }`}>
                   {counts[t.id]}
                 </span>
@@ -208,17 +208,17 @@ export function InquiriesPage() {
 
         {/* Search */}
         <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#111111]/30" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#0c2417]/30" />
           <input
             value={query}
             onChange={e => setQuery(e.target.value)}
             type="text"
             placeholder="Search by name, email or property…"
-            className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-2xl text-[13px] font-medium text-[#111111] focus:outline-none focus:ring-2 focus:ring-[#5b21b6]/15 focus:border-[#5b21b6]/30 placeholder:text-[#111111]/25 transition-all"
+            className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-2xl text-[13px] font-medium text-[#0c2417] focus:outline-none focus:ring-2 focus:ring-[#166534]/15 focus:border-[#166534]/30 placeholder:text-[#0c2417]/25 transition-all"
           />
           {query && (
             <button onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2">
-              <X className="w-3.5 h-3.5 text-[#111111]/30 hover:text-[#111111]/60 transition-colors" />
+              <X className="w-3.5 h-3.5 text-[#0c2417]/30 hover:text-[#0c2417]/60 transition-colors" />
             </button>
           )}
         </div>
@@ -226,18 +226,18 @@ export function InquiriesPage() {
         {/* Property filter */}
         {propertyOptions.length > 1 && (
           <div className="relative shrink-0">
-            <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#5b21b6]/60 pointer-events-none" />
+            <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#166534]/60 pointer-events-none" />
             <select
               value={propFilter}
               onChange={e => setPropFilter(e.target.value)}
-              className="pl-8 pr-8 py-2.5 bg-white border border-gray-200 rounded-2xl text-[13px] font-medium text-[#111111]/70 focus:outline-none focus:ring-2 focus:ring-[#5b21b6]/15 focus:border-[#5b21b6]/30 appearance-none cursor-pointer transition-all"
+              className="pl-8 pr-8 py-2.5 bg-white border border-gray-200 rounded-2xl text-[13px] font-medium text-[#0c2417]/70 focus:outline-none focus:ring-2 focus:ring-[#166534]/15 focus:border-[#166534]/30 appearance-none cursor-pointer transition-all"
             >
               <option value="all">All Properties</option>
               {propertyOptions.map(p => (
                 <option key={p} value={p}>{p}</option>
               ))}
             </select>
-            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#111111]/30 pointer-events-none" />
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#0c2417]/30 pointer-events-none" />
           </div>
         )}
       </div>
@@ -252,21 +252,21 @@ export function InquiriesPage() {
           <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center">
             <AlertCircle className="w-6 h-6 text-red-400" />
           </div>
-          <p className="text-sm font-bold text-[#111111]/60">Failed to load inquiries</p>
-          <p className="text-xs text-[#111111]/30">{error}</p>
+          <p className="text-sm font-bold text-[#0c2417]/60">Failed to load inquiries</p>
+          <p className="text-xs text-[#0c2417]/30">{error}</p>
           <button onClick={load} className="premium-btn text-xs px-4 py-2 mt-1">
             Try Again
           </button>
         </div>
       ) : filtered.length === 0 ? (
         <div className="dp-card p-12 flex flex-col items-center justify-center text-center gap-3">
-          <div className="w-14 h-14 rounded-2xl bg-[#5b21b6]/8 flex items-center justify-center">
-            <Inbox className="w-7 h-7 text-[#5b21b6]/40" />
+          <div className="w-14 h-14 rounded-2xl bg-[#166534]/8 flex items-center justify-center">
+            <Inbox className="w-7 h-7 text-[#166534]/40" />
           </div>
-          <p className="text-base font-black text-[#111111]/50">
+          <p className="text-base font-black text-[#0c2417]/50">
             {tab === "all" && !query ? "No inquiries yet" : "No matching inquiries"}
           </p>
-          <p className="text-xs text-[#111111]/30 max-w-xs">
+          <p className="text-xs text-[#0c2417]/30 max-w-xs">
             {tab === "all" && !query
               ? "When customers enquire about your properties, they'll appear here."
               : "Try adjusting your filters or search term."}
@@ -274,7 +274,7 @@ export function InquiriesPage() {
           {(tab !== "all" || query || propFilter !== "all") && (
             <button
               onClick={() => { setTab("all"); setQuery(""); setPropFilter("all"); }}
-              className="mt-1 text-[12px] font-bold text-[#5b21b6] hover:underline"
+              className="mt-1 text-[12px] font-bold text-[#166534] hover:underline"
             >
               Clear filters
             </button>
@@ -291,7 +291,7 @@ export function InquiriesPage() {
             return (
               <div
                 key={inq._id}
-                className={`dp-card overflow-hidden transition-all duration-300 ${inq.status === "new" ? "border-l-[3px] border-l-[#5b21b6]" : ""}`}
+                className={`dp-card overflow-hidden transition-all duration-300 ${inq.status === "new" ? "border-l-[3px] border-l-[#166534]" : ""}`}
               >
                 {/* ── Property banner ── */}
                 <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 border-b border-gray-100">
@@ -303,15 +303,15 @@ export function InquiriesPage() {
                       className="w-14 h-10 rounded-xl object-cover shrink-0 border border-gray-200 shadow-sm"
                     />
                   ) : (
-                    <div className="w-14 h-10 rounded-xl bg-[#5b21b6]/10 flex items-center justify-center shrink-0 border border-[#5b21b6]/10">
-                      <Building2 className="w-4 h-4 text-[#5b21b6]/50" />
+                    <div className="w-14 h-10 rounded-xl bg-[#166534]/10 flex items-center justify-center shrink-0 border border-[#166534]/10">
+                      <Building2 className="w-4 h-4 text-[#166534]/50" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-black text-[#5b21b6] truncate leading-tight">
+                    <p className="text-[11px] font-black text-[#166534] truncate leading-tight">
                       {inq.propertyTitle || "Property Inquiry"}
                     </p>
-                    <p className="text-[10px] text-[#111111]/30 font-medium mt-0.5 flex items-center gap-1">
+                    <p className="text-[10px] text-[#0c2417]/30 font-medium mt-0.5 flex items-center gap-1">
                       <Clock className="w-2.5 h-2.5" />
                       {timeAgo(inq.createdAt)}
                     </p>
@@ -331,9 +331,9 @@ export function InquiriesPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-[14px] font-black text-[#111111] leading-tight">{inq.name}</p>
+                        <p className="text-[14px] font-black text-[#0c2417] leading-tight">{inq.name}</p>
                         {inq.status === "new" && (
-                          <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-[#5b21b6] text-white tracking-widest uppercase">
+                          <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-[#166534] text-white tracking-widest uppercase">
                             New
                           </span>
                         )}
@@ -341,14 +341,14 @@ export function InquiriesPage() {
                       <div className="flex items-center gap-3 mt-1 flex-wrap">
                         <a
                           href={`tel:${inq.phone}`}
-                          className="flex items-center gap-1 text-[12px] font-medium text-[#111111]/40 hover:text-[#5b21b6] transition-colors"
+                          className="flex items-center gap-1 text-[12px] font-medium text-[#0c2417]/40 hover:text-[#166534] transition-colors"
                         >
                           <Phone className="w-3 h-3 shrink-0" />
                           {inq.phone}
                         </a>
                         <a
                           href={`mailto:${inq.email}`}
-                          className="flex items-center gap-1 text-[12px] font-medium text-[#111111]/40 hover:text-[#5b21b6] transition-colors"
+                          className="flex items-center gap-1 text-[12px] font-medium text-[#0c2417]/40 hover:text-[#166534] transition-colors"
                         >
                           <Mail className="w-3 h-3 shrink-0" />
                           {inq.email}
@@ -362,12 +362,12 @@ export function InquiriesPage() {
                     <div className={`relative bg-gray-50 rounded-2xl px-4 py-3 border border-gray-100 ${!isExpanded && inq.message.length > 120 ? "cursor-pointer" : ""}`}
                       onClick={() => inq.message.length > 120 && setExpanded(isExpanded ? null : inq._id)}
                     >
-                      <MessageSquare className="absolute top-3 right-3 w-3.5 h-3.5 text-[#111111]/15" />
-                      <p className={`text-[13px] text-[#111111]/65 font-medium leading-relaxed pr-5 ${!isExpanded && inq.message.length > 120 ? "line-clamp-2" : ""}`}>
-                        {inq.message || <span className="italic text-[#111111]/30">No message provided</span>}
+                      <MessageSquare className="absolute top-3 right-3 w-3.5 h-3.5 text-[#0c2417]/15" />
+                      <p className={`text-[13px] text-[#0c2417]/65 font-medium leading-relaxed pr-5 ${!isExpanded && inq.message.length > 120 ? "line-clamp-2" : ""}`}>
+                        {inq.message || <span className="italic text-[#0c2417]/30">No message provided</span>}
                       </p>
                       {inq.message.length > 120 && (
-                        <button className="text-[11px] font-bold text-[#5b21b6] mt-1 hover:underline">
+                        <button className="text-[11px] font-bold text-[#166534] mt-1 hover:underline">
                           {isExpanded ? "Show less" : "Read more"}
                         </button>
                       )}
@@ -379,14 +379,14 @@ export function InquiriesPage() {
                     <a
                       href={`mailto:${inq.email}?subject=Re: ${encodeURIComponent(inq.propertyTitle || "Your Inquiry")}&body=Dear ${encodeURIComponent(inq.name)},%0A%0A`}
                       onClick={() => inq.status === "new" && handleStatusChange(inq._id, "responded")}
-                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#5b21b6] text-white text-[11px] font-black tracking-wider hover:opacity-90 active:scale-[0.97] transition-all shadow-sm shadow-[#5b21b6]/20"
+                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#166534] text-white text-[11px] font-black tracking-wider hover:opacity-90 active:scale-[0.97] transition-all shadow-sm shadow-[#166534]/20"
                     >
                       <Mail className="w-3.5 h-3.5" /> Reply via Email
                     </a>
 
                     <a
                       href={`tel:${inq.phone}`}
-                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-gray-200 text-[11px] font-bold text-[#111111]/60 hover:border-[#5b21b6]/30 hover:text-[#5b21b6] transition-all"
+                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-gray-200 text-[11px] font-bold text-[#0c2417]/60 hover:border-[#166534]/30 hover:text-[#166534] transition-all"
                     >
                       <Phone className="w-3.5 h-3.5" /> Call
                     </a>
@@ -417,7 +417,7 @@ export function InquiriesPage() {
                         <button
                           onClick={() => handleStatusChange(inq._id, "new")}
                           disabled={isUpdating}
-                          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-purple-50 border border-purple-200 text-purple-600 text-[11px] font-bold hover:bg-purple-100 transition-all disabled:opacity-50"
+                          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold hover:bg-emerald-100 transition-all disabled:opacity-50"
                         >
                           {isUpdating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
                           Reopen
@@ -434,10 +434,10 @@ export function InquiriesPage() {
 
       {/* ── Summary footer ── */}
       {!loading && !error && filtered.length > 0 && (
-        <div className="flex items-center justify-between text-[11px] font-bold text-[#111111]/25 pt-2">
+        <div className="flex items-center justify-between text-[11px] font-bold text-[#0c2417]/25 pt-2">
           <span>Showing {filtered.length} of {counts.all} inquiries</span>
           {counts.new > 0 && (
-            <span className="text-[#5b21b6]/60">{counts.new} need{counts.new === 1 ? "s" : ""} attention</span>
+            <span className="text-[#166534]/60">{counts.new} need{counts.new === 1 ? "s" : ""} attention</span>
           )}
         </div>
       )}

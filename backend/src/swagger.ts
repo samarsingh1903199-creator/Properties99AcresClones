@@ -67,24 +67,29 @@ const options: swaggerJsdoc.Options = {
         Property: {
           type: "object",
           properties: {
-            id:          { type: "string", example: "1" },
+            _id:         { type: "string", example: "64a1b2c3d4e5f6789abcdef0" },
             title:       { type: "string", example: "Luxury Sea-View Penthouse" },
-            type:        { type: "string", enum: ["apartment", "villa", "plot", "commercial", "penthouse"] },
-            listingType: { type: "string", enum: ["sale", "rent"] },
+            type:        { type: "string", example: "penthouse" },
+            listingType: { type: "string", enum: ["sale", "rent"], example: "sale" },
             price:       { type: "number", example: 12500000 },
             area:        { type: "number", example: 4200 },
             bedrooms:    { type: "number", example: 5 },
             bathrooms:   { type: "number", example: 6 },
-            location:    { type: "string", example: "Marine Drive, Mumbai" },
-            city:        { type: "string", example: "Mumbai" },
+            location:    { type: "string", example: "Marine Drive, Plot No. 8", description: "Derived from address.street — kept for search/filter compatibility" },
+            city:        { type: "string", example: "Mumbai", description: "Derived from address.city — kept for search/filter compatibility" },
+            address:     { $ref: "#/components/schemas/Address" },
             description: { type: "string" },
             images:      { type: "array", items: { type: "string" } },
             status:      { type: "string", enum: ["active", "pending", "sold", "rented", "draft"] },
             views:       { type: "number" },
             inquiries:   { type: "number" },
             amenities:   { $ref: "#/components/schemas/PropertyAmenities" },
-            createdAt:   { type: "string", format: "date" },
+            saleDetails: { $ref: "#/components/schemas/SaleDetails" },
+            createdAt:   { type: "string", format: "date-time" },
+            updatedAt:   { type: "string", format: "date-time" },
             ownerId:     { type: "string" },
+            isHighlighted: { type: "boolean", example: false, description: "Featured on the public homepage when true" },
+            highlightedAt: { type: "string", format: "date-time", description: "When the property was last marked highlighted" },
           },
         },
         Inquiry: {
@@ -133,6 +138,35 @@ const options: swaggerJsdoc.Options = {
             format:       { type: "string", example: "jpg" },
           },
         },
+        GenerateDescriptionRequest: {
+          type: "object",
+          required: ["listingType", "title", "city"],
+          properties: {
+            listingType:  { type: "string", example: "rent", description: "rent, sale, or lease" },
+            propertyType: { type: "string", example: "Independent Flat" },
+            title:        { type: "string", example: "2 BHK Independent Flat for Rent" },
+            city:         { type: "string", example: "Mohali" },
+            location:     { type: "string", example: "Sector 70" },
+            bedrooms:     { type: "number", example: 2 },
+            bathrooms:    { type: "number", example: 2 },
+            area:         { oneOf: [{ type: "number" }, { type: "string" }], example: 1250 },
+            furnishing:   { type: "string", example: "semi-furnished" },
+            parking:      { type: "number", example: 1 },
+            price:        { oneOf: [{ type: "number" }, { type: "string" }], example: 18000 },
+            amenities:    { type: "array", items: { type: "string" }, example: ["Lift", "Power Backup", "Gym"] },
+            style:        { type: "string", enum: ["professional","luxury","family","investment","student","commercial","premium"], default: "professional" },
+            length:       { type: "string", enum: ["short","medium","long"], default: "medium" },
+            regenerate:   { type: "boolean", default: false, description: "Request alternate wording" },
+          },
+        },
+        GenerateDescriptionResponse: {
+          type: "object",
+          properties: {
+            description: { type: "string", example: "Discover this spacious 2 BHK independent flat available for rent in Mohali..." },
+            model:       { type: "string", example: "llama-3.3-70b-versatile" },
+            wordCount:   { type: "number", example: 142 },
+          },
+        },
         PropertyView: {
           type: "object",
           properties: {
@@ -146,6 +180,47 @@ const options: swaggerJsdoc.Options = {
             userPhone:     { type: "string", example: "+91 98765 43210" },
             source:        { type: "string", enum: ["view", "book"] },
             viewedAt:      { type: "string", format: "date-time" },
+          },
+        },
+        Address: {
+          type: "object",
+          description: "Structured address of the property. `city` and `street` are required on creation — they are also stored as the flat `city` and `location` fields on the property document for search compatibility.",
+          required: ["city", "street"],
+          properties: {
+            country:    { type: "string", example: "India" },
+            state:      { type: "string", example: "Haryana" },
+            city:       { type: "string", example: "Gurugram", description: "Required. Mapped to the top-level city field." },
+            locality:   { type: "string", example: "Sector 54, DLF Phase 2", description: "Neighbourhood / sector / sub-locality" },
+            street:     { type: "string", example: "Golf Course Road, Plot No. 12", description: "Required. Mapped to the top-level location field." },
+            landmark:   { type: "string", example: "Near Ambience Mall" },
+            postalCode: { type: "string", example: "122002" },
+            lat:        { type: "number", example: 28.4595, description: "Latitude — auto-filled by Google Places Autocomplete on the frontend" },
+            lng:        { type: "number", example: 77.0266, description: "Longitude — auto-filled by Google Places Autocomplete on the frontend" },
+          },
+        },
+        SaleDetails: {
+          type: "object",
+          description: "Additional details applicable only to sale listings. Ignored for rent listings.",
+          properties: {
+            pricePerSqft:       { type: "number", minimum: 0, example: 8500, description: "Price per sq. ft (₹)" },
+            bookingAmount:      { type: "number", minimum: 0, example: 500000, description: "Token / booking amount (₹)" },
+            maintenanceCharges: { type: "number", minimum: 0, example: 5000, description: "Monthly maintenance charges (₹)" },
+            negotiable:         { type: "boolean", example: true },
+            loanAvailable:      { type: "boolean", example: true },
+            ownershipType:      { type: "string", enum: ["freehold","leasehold","builder-owned","resale"], example: "freehold" },
+            propertyAge:        { type: "number", minimum: 0, example: 5, description: "Age of the property in years" },
+            possessionStatus:   { type: "string", enum: ["ready-to-move","under-construction"], example: "ready-to-move" },
+            possessionDate:     { type: "string", example: "2025-12-31", description: "Expected possession date (ISO date string)" },
+            floorNumber:        { type: "string", example: "4" },
+            totalFloors:        { type: "number", minimum: 1, example: 12 },
+            facing:             { type: "string", enum: ["north","south","east","west","north-east","north-west","south-east","south-west"], example: "east" },
+            vastuCompliant:     { type: "boolean", example: true },
+            carpetArea:         { type: "number", minimum: 0, example: 1800, description: "Carpet area (sq. ft)" },
+            builtUpArea:        { type: "number", minimum: 0, example: 2000, description: "Built-up area (sq. ft)" },
+            superBuiltUpArea:   { type: "number", minimum: 0, example: 2400, description: "Super built-up area (sq. ft)" },
+            reraNumber:         { type: "string", example: "RERA/GGM/2024/XXXXX" },
+            registryStatus:     { type: "string", enum: ["clear","pending","disputed"], example: "clear" },
+            legalApprovals:     { type: "string", enum: ["approved","pending","disputed"], example: "approved" },
           },
         },
         Category: {
@@ -321,29 +396,179 @@ const options: swaggerJsdoc.Options = {
               "application/json": {
                 schema: {
                   type: "object",
-                  required: ["title","type","listingType","price","area","location","city"],
+                  required: ["title","type","listingType","price","area","address"],
                   properties: {
-                    title:       { type: "string", example: "Sea-View Penthouse" },
-                    type:        { type: "string", enum: ["apartment","villa","plot","commercial","penthouse"] },
-                    listingType: { type: "string", enum: ["sale","rent"] },
+                    title:       { type: "string", example: "Luxury Sea-View Penthouse" },
+                    type:        { type: "string", example: "penthouse", description: "Property category slug (e.g. apartment, villa, penthouse)" },
+                    listingType: { type: "string", enum: ["sale","rent"], example: "sale" },
                     price:       { type: "number", example: 12500000 },
-                    area:        { type: "number", example: 4200 },
-                    bedrooms:    { type: "number", example: 4 },
-                    bathrooms:   { type: "number", example: 3 },
-                    location:    { type: "string", example: "Marine Drive, Mumbai" },
-                    city:        { type: "string", example: "Mumbai" },
-                    description: { type: "string" },
-                    images:      { type: "array", items: { type: "string" } },
-                    status:      { type: "string", enum: ["active","pending","draft"] },
-                    amenities:   { $ref: "#/components/schemas/PropertyAmenities", description: "Optional amenities to set at creation time" },
+                    area:        { type: "number", example: 4200, description: "Total area in sq. ft" },
+                    bedrooms:    { type: "number", example: 4, default: 1 },
+                    bathrooms:   { type: "number", example: 3, default: 1 },
+                    address: {
+                      allOf: [{ $ref: "#/components/schemas/Address" }],
+                      description: "Full structured address. `address.city` and `address.street` are required.",
+                    },
+                    description: { type: "string", example: "Sprawling penthouse with panoramic sea views and private terrace." },
+                    images:      { type: "array", items: { type: "string" }, description: "Array of Cloudinary URLs returned by POST /api/upload" },
+                    status:      { type: "string", enum: ["active","pending","draft"], default: "draft" },
+                    amenities:   { allOf: [{ $ref: "#/components/schemas/PropertyAmenities" }], description: "Optional amenities — can also be set later via PATCH /api/properties/{id}/amenities" },
+                    saleDetails: { allOf: [{ $ref: "#/components/schemas/SaleDetails" }], description: "Required only when listingType is sale" },
+                  },
+                  example: {
+                    title: "Golf Course Penthouse",
+                    type: "penthouse",
+                    listingType: "sale",
+                    price: 45000000,
+                    area: 4200,
+                    bedrooms: 4,
+                    bathrooms: 4,
+                    address: {
+                      country: "India",
+                      state: "Haryana",
+                      city: "Gurugram",
+                      locality: "DLF Phase 5",
+                      street: "Golf Course Road, Plot No. 12",
+                      landmark: "Near Ambience Mall",
+                      postalCode: "122002",
+                      lat: 28.4595,
+                      lng: 77.0266,
+                    },
+                    description: "Sprawling penthouse with panoramic views of the Golf Course.",
+                    images: ["https://res.cloudinary.com/demo/image/upload/v1/sample.jpg"],
+                    status: "active",
                   },
                 },
               },
             },
           },
           responses: {
-            "201": { description: "Property created" },
-            "400": { description: "Missing required fields" },
+            "201": {
+              description: "Property created successfully",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: { type: "boolean", example: true },
+                      data:    { $ref: "#/components/schemas/Property" },
+                    },
+                  },
+                },
+              },
+            },
+            "400": { description: "Missing required fields — title, type, listingType, price, area, address (with city and street) are all required" },
+            "401": { description: "Unauthorized — JWT required" },
+          },
+        },
+      },
+      "/api/properties/generate-description": {
+        post: {
+          tags: ["Properties", "AI"],
+          summary: "Generate a property listing description with Groq AI",
+          description: "Uses property details from the request body to generate a professional listing description. Requires GROQ_API_KEY in server environment.",
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/GenerateDescriptionRequest" },
+                example: {
+                  listingType: "rent",
+                  propertyType: "Independent Flat",
+                  title: "2 BHK Independent Flat for Rent",
+                  city: "Mohali",
+                  location: "Sector 70",
+                  bedrooms: 2,
+                  bathrooms: 2,
+                  area: 1250,
+                  furnishing: "semi-furnished",
+                  parking: 1,
+                  price: 18000,
+                  amenities: ["Lift", "Power Backup", "Gym"],
+                  style: "professional",
+                  length: "medium",
+                  regenerate: false,
+                },
+              },
+            },
+          },
+          responses: {
+            "200": {
+              description: "Generated description",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: { type: "boolean", example: true },
+                      data: { $ref: "#/components/schemas/GenerateDescriptionResponse" },
+                    },
+                  },
+                },
+              },
+            },
+            "400": { description: "Missing or invalid request fields" },
+            "401": { description: "Unauthorized — JWT required" },
+            "503": { description: "AI service not configured (GROQ_API_KEY missing)" },
+          },
+        },
+      },
+      "/api/properties/highlighted": {
+        get: {
+          tags: ["Properties"],
+          summary: "List highlighted properties for the authenticated dealer",
+          description: "Returns properties marked as highlighted by the logged-in dealer (or all highlighted for admins), newest first.",
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: "limit", in: "query", schema: { type: "integer", default: 50, maximum: 100 } },
+          ],
+          responses: {
+            "200": {
+              description: "Highlighted properties",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: { type: "boolean" },
+                      count: { type: "number" },
+                      data: { type: "array", items: { $ref: "#/components/schemas/Property" } },
+                    },
+                  },
+                },
+              },
+            },
+            "401": { description: "Unauthorized" },
+          },
+        },
+      },
+      "/api/properties/{id}/highlight": {
+        patch: {
+          tags: ["Properties"],
+          summary: "Mark or unmark a property as highlighted",
+          description: "Dealers can highlight their own active/pending listings. Admins can highlight any property.",
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["highlighted"],
+                  properties: {
+                    highlighted: { type: "boolean", example: true },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "200": { description: "Highlight status updated" },
+            "400": { description: "Invalid body or property not eligible" },
+            "401": { description: "Unauthorized" },
+            "404": { description: "Property not found" },
           },
         },
       },
@@ -361,6 +586,7 @@ const options: swaggerJsdoc.Options = {
         patch: {
           tags: ["Properties"],
           summary: "Update a property",
+          description: "Partial update — send only the fields you want to change. When `address` is provided, `location` and `city` are automatically re-derived from `address.street` and `address.city`.",
           security: [{ bearerAuth: [] }],
           parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
           requestBody: {
@@ -369,20 +595,41 @@ const options: swaggerJsdoc.Options = {
                 schema: {
                   type: "object",
                   properties: {
-                    title:       { type: "string" },
-                    price:       { type: "number" },
-                    status:      { type: "string", enum: ["active","pending","sold","rented","draft"] },
+                    title:       { type: "string", example: "Updated Penthouse Title" },
+                    type:        { type: "string", example: "penthouse", description: "Property category slug" },
+                    listingType: { type: "string", enum: ["sale","rent"] },
+                    price:       { type: "number", example: 48000000 },
+                    area:        { type: "number", example: 4500 },
+                    bedrooms:    { type: "number", example: 5 },
+                    bathrooms:   { type: "number", example: 5 },
+                    address:     { allOf: [{ $ref: "#/components/schemas/Address" }], description: "Partial address update — only provided sub-fields are merged. city and street are synced to the flat fields automatically." },
                     description: { type: "string" },
-                    images:      { type: "array", items: { type: "string" } },
-                    amenities:   { $ref: "#/components/schemas/PropertyAmenities" },
+                    images:      { type: "array", items: { type: "string" }, description: "Full replacement array of Cloudinary URLs" },
+                    status:      { type: "string", enum: ["active","pending","sold","rented","draft"] },
+                    amenities:   { allOf: [{ $ref: "#/components/schemas/PropertyAmenities" }] },
+                    saleDetails: { allOf: [{ $ref: "#/components/schemas/SaleDetails" }] },
                   },
                 },
               },
             },
           },
           responses: {
-            "200": { description: "Property updated" },
-            "404": { description: "Not found" },
+            "200": {
+              description: "Property updated",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: { type: "boolean", example: true },
+                      data:    { $ref: "#/components/schemas/Property" },
+                    },
+                  },
+                },
+              },
+            },
+            "401": { description: "Unauthorized" },
+            "404": { description: "Property not found or does not belong to the caller" },
           },
         },
         delete: {
@@ -580,6 +827,33 @@ const options: swaggerJsdoc.Options = {
       },
 
       /* ── Property Views (public) ── */
+      "/api/public/properties/highlighted": {
+        get: {
+          tags: ["Public"],
+          summary: "Get highlighted / featured properties",
+          description: "Returns active listings marked as highlighted, newest highlights first. No auth required.",
+          parameters: [
+            { name: "limit", in: "query", schema: { type: "integer", default: 12, maximum: 50 }, description: "Max results (default 12)" },
+          ],
+          responses: {
+            "200": {
+              description: "Highlighted properties",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: { type: "boolean", example: true },
+                      count:   { type: "number", example: 3 },
+                      data:    { type: "array", items: { $ref: "#/components/schemas/Property" } },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
       "/api/public/properties/{id}/view": {
         post: {
           tags: ["Property Views"],

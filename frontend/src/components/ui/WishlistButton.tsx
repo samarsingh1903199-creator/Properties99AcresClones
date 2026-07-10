@@ -40,40 +40,40 @@ export const WishlistButton = ({ propertyId, className, variant = "default" }: W
   const variantClass = {
     default: cn(
       "relative flex items-center justify-center transition-all duration-300",
-      isLiked ? "text-luxury-purple" : "text-luxury-black/20 hover:text-luxury-black/40"
+      isLiked ? "text-error" : "text-mute hover:text-ink"
     ),
     floating: cn(
-      "w-12 h-12 rounded-[1.25rem] backdrop-blur-xl flex items-center justify-center border transition-all duration-300",
+      "w-10 h-10 rounded-full flex items-center justify-center border transition-all duration-300",
       isLiked
-        ? "bg-luxury-purple border-luxury-purple shadow-[0_10px_20px_rgba(91,33,182,0.3)] text-white"
-        : "bg-white/80 text-luxury-black/40 border-luxury-purple/5 hover:bg-luxury-purple hover:text-white"
+        ? "bg-accent border-accent text-on-primary shadow-elevated-3"
+        : "bg-canvas/95 text-body border-hairline hover:bg-accent-soft hover:text-accent-deep backdrop-blur-sm"
     ),
     outline: cn(
-      "flex items-center gap-3 px-8 py-4 rounded-2xl border transition-all duration-500 group",
+      "flex items-center gap-2.5 px-6 py-3 rounded-full border transition-all duration-300",
       isLiked
-        ? "bg-luxury-purple border-luxury-purple text-white shadow-xl shadow-luxury-purple/20"
-        : "bg-white border-luxury-purple/5 text-luxury-black/40 hover:border-luxury-purple/20 hover:bg-luxury-purple/5"
+        ? "bg-ink border-ink text-on-primary"
+        : "bg-canvas border-hairline text-body hover:border-hairline-strong hover:bg-canvas-soft"
     ),
   };
 
   return (
     <button
       onClick={handleToggle}
-      className={cn(variantClass[variant], "cursor-pointer active:scale-90", className)}
+      className={cn(variantClass[variant], "cursor-pointer active:scale-95", className)}
     >
       <motion.div
-        animate={isAnimating ? { scale: [1, 1.5, 0.8, 1.2, 1] } : {}}
+        animate={isAnimating ? { scale: [1, 1.35, 0.9, 1.1, 1] } : {}}
         transition={{ duration: 0.5, type: "spring", stiffness: 300 }}
       >
         <Heart
-          size={variant === "floating" ? 20 : 22}
+          size={variant === "floating" ? 18 : 20}
           className={cn(isLiked && "fill-current")}
         />
       </motion.div>
 
       {variant === "outline" && (
-        <span className="text-[10px] font-black uppercase tracking-[0.2em]">
-          {isLiked ? "In Portfolio" : "Add to Portfolio"}
+        <span className="text-sm font-medium">
+          {isLiked ? "Saved" : "Save property"}
         </span>
       )}
 
@@ -81,9 +81,9 @@ export const WishlistButton = ({ propertyId, className, variant = "default" }: W
         {isLiked && isAnimating && (
           <motion.div
             initial={{ opacity: 1, scale: 1 }}
-            animate={{ opacity: 0, scale: 2.5 }}
+            animate={{ opacity: 0, scale: 2 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-luxury-purple/40 rounded-full blur-md -z-10"
+            className="absolute inset-0 bg-ink/20 rounded-full blur-md -z-10"
           />
         )}
       </AnimatePresence>

@@ -6,26 +6,38 @@ import { VisitEnquiryModel } from "../models/VisitEnquiry.model.js";
 import { CategoryModel } from "../models/Category.model.js";
 
 const DEFAULT_CATEGORIES = [
-  /* Listing types */
-  { name: "For Rent",  slug: "rent",    categoryType: "listing", icon: "key",       order: 1 },
-  { name: "For Sale",  slug: "sale",    categoryType: "listing", icon: "home",      order: 2 },
-  { name: "Lease",     slug: "lease",   categoryType: "listing", icon: "layers",    order: 3 },
+  /* Listing types — matchValues are the frontend-normalised listingType values */
+  { name: "For Rent",  slug: "rent",    categoryType: "listing", icon: "key",       order: 1, matchValues: ["rent"] },
+  { name: "For Sale",  slug: "sale",    categoryType: "listing", icon: "home",      order: 2, matchValues: ["buy", "sale"] },
+  { name: "Lease",     slug: "lease",   categoryType: "listing", icon: "layers",    order: 3, matchValues: ["lease"] },
 
-  /* Property types */
-  { name: "Luxury Homes",   slug: "luxury-homes",  categoryType: "property", icon: "crown",    order: 1 },
-  { name: "Apartments",     slug: "apartment",     categoryType: "property", icon: "building2", order: 2 },
-  { name: "Villas",         slug: "villa",         categoryType: "property", icon: "tree-palm", order: 3 },
-  { name: "Commercial",     slug: "commercial",    categoryType: "property", icon: "briefcase", order: 4 },
-  { name: "Plots",          slug: "plot",          categoryType: "property", icon: "map",       order: 5 },
-  { name: "New Projects",   slug: "new-projects",  categoryType: "property", icon: "sparkles",  order: 6 },
-  { name: "PG / Co-Living", slug: "pg-co-living",  categoryType: "property", icon: "users",     order: 7 },
+  /* Property types — matchValues are the property.type values stored in the DB */
+  { name: "Luxury Homes",   slug: "luxury-homes",  categoryType: "property", icon: "sparkles",     order: 1, matchValues: ["villa", "independent"] },
+  { name: "Apartments",     slug: "apartments",    categoryType: "property", icon: "building2",    order: 2, matchValues: ["apartment"] },
+  { name: "Villas",         slug: "villas",        categoryType: "property", icon: "palmtree",     order: 3, matchValues: ["villa", "independent"] },
+  { name: "Commercial",     slug: "commercial",    categoryType: "property", icon: "briefcase",    order: 4, matchValues: ["commercial"] },
+  { name: "Plots",          slug: "plots",         categoryType: "property", icon: "map",          order: 5, matchValues: ["plot"] },
+  { name: "New Projects",   slug: "projects",      categoryType: "property", icon: "hotel",        order: 6, matchValues: [] },
+  { name: "PG / Co-Living", slug: "co-living",     categoryType: "property", icon: "tent",         order: 7, matchValues: ["pg", "co-living"] },
+  { name: "Penthouse",      slug: "penthouse",     categoryType: "property", icon: "crown",        order: 8, matchValues: ["penthouse"] },
 ];
 
 async function seedCategories() {
   const count = await CategoryModel.countDocuments();
-  if (count > 0) return;
-  await CategoryModel.insertMany(DEFAULT_CATEGORIES);
-  console.log(`  Seeding   → inserted ${DEFAULT_CATEGORIES.length} default categories`);
+  if (count === 0) {
+    await CategoryModel.insertMany(DEFAULT_CATEGORIES);
+    console.log(`  Seeding   → inserted ${DEFAULT_CATEGORIES.length} default categories`);
+  } else {
+    // Update existing categories to match the defaults
+    for (const cat of DEFAULT_CATEGORIES) {
+      await CategoryModel.updateOne(
+        { slug: cat.slug },
+        { $set: cat },
+        { upsert: true }
+      );
+    }
+    console.log(`  Seeding   → ensured ${DEFAULT_CATEGORIES.length} categories are up-to-date`);
+  }
 }
 
 export async function seedIfEmpty(): Promise<void> {

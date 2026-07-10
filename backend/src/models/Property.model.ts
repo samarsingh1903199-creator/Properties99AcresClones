@@ -33,6 +33,18 @@ export interface ISaleDetails {
   legalApprovals?: "approved" | "pending" | "disputed";
 }
 
+export interface IAddress {
+  country?:    string;
+  state?:      string;
+  city?:       string;
+  locality?:   string;
+  street?:     string;
+  landmark?:   string;
+  postalCode?: string;
+  lat?:        number;
+  lng?:        number;
+}
+
 export interface IPropertyAmenities {
   /* Parking */
   parking: 0 | 1 | 2 | 3;
@@ -81,12 +93,15 @@ export interface IProperty extends Document {
   bathrooms: number;
   location: string;
   city: string;
+  address?: IAddress;
   description: string;
   images: string[];
   status: PropertyStatus;
   views: number;
   inquiries: number;
   ownerId: string;
+  isHighlighted: boolean;
+  highlightedAt?: Date;
   amenities: IPropertyAmenities;
   saleDetails?: ISaleDetails;
 }
@@ -149,6 +164,21 @@ const SaleDetailsSchema = new Schema<ISaleDetails>(
   { _id: false }
 );
 
+const AddressSchema = new Schema<IAddress>(
+  {
+    country:    { type: String, trim: true, default: "" },
+    state:      { type: String, trim: true, default: "" },
+    city:       { type: String, trim: true, default: "" },
+    locality:   { type: String, trim: true, default: "" },
+    street:     { type: String, trim: true, default: "" },
+    landmark:   { type: String, trim: true, default: "" },
+    postalCode: { type: String, trim: true, default: "" },
+    lat:        { type: Number },
+    lng:        { type: Number },
+  },
+  { _id: false }
+);
+
 const PropertySchema = new Schema<IProperty>(
   {
     title:       { type: String, required: true, trim: true },
@@ -160,12 +190,15 @@ const PropertySchema = new Schema<IProperty>(
     bathrooms:   { type: Number, default: 1, min: 0 },
     location:    { type: String, required: true, trim: true },
     city:        { type: String, required: true, trim: true },
+    address:     { type: AddressSchema },
     description: { type: String, default: "" },
     images:      [{ type: String }],
     status:      { type: String, enum: ["active", "pending", "sold", "rented", "draft"], default: "draft" },
     views:       { type: Number, default: 0 },
     inquiries:   { type: Number, default: 0 },
     ownerId:     { type: String, required: true },
+    isHighlighted: { type: Boolean, default: false, index: true },
+    highlightedAt: { type: Date },
     amenities:   { type: AmenitiesSchema, default: () => ({}) },
     saleDetails: { type: SaleDetailsSchema },
   },

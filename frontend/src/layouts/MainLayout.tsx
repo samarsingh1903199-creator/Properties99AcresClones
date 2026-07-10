@@ -12,7 +12,7 @@ export const MainLayout = () => {
 
   return (
     <Lenis root>
-      <div className="min-h-screen bg-luxury-gray text-luxury-black selection:bg-luxury-purple/20 selection:text-luxury-purple">
+      <div className="min-h-screen bg-canvas-warm text-ink">
         <Navbar />
         <main className="pb-20 md:pb-0">
           <ErrorBoundary>

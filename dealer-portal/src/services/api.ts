@@ -50,8 +50,8 @@ export const propertiesApi = {
   create: (token: string, data: {
     title: string; type: string; listingType: string;
     price: number; area: number; bedrooms: number; bathrooms: number;
-    location: string; city: string; description: string;
-    images: string[]; status: string;
+    address: IAddress;
+    description: string; images: string[]; status: string;
     amenities?: Partial<ApiPropertyAmenities>;
     saleDetails?: ApiSaleDetails;
   }) =>
@@ -68,6 +68,12 @@ export const propertiesApi = {
     });
   },
 
+  listHighlighted: (token: string, limit = 50) =>
+    request<{ success: boolean; count: number; data: ApiProperty[] }>(
+      `/api/properties/highlighted?limit=${limit}`,
+      { headers: authHeader(token) },
+    ),
+
   get: (token: string, id: string) =>
     request<{ success: boolean; data: ApiProperty }>(`/api/properties/${id}`, {
       headers: authHeader(token),
@@ -76,8 +82,8 @@ export const propertiesApi = {
   update: (token: string, id: string, data: Partial<{
     title: string; type: string; listingType: string;
     price: number; area: number; bedrooms: number; bathrooms: number;
-    location: string; city: string; description: string;
-    images: string[]; status: string;
+    address: IAddress;
+    description: string; images: string[]; status: string;
     amenities: Partial<ApiPropertyAmenities>;
     saleDetails: ApiSaleDetails;
   }>) =>
@@ -85,6 +91,13 @@ export const propertiesApi = {
       method: "PATCH",
       headers: authHeader(token),
       body: JSON.stringify(data),
+    }),
+
+  setHighlighted: (token: string, id: string, highlighted: boolean) =>
+    request<{ success: boolean; message: string; data: ApiProperty }>(`/api/properties/${id}/highlight`, {
+      method: "PATCH",
+      headers: authHeader(token),
+      body: JSON.stringify({ highlighted }),
     }),
 
   delete: (token: string, id: string) =>
@@ -104,7 +117,45 @@ export const propertiesApi = {
       headers: authHeader(token),
       body: JSON.stringify(data),
     }),
+
+  generateDescription: (token: string, data: {
+    listingType: string;
+    propertyType?: string;
+    title: string;
+    city: string;
+    location?: string;
+    bedrooms?: number;
+    bathrooms?: number;
+    area?: number | string;
+    furnishing?: string;
+    parking?: number;
+    price?: number | string;
+    amenities?: string[];
+    style?: string;
+    length?: string;
+    regenerate?: boolean;
+  }) =>
+    request<{ success: boolean; data: { description: string; model: string; wordCount: number } }>(
+      "/api/properties/generate-description",
+      {
+        method: "POST",
+        headers: authHeader(token),
+        body: JSON.stringify(data),
+      },
+    ),
 };
+
+export interface IAddress {
+  country?:    string;
+  state?:      string;
+  city?:       string;
+  locality?:   string;
+  street?:     string;
+  landmark?:   string;
+  postalCode?: string;
+  lat?:        number;
+  lng?:        number;
+}
 
 export interface ApiSaleDetails {
   /* Pricing */
@@ -165,12 +216,15 @@ export interface ApiProperty {
   bathrooms: number;
   location: string;
   city: string;
+  address?: IAddress;
   description: string;
   images: string[];
   status: string;
   views: number;
   inquiries: number;
   ownerId: string;
+  isHighlighted?: boolean;
+  highlightedAt?: string;
   amenities: ApiPropertyAmenities;
   saleDetails?: ApiSaleDetails;
   createdAt: string;

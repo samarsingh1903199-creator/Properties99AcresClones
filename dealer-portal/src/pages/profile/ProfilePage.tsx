@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Save, ShieldCheck, User } from "lucide-react";
 import { useAuthStore } from "../../store/useAuthStore";
 
-const label = "block text-xs font-black text-[#111111]/50 uppercase tracking-wide mb-1.5";
+const label = "block text-xs font-black text-[#0c2417]/50 uppercase tracking-wide mb-1.5";
 
 export function ProfilePage() {
   const { user, updateProfile } = useAuthStore();
@@ -20,21 +20,21 @@ export function ProfilePage() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-2xl font-black text-[#111111] tracking-tight" style={{ fontFamily: "Outfit, sans-serif" }}>Profile Settings</h1>
-        <p className="text-sm font-medium text-[#111111]/40 mt-0.5">Manage your account information</p>
+        <h1 className="text-2xl font-black text-[#0c2417] tracking-tight" style={{ fontFamily: "Outfit, sans-serif" }}>Profile Settings</h1>
+        <p className="text-sm font-medium text-[#0c2417]/40 mt-0.5">Manage your account information</p>
       </div>
 
       {/* Avatar card */}
       <div className="dp-card p-6 mb-5 flex items-center gap-5">
-        <div className="w-16 h-16 rounded-2xl bg-[#5b21b6] flex items-center justify-center shadow-xl shrink-0"
-          style={{ boxShadow: "0 8px 24px -6px rgba(91,33,182,0.4)" }}>
+        <div className="w-16 h-16 rounded-2xl bg-[#166534] flex items-center justify-center shadow-xl shrink-0"
+          style={{ boxShadow: "0 8px 24px -6px rgba(22,101,52,0.4)" }}>
           <User className="w-7 h-7 text-white" />
         </div>
         <div>
-          <p className="text-lg font-black text-[#111111] tracking-tight" style={{ fontFamily: "Outfit, sans-serif" }}>{user?.name}</p>
-          <p className="text-sm text-[#111111]/40 font-medium">{user?.email}</p>
+          <p className="text-lg font-black text-[#0c2417] tracking-tight" style={{ fontFamily: "Outfit, sans-serif" }}>{user?.name}</p>
+          <p className="text-sm text-[#0c2417]/40 font-medium">{user?.email}</p>
           <div className="flex items-center gap-2 mt-2">
-            <span className="inline-flex items-center text-xs font-black capitalize px-2.5 py-0.5 rounded-full bg-[#f8f9fa] text-[#111111]/50 border border-[rgba(91,33,182,0.08)] uppercase tracking-wider">
+            <span className="inline-flex items-center text-xs font-black capitalize px-2.5 py-0.5 rounded-full bg-[#f4f9f6] text-[#0c2417]/50 border border-[rgba(22,101,52,0.08)] uppercase tracking-wider">
               {user?.role}
             </span>
             {user?.verified && (
@@ -48,7 +48,7 @@ export function ProfilePage() {
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="dp-card p-6 space-y-4">
-          <h2 className="text-sm font-black text-[#111111] uppercase tracking-widest mb-1" style={{ fontFamily: "Outfit, sans-serif" }}>Personal Information</h2>
+          <h2 className="text-sm font-black text-[#0c2417] uppercase tracking-widest mb-1" style={{ fontFamily: "Outfit, sans-serif" }}>Personal Information</h2>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={label}>Full name</label>
@@ -62,13 +62,13 @@ export function ProfilePage() {
           <div>
             <label className={label}>Email address</label>
             <input value={user?.email ?? ""} disabled className="dp-input" style={{ borderRadius: "0.875rem" }} />
-            <p className="text-xs font-medium text-[#111111]/30 mt-1">Email cannot be changed.</p>
+            <p className="text-xs font-medium text-[#0c2417]/30 mt-1">Email cannot be changed.</p>
           </div>
         </div>
 
         {user?.role === "dealer" && (
           <div className="dp-card p-6 space-y-4">
-            <h2 className="text-sm font-black text-[#111111] uppercase tracking-widest mb-1" style={{ fontFamily: "Outfit, sans-serif" }}>Dealer Details</h2>
+            <h2 className="text-sm font-black text-[#0c2417] uppercase tracking-widest mb-1" style={{ fontFamily: "Outfit, sans-serif" }}>Dealer Details</h2>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className={label}>Company</label>
@@ -87,7 +87,7 @@ export function ProfilePage() {
             className="flex items-center gap-2 px-5 h-11 rounded-xl text-xs font-black tracking-widest text-white transition-all duration-200 active:scale-[0.98]"
             style={saved
               ? { background: "#059669", boxShadow: "0 4px 14px -4px rgba(5,150,105,0.4)" }
-              : { background: "#5b21b6", boxShadow: "0 4px 14px -4px rgba(91,33,182,0.4)" }}>
+              : { background: "#166534", boxShadow: "0 4px 14px -4px rgba(22,101,52,0.4)" }}>
             <Save className="w-4 h-4" />
             {saved ? "SAVED!" : "SAVE CHANGES"}
           </button>

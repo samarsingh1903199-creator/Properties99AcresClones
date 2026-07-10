@@ -79,12 +79,12 @@ export const SpecialistCard = ({ specialist, index }: SpecialistCardProps) => {
             </div>
             <div className="p-3 rounded-2xl bg-black/5 border border-white/5">
                 <p className="text-[9px] text-[var(--text-main)]/30 font-bold uppercase mb-1">Active Market</p>
-                <p className="text-base font-bold font-display">{specialist.totalProperties} Nodes</p>
+                <p className="text-base font-bold font-display">{specialist.totalProperties} Listings</p>
             </div>
             <div className="col-span-2 p-3 rounded-2xl bg-black/5 border border-white/5 flex items-center justify-between">
                 <div>
                     <p className="text-[9px] text-[var(--text-main)]/30 font-bold uppercase mb-1">Deals Closed</p>
-                    <p className="text-base font-bold font-display">{specialist.dealsClosed}+ Global Trades</p>
+                    <p className="text-base font-bold font-display">{specialist.dealsClosed}+ Enquiries</p>
                 </div>
                 <Zap size={16} className="text-luxury-purple animate-pulse" />
             </div>

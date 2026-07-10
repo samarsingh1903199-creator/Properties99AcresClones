@@ -56,10 +56,10 @@ function StatCard({ label, value, icon: Icon, trend, sub, accent = false }: {
   trend?: string; sub?: string; accent?: boolean;
 }) {
   return (
-    <div className={`dp-card p-5 transition-all duration-300 hover:-translate-y-0.5 ${accent ? "border-[#5b21b6]/20 bg-gradient-to-br from-[#5b21b6]/5 to-indigo-50/60" : ""}`}>
+    <div className={`dp-card p-5 transition-all duration-300 hover:-translate-y-0.5 ${accent ? "border-[#166534]/20 bg-gradient-to-br from-[#166534]/5 to-emerald-50/60" : ""}`}>
       <div className="flex items-start justify-between mb-4">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${accent ? "bg-[#5b21b6]/15" : "bg-[#5b21b6]/8"}`}>
-          <Icon className="w-4.5 h-4.5 text-[#5b21b6]" />
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${accent ? "bg-[#166534]/15" : "bg-[#166534]/8"}`}>
+          <Icon className="w-4.5 h-4.5 text-[#166534]" />
         </div>
         {trend && (
           <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
@@ -67,11 +67,11 @@ function StatCard({ label, value, icon: Icon, trend, sub, accent = false }: {
           </span>
         )}
       </div>
-      <p className="text-2xl font-black text-[#111111] tracking-tight" style={{ fontFamily: "Outfit, sans-serif" }}>
+      <p className="text-2xl font-black text-[#0c2417] tracking-tight" style={{ fontFamily: "Outfit, sans-serif" }}>
         {value}
       </p>
-      <p className="text-xs font-medium text-[#111111]/40 mt-0.5">{label}</p>
-      {sub && <p className="text-[10px] font-bold text-[#5b21b6]/60 mt-1">{sub}</p>}
+      <p className="text-xs font-medium text-[#0c2417]/40 mt-0.5">{label}</p>
+      {sub && <p className="text-[10px] font-bold text-[#166534]/60 mt-1">{sub}</p>}
     </div>
   );
 }
@@ -116,10 +116,10 @@ export function DashboardPage() {
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-[#111111] tracking-tight" style={{ fontFamily: "Outfit, sans-serif" }}>
+          <h1 className="text-2xl font-black text-[#0c2417] tracking-tight" style={{ fontFamily: "Outfit, sans-serif" }}>
             {user ? greeting(user.name) : "Dashboard"}
           </h1>
-          <p className="text-sm font-medium text-[#111111]/40 mt-0.5">
+          <p className="text-sm font-medium text-[#0c2417]/40 mt-0.5">
             {loading ? "Loading your overview…" : "Here's what's happening with your listings today."}
           </p>
         </div>
@@ -127,7 +127,7 @@ export function DashboardPage() {
           <button
             onClick={load}
             disabled={loading}
-            className="w-9 h-9 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-[#111111]/40 hover:text-[#5b21b6] hover:border-[#5b21b6]/30 transition-all disabled:opacity-40"
+            className="w-9 h-9 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-[#0c2417]/40 hover:text-[#166534] hover:border-[#166534]/30 transition-all disabled:opacity-40"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
           </button>
@@ -185,24 +185,24 @@ export function DashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Portfolio Value */}
           <div className="dp-card p-5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#5b21b6]/15 to-indigo-100 flex items-center justify-center shrink-0">
-              <IndianRupee className="w-5 h-5 text-[#5b21b6]" />
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#166534]/15 to-emerald-100 flex items-center justify-center shrink-0">
+              <IndianRupee className="w-5 h-5 text-[#166534]" />
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-[#111111]/30 mb-0.5">Portfolio Value</p>
-              <p className="text-2xl font-black text-[#111111] tracking-tight" style={{ fontFamily: "Outfit, sans-serif" }}>
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#0c2417]/30 mb-0.5">Portfolio Value</p>
+              <p className="text-2xl font-black text-[#0c2417] tracking-tight" style={{ fontFamily: "Outfit, sans-serif" }}>
                 {fmt(s?.portfolioValue ?? 0)}
               </p>
-              <p className="text-[11px] text-[#111111]/35 font-medium mt-0.5">Active sale listings</p>
+              <p className="text-[11px] text-[#0c2417]/35 font-medium mt-0.5">Active sale listings</p>
             </div>
           </div>
 
           {/* Inquiry Breakdown */}
           <div className="dp-card p-5">
-            <p className="text-[10px] font-black uppercase tracking-widest text-[#111111]/30 mb-3">Inquiry Status</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-[#0c2417]/30 mb-3">Inquiry Status</p>
             <div className="flex items-center gap-3">
               {[
-                { key: "new",       label: "New",       icon: Star,       cls: "bg-purple-50 border-purple-100 text-purple-700" },
+                { key: "new",       label: "New",       icon: Star,       cls: "bg-emerald-50 border-emerald-100 text-emerald-700" },
                 { key: "responded", label: "Responded", icon: CheckCheck,  cls: "bg-emerald-50 border-emerald-100 text-emerald-600" },
                 { key: "closed",    label: "Closed",    icon: XCircle,    cls: "bg-gray-50 border-gray-200 text-gray-400" },
               ].map(({ key, label, icon: Icon, cls }) => (
@@ -224,11 +224,11 @@ export function DashboardPage() {
 
         {/* Recent Listings — wider */}
         <div className="dp-card overflow-hidden lg:col-span-3">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(91,33,182,0.06)]">
-            <h2 className="text-[11px] font-black text-[#111111] uppercase tracking-widest" style={{ fontFamily: "Outfit, sans-serif" }}>
+          <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(22,101,52,0.06)]">
+            <h2 className="text-[11px] font-black text-[#0c2417] uppercase tracking-widest" style={{ fontFamily: "Outfit, sans-serif" }}>
               Recent Listings
             </h2>
-            <Link to={ROUTES.PROPERTIES} className="flex items-center gap-1 text-[10px] font-black text-[#5b21b6] hover:underline underline-offset-4 uppercase tracking-widest">
+            <Link to={ROUTES.PROPERTIES} className="flex items-center gap-1 text-[10px] font-black text-[#166534] hover:underline underline-offset-4 uppercase tracking-widest">
               View all <ArrowUpRight className="w-3 h-3" />
             </Link>
           </div>
@@ -247,26 +247,26 @@ export function DashboardPage() {
               ))}
             </div>
           ) : recent.length === 0 ? (
-            <div className="py-10 text-center text-[#111111]/30 text-xs font-medium">
-              No properties yet. <Link to={ROUTES.PROPERTY_ADD} className="text-[#5b21b6] hover:underline">Add one →</Link>
+            <div className="py-10 text-center text-[#0c2417]/30 text-xs font-medium">
+              No properties yet. <Link to={ROUTES.PROPERTY_ADD} className="text-[#166534] hover:underline">Add one →</Link>
             </div>
           ) : (
             recent.map((p, i) => (
               <div key={p._id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50/80 transition-colors"
-                style={{ borderBottom: i < recent.length - 1 ? "1px solid rgba(91,33,182,0.05)" : "none" }}>
+                style={{ borderBottom: i < recent.length - 1 ? "1px solid rgba(22,101,52,0.05)" : "none" }}>
                 <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-gray-100 border border-gray-100">
                   {p.images[0]
                     ? <img src={p.images[0]} alt={p.title} className="w-full h-full object-cover" />
-                    : <div className="w-full h-full flex items-center justify-center"><Home className="w-5 h-5 text-[#5b21b6]/20" /></div>
+                    : <div className="w-full h-full flex items-center justify-center"><Home className="w-5 h-5 text-[#166534]/20" /></div>
                   }
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-bold text-[#111111] truncate">{p.title}</p>
-                  <p className="text-[11px] font-medium text-[#111111]/35 truncate mt-0.5">{p.city || p.location}</p>
+                  <p className="text-[13px] font-bold text-[#0c2417] truncate">{p.title}</p>
+                  <p className="text-[11px] font-medium text-[#0c2417]/35 truncate mt-0.5">{p.city || p.location}</p>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="text-[13px] font-black text-[#111111]">
-                    {fmt(p.price)}{p.listingType === "rent" && <span className="text-[10px] font-medium text-[#111111]/35">/mo</span>}
+                  <p className="text-[13px] font-black text-[#0c2417]">
+                    {fmt(p.price)}{p.listingType === "rent" && <span className="text-[10px] font-medium text-[#0c2417]/35">/mo</span>}
                   </p>
                   <div className="flex items-center gap-1.5 justify-end mt-1">
                     <span className={`text-[9px] font-black px-2 py-0.5 rounded-full capitalize border ${
@@ -275,7 +275,7 @@ export function DashboardPage() {
                       : "bg-gray-50 text-gray-400 border-gray-100"}`}>
                       {p.status}
                     </span>
-                    <span className="flex items-center gap-0.5 text-[10px] text-[#111111]/25 font-medium">
+                    <span className="flex items-center gap-0.5 text-[10px] text-[#0c2417]/25 font-medium">
                       <Eye className="w-2.5 h-2.5" />{p.views}
                     </span>
                   </div>
@@ -287,11 +287,11 @@ export function DashboardPage() {
 
         {/* New Inquiries — narrower */}
         <div className="dp-card overflow-hidden lg:col-span-2">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(91,33,182,0.06)]">
-            <h2 className="text-[11px] font-black text-[#111111] uppercase tracking-widest" style={{ fontFamily: "Outfit, sans-serif" }}>
+          <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(22,101,52,0.06)]">
+            <h2 className="text-[11px] font-black text-[#0c2417] uppercase tracking-widest" style={{ fontFamily: "Outfit, sans-serif" }}>
               New Inquiries
             </h2>
-            <Link to={ROUTES.INQUIRIES} className="flex items-center gap-1 text-[10px] font-black text-[#5b21b6] hover:underline underline-offset-4 uppercase tracking-widest">
+            <Link to={ROUTES.INQUIRIES} className="flex items-center gap-1 text-[10px] font-black text-[#166534] hover:underline underline-offset-4 uppercase tracking-widest">
               View all <ArrowUpRight className="w-3 h-3" />
             </Link>
           </div>
@@ -306,24 +306,24 @@ export function DashboardPage() {
               ))}
             </div>
           ) : newInqs.length === 0 ? (
-            <div className="py-10 text-center text-[#111111]/30 text-xs font-medium">No new inquiries</div>
+            <div className="py-10 text-center text-[#0c2417]/30 text-xs font-medium">No new inquiries</div>
           ) : (
             newInqs.map((inq, i) => (
               <div key={inq._id} className="px-5 py-4 hover:bg-gray-50/80 transition-colors"
-                style={{ borderBottom: i < newInqs.length - 1 ? "1px solid rgba(91,33,182,0.05)" : "none" }}>
+                style={{ borderBottom: i < newInqs.length - 1 ? "1px solid rgba(22,101,52,0.05)" : "none" }}>
                 <div className="flex items-start gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-[#5b21b6] flex items-center justify-center shrink-0 text-[11px] font-black text-white">
+                  <div className="w-8 h-8 rounded-full bg-[#166534] flex items-center justify-center shrink-0 text-[11px] font-black text-white">
                     {inq.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-[13px] font-bold text-[#111111] truncate">{inq.name}</p>
-                      <span className="text-[10px] text-[#111111]/25 font-medium shrink-0 flex items-center gap-0.5">
+                      <p className="text-[13px] font-bold text-[#0c2417] truncate">{inq.name}</p>
+                      <span className="text-[10px] text-[#0c2417]/25 font-medium shrink-0 flex items-center gap-0.5">
                         <Clock className="w-2.5 h-2.5" />{timeAgo(inq.createdAt)}
                       </span>
                     </div>
-                    <p className="text-[10px] font-bold text-[#5b21b6] truncate mt-0.5">{inq.propertyTitle}</p>
-                    <p className="text-[11px] text-[#111111]/40 line-clamp-1 mt-0.5">{inq.message}</p>
+                    <p className="text-[10px] font-bold text-[#166534] truncate mt-0.5">{inq.propertyTitle}</p>
+                    <p className="text-[11px] text-[#0c2417]/40 line-clamp-1 mt-0.5">{inq.message}</p>
                   </div>
                 </div>
               </div>
@@ -335,9 +335,9 @@ export function DashboardPage() {
       {/* ── Top Properties by Views ── */}
       {!loading && (analytics?.topProperties?.length ?? 0) > 0 && (
         <div className="dp-card overflow-hidden">
-          <div className="flex items-center gap-2 px-5 py-4 border-b border-[rgba(91,33,182,0.06)]">
-            <BarChart3 className="w-4 h-4 text-[#5b21b6]" />
-            <h2 className="text-[11px] font-black text-[#111111] uppercase tracking-widest" style={{ fontFamily: "Outfit, sans-serif" }}>
+          <div className="flex items-center gap-2 px-5 py-4 border-b border-[rgba(22,101,52,0.06)]">
+            <BarChart3 className="w-4 h-4 text-[#166534]" />
+            <h2 className="text-[11px] font-black text-[#0c2417] uppercase tracking-widest" style={{ fontFamily: "Outfit, sans-serif" }}>
               Top Properties by Views
             </h2>
           </div>
@@ -347,22 +347,22 @@ export function DashboardPage() {
               const pct = Math.round((p.views / maxViews) * 100);
               return (
                 <div key={p._id} className="flex items-center gap-3">
-                  <span className="text-[11px] font-black text-[#111111]/20 w-5 shrink-0">{i + 1}</span>
+                  <span className="text-[11px] font-black text-[#0c2417]/20 w-5 shrink-0">{i + 1}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
-                      <p className="text-[12px] font-bold text-[#111111] truncate">{p.title}</p>
+                      <p className="text-[12px] font-bold text-[#0c2417] truncate">{p.title}</p>
                       <div className="flex items-center gap-3 shrink-0 ml-2">
-                        <span className="flex items-center gap-1 text-[10px] font-bold text-[#111111]/40">
+                        <span className="flex items-center gap-1 text-[10px] font-bold text-[#0c2417]/40">
                           <Eye className="w-3 h-3" />{p.views.toLocaleString()}
                         </span>
-                        <span className="flex items-center gap-1 text-[10px] font-bold text-[#111111]/40">
+                        <span className="flex items-center gap-1 text-[10px] font-bold text-[#0c2417]/40">
                           <MessageSquare className="w-3 h-3" />{p.inquiries}
                         </span>
                       </div>
                     </div>
                     <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-[#5b21b6] to-indigo-400 rounded-full"
+                        className="h-full bg-gradient-to-r from-[#166534] to-emerald-400 rounded-full"
                         style={{ width: `${pct}%`, transition: "width 0.8s ease" }}
                       />
                     </div>

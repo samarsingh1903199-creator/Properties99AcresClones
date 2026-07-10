@@ -47,6 +47,18 @@ export interface Project {
   floorPlans: { type: string; area: string; price: number; image: string }[];
 }
 
+export interface IAddress {
+  country?: string;
+  state?: string;
+  city?: string;
+  locality?: string;
+  street?: string;
+  landmark?: string;
+  postalCode?: string;
+  lat?: number;
+  lng?: number;
+}
+
 export interface Property {
   id: string;
   title: string;
@@ -59,7 +71,7 @@ export interface Property {
   sqft: number;
   type: string;
   status: string;
-  listingType?: 'buy' | 'rent';
+  listingType?: 'buy' | 'rent' | 'lease';
   features: string[];
   yearBuilt?: number;
   agentId: string;
@@ -93,7 +105,7 @@ export interface Property {
   waterSupply?: string;
   electricityBackup?: string;
   internet?: string;
-  address?: string;
+  address?: IAddress;
   includedItems?: string[];
   amenities?: string[];
   nearbyPlaces?: { name: string; distance: string; travelTime: string; type: string }[];

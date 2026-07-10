@@ -10,8 +10,9 @@ import {
   TrendingUp, Clock, CheckCircle2, Sparkles, ChevronDown,
   Heart, User, UserCheck, Briefcase,
 } from "lucide-react";
-import { propertiesApi, type ApiProperty, type ApiPropertyAmenities } from "@/src/services/api";
+import { propertiesApi, type ApiProperty, type ApiPropertyAmenities, type IAddress } from "@/src/services/api";
 import { cn, formatCurrency, formatMonthlyRent, toTitleCase } from "@/src/lib/utils";
+import { mapApiProperty } from "@/src/lib/listingCategory";
 import { VisitEnquiryModal } from "../../components/properties/VisitEnquiryModal";
 import { WishlistButton } from "../../components/ui/WishlistButton";
 import { PropertyCard } from "../../components/ui/PropertyCard";
@@ -70,16 +71,54 @@ const fmtDate = (iso: string) =>
   new Date(iso).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 
 function mapToLocal(p: ApiProperty): Property {
-  return {
-    id: p._id, title: p.title, description: p.description, price: p.price,
-    rent: p.listingType === "rent" ? p.price : undefined,
-    location: [p.location, p.city].filter(Boolean).join(", "),
-    images: p.images.length ? p.images : [FALLBACK_IMG],
-    beds: p.bedrooms, baths: p.bathrooms, sqft: p.area, type: p.type,
-    status: p.status, listingType: p.listingType === "sale" ? "buy" : "rent",
-    features: [], agentId: p.ownerId, totalViews: p.views, verified: true,
-    tenantTypes: p.amenities?.preferred_tenants ?? [],
-  };
+  return mapApiProperty(p);
+}
+
+/* ─── Address helpers ────────────────────────────────────────────────── */
+function buildFullLocation(p: ApiProperty): string {
+  if (p.address) {
+    return [p.address.locality, p.address.city || p.city, p.address.state]
+      .filter(Boolean).join(", ") || [p.location, p.city].filter(Boolean).join(", ");
+  }
+  return [p.location, p.city].filter(Boolean).join(", ");
+}
+
+function buildMapQuery(p: ApiProperty): string {
+  if (p.address?.lat && p.address?.lng) return `${p.address.lat},${p.address.lng}`;
+  if (p.address?.street) {
+    return encodeURIComponent(
+      [p.address.street, p.address.locality, p.address.city, p.address.state, p.address.country]
+        .filter(Boolean).join(", ")
+    );
+  }
+  return encodeURIComponent([p.location, p.city].filter(Boolean).join(", ") || "India");
+}
+
+function buildMapsHref(p: ApiProperty): string {
+  if (p.address?.lat && p.address?.lng) {
+    return `https://maps.google.com/?q=${p.address.lat},${p.address.lng}`;
+  }
+  return `https://maps.google.com/?q=${buildMapQuery(p)}`;
+}
+
+type AddressRow = { label: string; val: string };
+function buildAddressRows(addr: IAddress | undefined, fallbackLocation: string, fallbackCity: string): AddressRow[] {
+  if (!addr) {
+    return [
+      fallbackLocation ? { label: "Address",  val: fallbackLocation } : null,
+      fallbackCity     ? { label: "City",      val: fallbackCity }     : null,
+    ].filter(Boolean) as AddressRow[];
+  }
+  return [
+    addr.street     ? { label: "Street Address", val: addr.street }     : null,
+    addr.locality   ? { label: "Locality / Area", val: addr.locality }   : null,
+    (addr.city || fallbackCity) ? { label: "City",   val: addr.city || fallbackCity } : null,
+    addr.state      ? { label: "State",        val: addr.state }         : null,
+    addr.country    ? { label: "Country",      val: addr.country }       : null,
+    addr.postalCode ? { label: "Postal Code",  val: addr.postalCode }    : null,
+    addr.landmark   ? { label: "Landmark",     val: addr.landmark }      : null,
+    (addr.lat && addr.lng) ? { label: "Coordinates", val: `${addr.lat}, ${addr.lng}` } : null,
+  ].filter(Boolean) as AddressRow[];
 }
 
 /* ─── Skeleton ───────────────────────────────────────────────────────── */
@@ -88,7 +127,7 @@ const Pulse = ({ className }: { className?: string }) => (
 );
 
 const PropertyDetailsSkeleton = () => (
-  <div className="min-h-screen bg-[#f5f5f7]">
+  <div className="min-h-screen bg-canvas-soft">
     <Pulse className="h-[65vh] rounded-none" />
     <div className="max-w-[1400px] mx-auto px-6 md:px-12 mt-8">
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
@@ -125,21 +164,20 @@ const SectionCard = ({
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true, margin: "-60px" }}
     transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-    className={cn("bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden", className)}
+    className={cn("card-marketing-lg !p-0 overflow-hidden", className)}
   >
-    <div className="h-[3px] bg-gradient-to-r from-luxury-purple via-indigo-500 to-purple-400" />
     <div className="p-6 sm:p-8">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-luxury-black flex items-center gap-2.5">
+        <h2 className="text-sm font-medium text-ink flex items-center gap-2.5">
           {Icon && (
-            <span className="w-6 h-6 rounded-lg bg-luxury-purple/10 flex items-center justify-center shrink-0">
-              <Icon size={13} className="text-luxury-purple" />
+            <span className="w-8 h-8 rounded-md bg-canvas-soft-2 flex items-center justify-center shrink-0 border border-hairline">
+              <Icon size={14} className="text-mute" />
             </span>
           )}
           {title}
         </h2>
         {badge && (
-          <span className="text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-luxury-purple/10 text-luxury-purple">
+          <span className="badge-secondary font-medium text-ink">
             {badge}
           </span>
         )}
@@ -276,8 +314,10 @@ export const PropertyDetails = () => {
   const isRent = property.listingType === "rent";
   const isBuy  = !isRent;
   const images = property.images.length > 0 ? property.images : [FALLBACK_IMG];
-  const fullLocation = [property.location, property.city].filter(Boolean).join(", ");
-  const mapQuery = encodeURIComponent(fullLocation || property.city || "India");
+  const fullLocation = buildFullLocation(property);
+  const mapQuery     = buildMapQuery(property);
+  const mapsHref     = buildMapsHref(property);
+  const addressRows  = buildAddressRows(property.address, property.location, property.city);
   const pricePerSqft = isBuy && property.area > 0 ? Math.round(property.price / property.area) : 0;
   const amenityChips = buildAmenityChips(property.amenities);
   const totalPayment  = emi * tenure * 12;
@@ -316,8 +356,11 @@ export const PropertyDetails = () => {
     property.bathrooms > 0 && { icon: Bath,         label: "Bathrooms",   val: `${property.bathrooms}` },
     property.area > 0      && { icon: Ruler,        label: "Total Area",  val: `${property.area.toLocaleString("en-IN")} sqft` },
     isBuy && pricePerSqft > 0 && { icon: IndianRupee, label: "Rate / sqft", val: `₹${pricePerSqft.toLocaleString("en-IN")}` },
-    property.location  && { icon: MapPin,    label: "Location",  val: toTitleCase(property.location) },
-    property.city      && { icon: MapPin,    label: "City",      val: toTitleCase(property.city) },
+    (property.address?.street || property.location) && { icon: MapPin, label: "Street",       val: toTitleCase(property.address?.street || property.location) },
+    property.address?.locality   && { icon: MapPin, label: "Locality",     val: toTitleCase(property.address.locality) },
+    (property.address?.city || property.city) && { icon: MapPin, label: "City",     val: toTitleCase(property.address?.city || property.city) },
+    property.address?.state      && { icon: MapPin, label: "State",        val: toTitleCase(property.address.state) },
+    property.address?.postalCode && { icon: MapPin, label: "Postal Code",  val: property.address.postalCode },
     property.createdAt && { icon: Calendar,  label: "Listed On", val: fmtDate(property.createdAt) },
     property.views > 0 && { icon: Eye,       label: "Views",     val: property.views.toLocaleString("en-IN") },
     property.amenities?.furnishingStatus && {
@@ -339,7 +382,7 @@ export const PropertyDetails = () => {
 
   /* ─────────────────── RENDER ─────────────────── */
   return (
-    <div className="bg-[#f5f5f7] min-h-screen overflow-x-hidden">
+    <div className="bg-canvas-soft min-h-screen overflow-x-hidden">
 
       {/* Scroll progress */}
       <motion.div
@@ -728,23 +771,50 @@ export const PropertyDetails = () => {
           )}
 
           {/* Location & Map */}
-          {fullLocation && (
+          {(fullLocation || addressRows.length > 0) && (
             <SectionCard id="location" title="Location & Map" icon={MapPin}>
-              <div className="flex items-start gap-3 p-4 rounded-2xl bg-luxury-purple/5 border border-luxury-purple/10 mb-4">
-                <MapPin size={14} className="text-luxury-purple mt-0.5 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-[14px] font-bold text-luxury-black">{fullLocation}</p>
-                  <a href={`https://maps.google.com/?q=${mapQuery}`} target="_blank" rel="noopener noreferrer"
-                    className="text-[11px] text-luxury-purple font-bold flex items-center gap-1 mt-1 hover:underline underline-offset-2">
-                    Open in Google Maps <ArrowUpRight size={11} />
-                  </a>
+
+              {/* Structured address grid */}
+              {addressRows.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
+                  {addressRows.map((row, i) => (
+                    <div key={i} className="p-3.5 rounded-2xl bg-gray-50/80 border border-gray-100">
+                      <p className="text-[9px] uppercase font-bold text-luxury-black/35 tracking-wider mb-1">
+                        {row.label}
+                      </p>
+                      <p className="text-[13px] font-bold text-luxury-black leading-snug break-words">
+                        {row.val}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              </div>
+              )}
+
+              {/* Maps link banner */}
+              {fullLocation && (
+                <div className="flex items-start gap-3 p-4 rounded-2xl bg-luxury-purple/5 border border-luxury-purple/10 mb-4">
+                  <MapPin size={14} className="text-luxury-purple mt-0.5 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[14px] font-bold text-luxury-black">{fullLocation}</p>
+                    <a
+                      href={mapsHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-luxury-purple font-bold flex items-center gap-1 mt-1 hover:underline underline-offset-2"
+                    >
+                      Open in Google Maps <ArrowUpRight size={11} />
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {/* Embedded map */}
               <div className="rounded-2xl overflow-hidden border border-gray-100 h-72 shadow-sm">
                 <iframe
                   src={`https://maps.google.com/maps?q=${mapQuery}&output=embed`}
                   className="w-full h-full border-0"
-                  allowFullScreen loading="lazy"
+                  allowFullScreen
+                  loading="lazy"
                   title="Property Location"
                 />
               </div>

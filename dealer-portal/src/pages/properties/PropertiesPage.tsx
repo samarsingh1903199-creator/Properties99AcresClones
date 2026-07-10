@@ -17,9 +17,10 @@ import {
 import { useAuthStore } from "../../store/useAuthStore";
 import { type PropertyStatus } from "../../store/usePropertyStore";
 import { ROUTES } from "../../constants/routes";
+import { HighlightToggle, canHighlightProperty } from "../../components/properties/HighlightToggle";
 
 const TENANT_CHIP: Record<string, { pill: string; Icon: LucideIcon }> = {
-  "Family":                { pill: "bg-indigo-50 border-indigo-200 text-indigo-700",    Icon: Home },
+  "Family":                { pill: "bg-emerald-50 border-emerald-200 text-emerald-800",    Icon: Home },
   "Couples":               { pill: "bg-rose-50 border-rose-200 text-rose-700",          Icon: Heart },
   "Girls":                 { pill: "bg-pink-50 border-pink-200 text-pink-700",          Icon: Users },
   "Boys":                  { pill: "bg-blue-50 border-blue-200 text-blue-700",          Icon: User },
@@ -33,7 +34,7 @@ function TenantChips({ tenants }: { tenants: string[] | undefined }) {
   const extra = tenants.length - 3;
   return (
     <div className="flex items-center gap-1 flex-wrap">
-      <span className="text-[9px] font-black uppercase tracking-wider text-[#111111]/30 mr-0.5">Preferred:</span>
+      <span className="text-[9px] font-black uppercase tracking-wider text-[#0c2417]/30 mr-0.5">Preferred:</span>
       {visible.map(t => {
         const cfg = TENANT_CHIP[t];
         return cfg ? (
@@ -48,7 +49,7 @@ function TenantChips({ tenants }: { tenants: string[] | undefined }) {
         );
       })}
       {extra > 0 && (
-        <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#5b21b6]/8 border border-[rgba(91,33,182,0.15)] text-[#5b21b6]/70">
+        <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#166534]/8 border border-[rgba(22,101,52,0.15)] text-[#166534]/70">
           +{extra}
         </span>
       )}
@@ -71,7 +72,7 @@ function SaleInfoChips({ sd }: { sd?: ApiProperty["saleDetails"] }) {
         </span>
       )}
       {sd.ownershipType && (
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold border bg-violet-50 border-violet-200 text-violet-700">
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold border bg-emerald-50 border-emerald-200 text-emerald-800">
           {sd.ownershipType.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}
         </span>
       )}
@@ -83,9 +84,9 @@ function SaleInfoChips({ sd }: { sd?: ApiProperty["saleDetails"] }) {
 function DetailRow({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
   return (
-    <div className="flex flex-col py-2.5 border-b border-[rgba(91,33,182,0.04)] last:border-0">
-      <span className="text-[10px] font-black uppercase tracking-wider text-[#111111]/30">{label}</span>
-      <span className="text-sm font-semibold text-[#111111] mt-0.5">{value}</span>
+    <div className="flex flex-col py-2.5 border-b border-[rgba(22,101,52,0.04)] last:border-0">
+      <span className="text-[10px] font-black uppercase tracking-wider text-[#0c2417]/30">{label}</span>
+      <span className="text-sm font-semibold text-[#0c2417] mt-0.5">{value}</span>
     </div>
   );
 }
@@ -95,22 +96,22 @@ function AmenityChip({ icon: Icon, label, active }: { icon: React.ElementType; l
   return (
     <div className={`flex items-center gap-2 px-2.5 py-2 rounded-xl border text-[11px] font-bold ${
       active
-        ? "bg-[#5b21b6]/[0.06] border-[#5b21b6]/20 text-[#5b21b6]"
-        : "bg-gray-50 border-gray-100 text-[#111111]/25"
+        ? "bg-[#166534]/[0.06] border-[#166534]/20 text-[#166534]"
+        : "bg-gray-50 border-gray-100 text-[#0c2417]/25"
     }`}>
-      <Icon className={`w-3.5 h-3.5 shrink-0 ${active ? "text-[#5b21b6]" : "text-[#111111]/20"}`} />
+      <Icon className={`w-3.5 h-3.5 shrink-0 ${active ? "text-[#166534]" : "text-[#0c2417]/20"}`} />
       <span className={active ? "" : "line-through"}>{label}</span>
     </div>
   );
 }
 
 /* ── Section heading helper ──────────────────────────────────────── */
-function SectionHeading({ label, color }: { label: string; color: "emerald" | "blue" | "purple" }) {
-  const lineColor = color === "emerald" ? "bg-emerald-100" : color === "blue" ? "bg-blue-100" : "bg-[#5b21b6]/10";
+function SectionHeading({ label, color }: { label: string; color: "emerald" | "blue" | "accent" }) {
+  const lineColor = color === "emerald" ? "bg-emerald-100" : color === "blue" ? "bg-blue-100" : "bg-accent/10";
   return (
     <div className="flex items-center gap-2 mb-3">
       <span className={`flex-1 h-px ${lineColor}`} />
-      <span className="text-[10px] font-black uppercase tracking-widest text-[#111111]/30 whitespace-nowrap">{label}</span>
+      <span className="text-[10px] font-black uppercase tracking-widest text-[#0c2417]/30 whitespace-nowrap">{label}</span>
       <span className={`flex-1 h-px ${lineColor}`} />
     </div>
   );
@@ -139,7 +140,7 @@ const SORT_OPTIONS: { label: string; value: SortKey }[] = [
 const STATUS_STYLE: Record<PropertyStatus, { bg: string; text: string; border: string; dot: string }> = {
   active:  { bg: "bg-emerald-50",   text: "text-emerald-700", border: "border-emerald-100",            dot: "bg-emerald-500" },
   pending: { bg: "bg-amber-50",     text: "text-amber-700",   border: "border-amber-100",              dot: "bg-amber-500"   },
-  sold:    { bg: "bg-[#5b21b6]/10", text: "text-[#5b21b6]",  border: "border-[rgba(91,33,182,0.15)]", dot: "bg-[#5b21b6]"  },
+  sold:    { bg: "bg-[#166534]/10", text: "text-[#166534]",  border: "border-[rgba(22,101,52,0.15)]", dot: "bg-[#166534]"  },
   rented:  { bg: "bg-blue-50",      text: "text-blue-700",    border: "border-blue-100",               dot: "bg-blue-500"    },
   draft:   { bg: "bg-gray-100",     text: "text-gray-500",    border: "border-gray-200",               dot: "bg-gray-400"    },
 };
@@ -174,21 +175,21 @@ function StatusDropdown({ property, onStatusChange }: {
   return (
     <div className="relative">
       <button onClick={(e) => { e.stopPropagation(); setOpen((o) => !o); }}
-        className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-[#111111]/40 hover:text-[#5b21b6] transition-colors">
+        className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-[#0c2417]/40 hover:text-[#166534] transition-colors">
         Change status <ChevronDown className="w-3 h-3" />
       </button>
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-full mt-1 z-20 bg-white rounded-xl border border-[rgba(91,33,182,0.1)] shadow-xl overflow-hidden min-w-[140px]"
-            style={{ boxShadow: "0 12px 32px -8px rgba(91,33,182,0.15)" }}>
+          <div className="absolute left-0 top-full mt-1 z-20 bg-white rounded-xl border border-[rgba(22,101,52,0.1)] shadow-xl overflow-hidden min-w-[140px]"
+            style={{ boxShadow: "0 12px 32px -8px rgba(22,101,52,0.15)" }}>
             {STATUSES.map((s) => {
               const st = STATUS_STYLE[s];
               return (
                 <button key={s} onClick={(e) => { e.stopPropagation(); onStatusChange(property.id, s); setOpen(false); }}
-                  className={`flex items-center justify-between w-full px-3 py-2 text-xs font-bold capitalize hover:bg-[#f8f9fa] transition-colors ${property.status === s ? "text-[#5b21b6]" : "text-[#111111]/60"}`}>
+                  className={`flex items-center justify-between w-full px-3 py-2 text-xs font-bold capitalize hover:bg-[#f4f9f6] transition-colors ${property.status === s ? "text-[#166534]" : "text-[#0c2417]/60"}`}>
                   <span className="flex items-center gap-2"><span className={`w-2 h-2 rounded-full ${st.dot}`} />{s}</span>
-                  {property.status === s && <Check className="w-3.5 h-3.5 text-[#5b21b6]" />}
+                  {property.status === s && <Check className="w-3.5 h-3.5 text-[#166534]" />}
                 </button>
               );
             })}
@@ -213,11 +214,11 @@ function ImageDots({ count, active }: { count: number; active: number }) {
 /* ── Stat Button ─────────────────────────────────────────────────── */
 function StatBtn({ icon: Icon, count, label, color, onClick }: {
   icon: typeof Eye; count: number; label: string;
-  color: "purple" | "emerald";
+  color: "accent" | "emerald";
   onClick: () => void;
 }) {
-  const styles = color === "purple"
-    ? "bg-[#5b21b6]/6 border-[rgba(91,33,182,0.12)] text-[#5b21b6]/60 hover:bg-[#5b21b6] hover:text-white hover:border-[#5b21b6] hover:shadow-[0_4px_12px_-3px_rgba(91,33,182,0.45)]"
+  const styles = color === "accent"
+    ? "bg-[#166534]/6 border-[rgba(22,101,52,0.12)] text-[#166534]/60 hover:bg-[#166534] hover:text-white hover:border-[#166534] hover:shadow-[0_4px_12px_-3px_rgba(22,101,52,0.45)]"
     : "bg-emerald-50 border-emerald-100 text-emerald-600/70 hover:bg-emerald-500 hover:text-white hover:border-emerald-500 hover:shadow-[0_4px_12px_-3px_rgba(16,185,129,0.4)]";
   return (
     <button
@@ -238,18 +239,20 @@ function StatBtn({ icon: Icon, count, label, color, onClick }: {
 }
 
 /* ── GRID CARD ───────────────────────────────────────────────────── */
-function PropertyCard({ p, confirmDelete, onDelete, onStatusChange, onViewClick, onInquiryClick, onDetailClick }: {
+function PropertyCard({ p, confirmDelete, onDelete, onStatusChange, onViewClick, onInquiryClick, onDetailClick, onHighlightToggle, highlightLoading }: {
   p: Property; confirmDelete: string | null;
   onDelete: (id: string) => void;
   onStatusChange: (id: string, status: PropertyStatus) => void;
   onViewClick: (p: Property) => void;
   onInquiryClick: (p: Property) => void;
   onDetailClick: (p: Property) => void;
+  onHighlightToggle: (id: string, highlighted: boolean) => void;
+  highlightLoading: boolean;
 }) {
   const [imgIdx, setImgIdx] = useState(0);
   return (
-    <div className="dp-card overflow-hidden group flex flex-col transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_48px_-12px_rgba(91,33,182,0.2)]">
-      <div className="relative overflow-hidden bg-[#f8f9fa]" style={{ aspectRatio: "16/10" }}>
+    <div className="dp-card overflow-hidden group flex flex-col transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_48px_-12px_rgba(22,101,52,0.2)]">
+      <div className="relative overflow-hidden bg-[#f4f9f6]" style={{ aspectRatio: "16/10" }}>
         {p.images.length > 0 ? (
           <>
             <img src={p.images[imgIdx]} alt={p.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
@@ -269,23 +272,30 @@ function PropertyCard({ p, confirmDelete, onDelete, onStatusChange, onViewClick,
           </>
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center gap-2">
-            <ImageOff className="w-8 h-8 text-[#5b21b6]/20" />
-            <span className="text-xs font-medium text-[#111111]/30">No photos yet</span>
+            <ImageOff className="w-8 h-8 text-[#166534]/20" />
+            <span className="text-xs font-medium text-[#0c2417]/30">No photos yet</span>
           </div>
         )}
-        <div className="absolute top-2.5 left-2.5"><StatusBadge s={p.status as PropertyStatus} /></div>
-        <span className="absolute bottom-3 right-3 bg-[#5b21b6] text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg">
+        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5">
+          <StatusBadge s={p.status as PropertyStatus} />
+          {p.isHighlighted && (
+            <span className="inline-flex items-center gap-1 bg-amber-500 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg shadow">
+              Featured
+            </span>
+          )}
+        </div>
+        <span className="absolute bottom-3 right-3 bg-[#166534] text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg">
           For {p.listingType}
         </span>
       </div>
 
       <div className="flex flex-col flex-1 p-4">
         <div className="mb-1">
-          <span className="text-[10px] font-black uppercase tracking-widest text-[#5b21b6]">{p.type}</span>
+          <span className="text-[10px] font-black uppercase tracking-widest text-[#166534]">{p.type}</span>
         </div>
-        <h3 className="font-black text-[#111111] text-sm leading-tight mb-1 line-clamp-1" style={{ fontFamily: "Outfit, sans-serif" }}>{p.title}</h3>
-        <div className="flex items-center gap-1 text-xs font-medium text-[#111111]/40 mb-2">
-          <MapPin className="w-3 h-3 shrink-0 text-[#5b21b6]/40" />
+        <h3 className="font-black text-[#0c2417] text-sm leading-tight mb-1 line-clamp-1" style={{ fontFamily: "Outfit, sans-serif" }}>{p.title}</h3>
+        <div className="flex items-center gap-1 text-xs font-medium text-[#0c2417]/40 mb-2">
+          <MapPin className="w-3 h-3 shrink-0 text-[#166534]/40" />
           <span className="truncate">{p.location}</span>
         </div>
         <div className="mb-3">
@@ -293,17 +303,17 @@ function PropertyCard({ p, confirmDelete, onDelete, onStatusChange, onViewClick,
             ? <SaleInfoChips sd={p.saleDetails} />
             : <TenantChips tenants={p.amenities?.preferred_tenants} />}
         </div>
-        <div className="flex items-center gap-3 pb-3 mb-3 border-b border-[rgba(91,33,182,0.06)]">
-          <span className="flex items-center gap-1 text-xs font-semibold text-[#111111]/60"><BedDouble className="w-3.5 h-3.5 text-[#5b21b6]/40" />{p.bedrooms} Beds</span>
+        <div className="flex items-center gap-3 pb-3 mb-3 border-b border-[rgba(22,101,52,0.06)]">
+          <span className="flex items-center gap-1 text-xs font-semibold text-[#0c2417]/60"><BedDouble className="w-3.5 h-3.5 text-[#166534]/40" />{p.bedrooms} Beds</span>
           <span className="w-px h-3 bg-gray-200" />
-          <span className="flex items-center gap-1 text-xs font-semibold text-[#111111]/60"><Bath className="w-3.5 h-3.5 text-[#5b21b6]/40" />{p.bathrooms} Baths</span>
+          <span className="flex items-center gap-1 text-xs font-semibold text-[#0c2417]/60"><Bath className="w-3.5 h-3.5 text-[#166534]/40" />{p.bathrooms} Baths</span>
           <span className="w-px h-3 bg-gray-200" />
-          <span className="flex items-center gap-1 text-xs font-semibold text-[#111111]/60"><Maximize2 className="w-3.5 h-3.5 text-[#5b21b6]/40" />{p.area.toLocaleString()} sq.ft</span>
+          <span className="flex items-center gap-1 text-xs font-semibold text-[#0c2417]/60"><Maximize2 className="w-3.5 h-3.5 text-[#166534]/40" />{p.area.toLocaleString()} sq.ft</span>
         </div>
 
         {/* ── Clickable stat buttons ── */}
         <div className="flex items-center gap-2 mb-4">
-          <StatBtn icon={Eye} count={p.views} label="views" color="purple" onClick={() => onViewClick(p)} />
+          <StatBtn icon={Eye} count={p.views} label="views" color="accent" onClick={() => onViewClick(p)} />
           <StatBtn icon={MessageSquare} count={p.inquiries} label="inquiries" color="emerald" onClick={() => onInquiryClick(p)} />
           {p.inquiries > 10 && (
             <span className="ml-auto flex items-center gap-1 text-[10px] font-black text-emerald-600 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded-full">
@@ -313,26 +323,33 @@ function PropertyCard({ p, confirmDelete, onDelete, onStatusChange, onViewClick,
         </div>
 
         <div className="mb-4">
-          <p className="text-xl font-black text-[#111111] tracking-tight" style={{ fontFamily: "Outfit, sans-serif" }}>
+          <p className="text-xl font-black text-[#0c2417] tracking-tight" style={{ fontFamily: "Outfit, sans-serif" }}>
             ₹{p.price.toLocaleString("en-IN")}
-            {p.listingType === "rent" && <span className="text-sm font-semibold text-[#111111]/40">/mo</span>}
+            {p.listingType === "rent" && <span className="text-sm font-semibold text-[#0c2417]/40">/mo</span>}
           </p>
         </div>
         <div className="mb-4">
           <StatusDropdown property={p} onStatusChange={onStatusChange} />
         </div>
         <div className="flex gap-2 mt-auto">
+          <HighlightToggle
+            isHighlighted={p.isHighlighted}
+            loading={highlightLoading}
+            disabled={!canHighlightProperty(p.status) && !p.isHighlighted}
+            disabledReason="Only active or pending properties can be highlighted"
+            onToggle={() => onHighlightToggle(p.id, !p.isHighlighted)}
+          />
           <button onClick={(e) => { e.stopPropagation(); onDetailClick(p); }}
-            className="flex items-center justify-center gap-1.5 h-9 px-3 rounded-xl text-xs font-black uppercase tracking-wider border border-[rgba(91,33,182,0.08)] text-[#111111]/40 hover:bg-[#5b21b6]/8 hover:text-[#5b21b6] hover:border-[rgba(91,33,182,0.2)] transition-all duration-200">
+            className="flex items-center justify-center gap-1.5 h-9 px-3 rounded-xl text-xs font-black uppercase tracking-wider border border-[rgba(22,101,52,0.08)] text-[#0c2417]/40 hover:bg-[#166534]/8 hover:text-[#166534] hover:border-[rgba(22,101,52,0.2)] transition-all duration-200">
             <Info className="w-3.5 h-3.5" />Details
           </button>
           <Link to={`/properties/${p.id}/edit`}
-            className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-xl text-xs font-black uppercase tracking-wider border border-[rgba(91,33,182,0.15)] text-[#5b21b6] hover:bg-[#5b21b6] hover:text-white hover:border-[#5b21b6] transition-all duration-200">
+            className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-xl text-xs font-black uppercase tracking-wider border border-[rgba(22,101,52,0.15)] text-[#166534] hover:bg-[#166534] hover:text-white hover:border-[#166534] transition-all duration-200">
             <Pencil className="w-3.5 h-3.5" />Edit
           </Link>
           <button onClick={() => onDelete(p.id)}
             className={`flex items-center justify-center gap-1.5 h-9 px-3 rounded-xl text-xs font-black uppercase tracking-wider border transition-all duration-200 ${
-              confirmDelete === p.id ? "bg-red-500 text-white border-red-500" : "border-gray-200 text-[#111111]/40 hover:bg-red-50 hover:text-red-500 hover:border-red-100"
+              confirmDelete === p.id ? "bg-red-500 text-white border-red-500" : "border-gray-200 text-[#0c2417]/40 hover:bg-red-50 hover:text-red-500 hover:border-red-100"
             }`}>
             <Trash2 className="w-3.5 h-3.5" />
             {confirmDelete === p.id ? "Confirm?" : "Delete"}
@@ -344,18 +361,20 @@ function PropertyCard({ p, confirmDelete, onDelete, onStatusChange, onViewClick,
 }
 
 /* ── LIST ROW ────────────────────────────────────────────────────── */
-function PropertyRow({ p, confirmDelete, onDelete, onStatusChange, isLast, onViewClick, onInquiryClick, onDetailClick }: {
+function PropertyRow({ p, confirmDelete, onDelete, onStatusChange, isLast, onViewClick, onInquiryClick, onDetailClick, onHighlightToggle, highlightLoading }: {
   p: Property; confirmDelete: string | null; isLast: boolean;
   onDelete: (id: string) => void;
   onStatusChange: (id: string, status: PropertyStatus) => void;
   onViewClick: (p: Property) => void;
   onInquiryClick: (p: Property) => void;
   onDetailClick: (p: Property) => void;
+  onHighlightToggle: (id: string, highlighted: boolean) => void;
+  highlightLoading: boolean;
 }) {
   return (
-    <div className="flex items-center gap-4 px-5 py-4 hover:bg-[#f8f9fa] transition-colors"
-      style={{ borderBottom: isLast ? "none" : "1px solid rgba(91,33,182,0.05)" }}>
-      <div className="w-20 h-16 rounded-xl overflow-hidden shrink-0 bg-[#f8f9fa] border border-[rgba(91,33,182,0.06)] flex items-center justify-center relative">
+    <div className="flex items-center gap-4 px-5 py-4 hover:bg-[#f4f9f6] transition-colors"
+      style={{ borderBottom: isLast ? "none" : "1px solid rgba(22,101,52,0.05)" }}>
+      <div className="w-20 h-16 rounded-xl overflow-hidden shrink-0 bg-[#f4f9f6] border border-[rgba(22,101,52,0.06)] flex items-center justify-center relative">
         {p.images[0] ? (
           <>
             <img src={p.images[0]} alt={p.title} className="w-full h-full object-cover" />
@@ -363,15 +382,20 @@ function PropertyRow({ p, confirmDelete, onDelete, onStatusChange, isLast, onVie
               <span className="absolute bottom-1 right-1 bg-black/50 text-white text-[9px] font-black px-1 rounded">+{p.images.length - 1}</span>
             )}
           </>
-        ) : <ImageOff className="w-5 h-5 text-[#5b21b6]/20" />}
+        ) : <ImageOff className="w-5 h-5 text-[#166534]/20" />}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
-          <p className="text-sm font-black text-[#111111] truncate" style={{ fontFamily: "Outfit, sans-serif" }}>{p.title}</p>
+          <p className="text-sm font-black text-[#0c2417] truncate" style={{ fontFamily: "Outfit, sans-serif" }}>{p.title}</p>
           <StatusBadge s={p.status as PropertyStatus} />
+          {p.isHighlighted && (
+            <span className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0">
+              Featured
+            </span>
+          )}
         </div>
-        <div className="flex items-center gap-1 text-xs font-medium text-[#111111]/40 mb-1.5">
-          <MapPin className="w-3 h-3 text-[#5b21b6]/30" /><span className="truncate">{p.location}</span>
+        <div className="flex items-center gap-1 text-xs font-medium text-[#0c2417]/40 mb-1.5">
+          <MapPin className="w-3 h-3 text-[#166534]/30" /><span className="truncate">{p.location}</span>
         </div>
         <div className="mb-2">
           {p.listingType === "sale"
@@ -379,35 +403,43 @@ function PropertyRow({ p, confirmDelete, onDelete, onStatusChange, isLast, onVie
             : <TenantChips tenants={p.amenities?.preferred_tenants} />}
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="flex items-center gap-1 text-xs font-semibold text-[#111111]/40"><BedDouble className="w-3 h-3" />{p.bedrooms}</span>
-          <span className="flex items-center gap-1 text-xs font-semibold text-[#111111]/40"><Bath className="w-3 h-3" />{p.bathrooms}</span>
-          <span className="flex items-center gap-1 text-xs font-semibold text-[#111111]/40"><Maximize2 className="w-3 h-3" />{p.area.toLocaleString()} sq.ft</span>
+          <span className="flex items-center gap-1 text-xs font-semibold text-[#0c2417]/40"><BedDouble className="w-3 h-3" />{p.bedrooms}</span>
+          <span className="flex items-center gap-1 text-xs font-semibold text-[#0c2417]/40"><Bath className="w-3 h-3" />{p.bathrooms}</span>
+          <span className="flex items-center gap-1 text-xs font-semibold text-[#0c2417]/40"><Maximize2 className="w-3 h-3" />{p.area.toLocaleString()} sq.ft</span>
           <div className="flex items-center gap-1.5 ml-1">
-            <StatBtn icon={Eye} count={p.views} label="views" color="purple" onClick={() => onViewClick(p)} />
+            <StatBtn icon={Eye} count={p.views} label="views" color="accent" onClick={() => onViewClick(p)} />
             <StatBtn icon={MessageSquare} count={p.inquiries} label="inquiries" color="emerald" onClick={() => onInquiryClick(p)} />
           </div>
         </div>
       </div>
       <div className="text-right shrink-0 mr-2 hidden sm:block">
-        <p className="text-base font-black text-[#111111] tracking-tight" style={{ fontFamily: "Outfit, sans-serif" }}>
+        <p className="text-base font-black text-[#0c2417] tracking-tight" style={{ fontFamily: "Outfit, sans-serif" }}>
           ₹{p.price.toLocaleString("en-IN")}
-          {p.listingType === "rent" && <span className="text-xs font-semibold text-[#111111]/40">/mo</span>}
+          {p.listingType === "rent" && <span className="text-xs font-semibold text-[#0c2417]/40">/mo</span>}
         </p>
-        <span className="text-[10px] font-black text-[#5b21b6] uppercase tracking-wider">For {p.listingType}</span>
+        <span className="text-[10px] font-black text-[#166534] uppercase tracking-wider">For {p.listingType}</span>
       </div>
       <div className="shrink-0 hidden md:block"><StatusDropdown property={p} onStatusChange={onStatusChange} /></div>
       <div className="flex items-center gap-1 shrink-0">
+        <HighlightToggle
+          isHighlighted={p.isHighlighted}
+          loading={highlightLoading}
+          disabled={!canHighlightProperty(p.status) && !p.isHighlighted}
+          disabledReason="Only active or pending properties can be highlighted"
+          size="sm"
+          onToggle={() => onHighlightToggle(p.id, !p.isHighlighted)}
+        />
         <button onClick={(e) => { e.stopPropagation(); onDetailClick(p); }}
-          className="p-2 rounded-xl text-[#111111]/30 hover:text-[#5b21b6] hover:bg-[#5b21b6]/8 border border-transparent hover:border-[rgba(91,33,182,0.12)] transition-all duration-200" title="View Details">
+          className="p-2 rounded-xl text-[#0c2417]/30 hover:text-[#166534] hover:bg-[#166534]/8 border border-transparent hover:border-[rgba(22,101,52,0.12)] transition-all duration-200" title="View Details">
           <Info className="w-4 h-4" />
         </button>
         <Link to={`/properties/${p.id}/edit`}
-          className="p-2 rounded-xl text-[#111111]/30 hover:text-[#5b21b6] hover:bg-[#5b21b6]/8 border border-transparent hover:border-[rgba(91,33,182,0.12)] transition-all duration-200" title="Edit">
+          className="p-2 rounded-xl text-[#0c2417]/30 hover:text-[#166534] hover:bg-[#166534]/8 border border-transparent hover:border-[rgba(22,101,52,0.12)] transition-all duration-200" title="Edit">
           <Pencil className="w-4 h-4" />
         </Link>
         <button onClick={() => onDelete(p.id)}
           className={`p-2 rounded-xl transition-all duration-200 border ${
-            confirmDelete === p.id ? "text-red-500 bg-red-50 border-red-100" : "text-[#111111]/30 border-transparent hover:text-red-500 hover:bg-red-50 hover:border-red-100"
+            confirmDelete === p.id ? "text-red-500 bg-red-50 border-red-100" : "text-[#0c2417]/30 border-transparent hover:text-red-500 hover:bg-red-50 hover:border-red-100"
           }`} title={confirmDelete === p.id ? "Click again to confirm" : "Delete"}>
           <Trash2 className="w-4 h-4" />
         </button>
@@ -442,15 +474,15 @@ function ModalShell({ title, subtitle, icon: Icon, accent, onClose, children }: 
 
         {/* Header */}
         <div className="flex items-start gap-3 px-5 py-4 border-b border-gray-100 shrink-0">
-          <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${accent === "bg-[#5b21b6]" ? "bg-[#5b21b6]/10" : "bg-emerald-50"}`}>
-            <Icon className={`w-4.5 h-4.5 ${accent === "bg-[#5b21b6]" ? "text-[#5b21b6]" : "text-emerald-600"}`} />
+          <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${accent === "bg-[#166534]" ? "bg-[#166534]/10" : "bg-emerald-50"}`}>
+            <Icon className={`w-4.5 h-4.5 ${accent === "bg-[#166534]" ? "text-[#166534]" : "text-emerald-600"}`} />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-sm font-black text-[#111111] tracking-tight" style={{ fontFamily: "Outfit, sans-serif" }}>{title}</h2>
-            <p className="text-xs text-[#111111]/40 font-medium truncate mt-0.5">{subtitle}</p>
+            <h2 className="text-sm font-black text-[#0c2417] tracking-tight" style={{ fontFamily: "Outfit, sans-serif" }}>{title}</h2>
+            <p className="text-xs text-[#0c2417]/40 font-medium truncate mt-0.5">{subtitle}</p>
           </div>
           <button onClick={onClose}
-            className="w-8 h-8 rounded-xl flex items-center justify-center text-[#111111]/30 hover:text-[#111111] hover:bg-gray-100 transition-all shrink-0">
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-[#0c2417]/30 hover:text-[#0c2417] hover:bg-gray-100 transition-all shrink-0">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -478,11 +510,11 @@ function ViewersModal({ target, token, onClose }: { target: NonNullable<ModalTar
   }, [token, target.propertyId]);
 
   return (
-    <ModalShell title="Property Viewers" subtitle={target.propertyTitle} icon={Eye} accent="bg-[#5b21b6]" onClose={onClose}>
+    <ModalShell title="Property Viewers" subtitle={target.propertyTitle} icon={Eye} accent="bg-[#166534]" onClose={onClose}>
       {loading && (
         <div className="flex flex-col items-center justify-center py-16 gap-3">
-          <Loader2 className="w-7 h-7 text-[#5b21b6] animate-spin" />
-          <p className="text-sm text-[#111111]/40 font-medium">Loading viewers…</p>
+          <Loader2 className="w-7 h-7 text-[#166534] animate-spin" />
+          <p className="text-sm text-[#0c2417]/40 font-medium">Loading viewers…</p>
         </div>
       )}
       {!loading && error && (
@@ -497,14 +529,14 @@ function ViewersModal({ target, token, onClose }: { target: NonNullable<ModalTar
           {summary && (
             <div className="grid grid-cols-3 gap-px bg-gray-100 border-b border-gray-100">
               {[
-                { label: "Total Views", value: summary.totalViews, icon: Eye, color: "text-[#5b21b6]" },
+                { label: "Total Views", value: summary.totalViews, icon: Eye, color: "text-[#166534]" },
                 { label: "Book Clicks", value: summary.bookClicks, icon: BookOpen, color: "text-amber-600" },
                 { label: "Unique Visitors", value: summary.uniqueVisitors, icon: Users, color: "text-emerald-600" },
               ].map(({ label, value, icon: Ic, color }) => (
                 <div key={label} className="bg-white px-4 py-3 flex flex-col items-center text-center">
                   <Ic className={`w-4 h-4 mb-1 ${color}`} />
                   <p className={`text-lg font-black ${color}`} style={{ fontFamily: "Outfit, sans-serif" }}>{value}</p>
-                  <p className="text-[10px] font-bold text-[#111111]/35 uppercase tracking-wider">{label}</p>
+                  <p className="text-[10px] font-bold text-[#0c2417]/35 uppercase tracking-wider">{label}</p>
                 </div>
               ))}
             </div>
@@ -513,11 +545,11 @@ function ViewersModal({ target, token, onClose }: { target: NonNullable<ModalTar
           {/* Empty */}
           {viewers.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
-              <div className="w-14 h-14 rounded-2xl bg-[#5b21b6]/8 flex items-center justify-center">
-                <Eye className="w-6 h-6 text-[#5b21b6]/30" />
+              <div className="w-14 h-14 rounded-2xl bg-[#166534]/8 flex items-center justify-center">
+                <Eye className="w-6 h-6 text-[#166534]/30" />
               </div>
-              <p className="text-sm font-black text-[#111111]">No viewers yet</p>
-              <p className="text-xs text-[#111111]/40 font-medium">Views will appear here once customers open this property.</p>
+              <p className="text-sm font-black text-[#0c2417]">No viewers yet</p>
+              <p className="text-xs text-[#0c2417]/40 font-medium">Views will appear here once customers open this property.</p>
             </div>
           )}
 
@@ -525,38 +557,38 @@ function ViewersModal({ target, token, onClose }: { target: NonNullable<ModalTar
           {viewers.length > 0 && (
             <div className="divide-y divide-gray-50">
               {viewers.map((v, i) => (
-                <div key={v._id} className="flex items-start gap-3 px-5 py-4 hover:bg-[#f8f9fa] transition-colors">
+                <div key={v._id} className="flex items-start gap-3 px-5 py-4 hover:bg-[#f4f9f6] transition-colors">
                   {/* Avatar */}
-                  <div className="w-9 h-9 rounded-xl bg-[#5b21b6]/10 border border-[rgba(91,33,182,0.12)] flex items-center justify-center shrink-0 text-[#5b21b6] text-xs font-black">
+                  <div className="w-9 h-9 rounded-xl bg-[#166534]/10 border border-[rgba(22,101,52,0.12)] flex items-center justify-center shrink-0 text-[#166534] text-xs font-black">
                     {initials(v.userName)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <p className="text-sm font-black text-[#111111]" style={{ fontFamily: "Outfit, sans-serif" }}>{v.userName}</p>
+                      <p className="text-sm font-black text-[#0c2417]" style={{ fontFamily: "Outfit, sans-serif" }}>{v.userName}</p>
                       <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${
                         v.source === "book"
                           ? "bg-amber-50 text-amber-700 border-amber-100"
-                          : "bg-[#5b21b6]/8 text-[#5b21b6] border-[rgba(91,33,182,0.12)]"
+                          : "bg-[#166534]/8 text-[#166534] border-[rgba(22,101,52,0.12)]"
                       }`}>{v.source === "book" ? "Book Click" : "Viewed"}</span>
                     </div>
                     <div className="flex flex-wrap gap-x-4 gap-y-1">
                       {v.userEmail && (
-                        <a href={`mailto:${v.userEmail}`} className="flex items-center gap-1 text-xs text-[#111111]/50 hover:text-[#5b21b6] transition-colors font-medium">
+                        <a href={`mailto:${v.userEmail}`} className="flex items-center gap-1 text-xs text-[#0c2417]/50 hover:text-[#166534] transition-colors font-medium">
                           <Mail className="w-3 h-3" />{v.userEmail}
                         </a>
                       )}
                       {v.userPhone && (
-                        <a href={`tel:${v.userPhone}`} className="flex items-center gap-1 text-xs text-[#111111]/50 hover:text-[#5b21b6] transition-colors font-medium">
+                        <a href={`tel:${v.userPhone}`} className="flex items-center gap-1 text-xs text-[#0c2417]/50 hover:text-[#166534] transition-colors font-medium">
                           <Phone className="w-3 h-3" />{v.userPhone}
                         </a>
                       )}
                     </div>
-                    <div className="flex items-center gap-1 mt-1.5 text-[10px] text-[#111111]/30 font-medium">
+                    <div className="flex items-center gap-1 mt-1.5 text-[10px] text-[#0c2417]/30 font-medium">
                       <Calendar className="w-3 h-3" />
                       {fmtDate(v.viewedAt)} at {fmtTime(v.viewedAt)}
                     </div>
                   </div>
-                  <span className="text-[10px] font-bold text-[#111111]/25 shrink-0 mt-1">#{i + 1}</span>
+                  <span className="text-[10px] font-bold text-[#0c2417]/25 shrink-0 mt-1">#{i + 1}</span>
                 </div>
               ))}
             </div>
@@ -598,7 +630,7 @@ function InquiriesModal({ target, token, onClose }: { target: NonNullable<ModalT
       {loading && (
         <div className="flex flex-col items-center justify-center py-16 gap-3">
           <Loader2 className="w-7 h-7 text-emerald-600 animate-spin" />
-          <p className="text-sm text-[#111111]/40 font-medium">Loading inquiries…</p>
+          <p className="text-sm text-[#0c2417]/40 font-medium">Loading inquiries…</p>
         </div>
       )}
       {!loading && error && (
@@ -619,7 +651,7 @@ function InquiriesModal({ target, token, onClose }: { target: NonNullable<ModalT
               ].map(({ label, value, color }) => (
                 <div key={label} className="bg-white px-4 py-3 flex flex-col items-center text-center">
                   <p className={`text-lg font-black ${color}`} style={{ fontFamily: "Outfit, sans-serif" }}>{value}</p>
-                  <p className="text-[10px] font-bold text-[#111111]/35 uppercase tracking-wider">{label}</p>
+                  <p className="text-[10px] font-bold text-[#0c2417]/35 uppercase tracking-wider">{label}</p>
                 </div>
               ))}
             </div>
@@ -631,8 +663,8 @@ function InquiriesModal({ target, token, onClose }: { target: NonNullable<ModalT
               <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center">
                 <MessageSquare className="w-6 h-6 text-emerald-300" />
               </div>
-              <p className="text-sm font-black text-[#111111]">No inquiries yet</p>
-              <p className="text-xs text-[#111111]/40 font-medium">Inquiries from customers will appear here.</p>
+              <p className="text-sm font-black text-[#0c2417]">No inquiries yet</p>
+              <p className="text-xs text-[#0c2417]/40 font-medium">Inquiries from customers will appear here.</p>
             </div>
           )}
 
@@ -642,45 +674,45 @@ function InquiriesModal({ target, token, onClose }: { target: NonNullable<ModalT
               {inquiries.map((inq, i) => {
                 const st = INQ_STATUS_STYLE[inq.status] ?? INQ_STATUS_STYLE.new;
                 return (
-                  <div key={inq._id} className="flex items-start gap-3 px-5 py-4 hover:bg-[#f8f9fa] transition-colors">
+                  <div key={inq._id} className="flex items-start gap-3 px-5 py-4 hover:bg-[#f4f9f6] transition-colors">
                     {/* Avatar */}
                     <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0 text-emerald-600 text-xs font-black">
                       {initials(inq.name)}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <p className="text-sm font-black text-[#111111]" style={{ fontFamily: "Outfit, sans-serif" }}>{inq.name}</p>
+                        <p className="text-sm font-black text-[#0c2417]" style={{ fontFamily: "Outfit, sans-serif" }}>{inq.name}</p>
                         <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${st.bg} ${st.text} ${st.border}`}>
                           {inq.status}
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-x-4 gap-y-1 mb-1.5">
                         {inq.email && (
-                          <a href={`mailto:${inq.email}`} className="flex items-center gap-1 text-xs text-[#111111]/50 hover:text-emerald-600 transition-colors font-medium">
+                          <a href={`mailto:${inq.email}`} className="flex items-center gap-1 text-xs text-[#0c2417]/50 hover:text-emerald-600 transition-colors font-medium">
                             <Mail className="w-3 h-3" />{inq.email}
                           </a>
                         )}
                         {inq.phone && (
-                          <a href={`tel:${inq.phone}`} className="flex items-center gap-1 text-xs text-[#111111]/50 hover:text-emerald-600 transition-colors font-medium">
+                          <a href={`tel:${inq.phone}`} className="flex items-center gap-1 text-xs text-[#0c2417]/50 hover:text-emerald-600 transition-colors font-medium">
                             <Phone className="w-3 h-3" />{inq.phone}
                           </a>
                         )}
                       </div>
                       {inq.message && (
-                        <p className="text-xs text-[#111111]/50 font-medium line-clamp-2 mb-1.5 italic bg-gray-50 rounded-lg px-2.5 py-1.5 border border-gray-100">
+                        <p className="text-xs text-[#0c2417]/50 font-medium line-clamp-2 mb-1.5 italic bg-gray-50 rounded-lg px-2.5 py-1.5 border border-gray-100">
                           "{inq.message}"
                         </p>
                       )}
                       <div className="flex items-center gap-3 flex-wrap">
-                        <span className="flex items-center gap-1 text-[10px] text-[#111111]/30 font-medium">
+                        <span className="flex items-center gap-1 text-[10px] text-[#0c2417]/30 font-medium">
                           <Calendar className="w-3 h-3" />{fmtDate(inq.createdAt)}
                         </span>
-                        <span className="flex items-center gap-1 text-[10px] text-[#111111]/30 font-medium">
+                        <span className="flex items-center gap-1 text-[10px] text-[#0c2417]/30 font-medium">
                           <Building2 className="w-3 h-3" />{inq.propertyTitle}
                         </span>
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold text-[#111111]/25 shrink-0 mt-1">#{i + 1}</span>
+                    <span className="text-[10px] font-bold text-[#0c2417]/25 shrink-0 mt-1">#{i + 1}</span>
                   </div>
                 );
               })}
@@ -728,23 +760,23 @@ function PropertyDetailModal({ p, onClose }: { p: Property; onClose: () => void 
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[9px] font-black uppercase tracking-wider text-[#5b21b6]">{p.type}</span>
+              <span className="text-[9px] font-black uppercase tracking-wider text-[#166534]">{p.type}</span>
               <span className={`text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full border ${accentBg} ${accentBorder} ${accentText}`}>
                 For {p.listingType}
               </span>
               <StatusBadge s={p.status as PropertyStatus} />
             </div>
-            <h2 className="text-sm font-black text-[#111111] leading-tight truncate mt-0.5" style={{ fontFamily: "Outfit, sans-serif" }}>{p.title}</h2>
+            <h2 className="text-sm font-black text-[#0c2417] leading-tight truncate mt-0.5" style={{ fontFamily: "Outfit, sans-serif" }}>{p.title}</h2>
           </div>
           <button onClick={onClose}
-            className="w-8 h-8 rounded-xl flex items-center justify-center text-[#111111]/30 hover:text-[#111111] hover:bg-gray-100 transition-all shrink-0">
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-[#0c2417]/30 hover:text-[#0c2417] hover:bg-gray-100 transition-all shrink-0">
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* image gallery */}
         {p.images.length > 0 && (
-          <div className="relative shrink-0 bg-[#111111]" style={{ aspectRatio: "16/8" }}>
+          <div className="relative shrink-0 bg-[#0c2417]" style={{ aspectRatio: "16/8" }}>
             <img src={p.images[imgIdx]} alt={p.title} className="w-full h-full object-cover opacity-90" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
             {p.images.length > 1 && (
@@ -775,29 +807,29 @@ function PropertyDetailModal({ p, onClose }: { p: Property; onClose: () => void 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 {p.images.length === 0 && (
-                  <div className="flex items-center gap-1 text-xs font-medium text-[#111111]/40 mb-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-[#5b21b6]/30 shrink-0" />
+                  <div className="flex items-center gap-1 text-xs font-medium text-[#0c2417]/40 mb-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-[#166534]/30 shrink-0" />
                     {p.location}{p.city ? `, ${p.city}` : ""}
                   </div>
                 )}
-                <p className="text-2xl font-black text-[#111111]" style={{ fontFamily: "Outfit, sans-serif" }}>
+                <p className="text-2xl font-black text-[#0c2417]" style={{ fontFamily: "Outfit, sans-serif" }}>
                   ₹{p.price.toLocaleString("en-IN")}
-                  {!isSale && <span className="text-base font-semibold text-[#111111]/40">/mo</span>}
+                  {!isSale && <span className="text-base font-semibold text-[#0c2417]/40">/mo</span>}
                 </p>
                 {isSale && sd?.pricePerSqft && (
-                  <p className="text-xs text-[#111111]/40 font-medium mt-0.5">₹{sd.pricePerSqft.toLocaleString("en-IN")}/sq.ft</p>
+                  <p className="text-xs text-[#0c2417]/40 font-medium mt-0.5">₹{sd.pricePerSqft.toLocaleString("en-IN")}/sq.ft</p>
                 )}
               </div>
               <div className={`flex items-center gap-3 ${accentBg} ${accentBorder} border rounded-2xl px-4 py-2.5`}>
-                <span className="flex items-center gap-1.5 text-xs font-bold text-[#111111]/60">
+                <span className="flex items-center gap-1.5 text-xs font-bold text-[#0c2417]/60">
                   <BedDouble className={`w-4 h-4 ${accentText}`} />{p.bedrooms} Beds
                 </span>
                 <span className={`w-px h-4 ${accentDiv}`} />
-                <span className="flex items-center gap-1.5 text-xs font-bold text-[#111111]/60">
+                <span className="flex items-center gap-1.5 text-xs font-bold text-[#0c2417]/60">
                   <Bath className={`w-4 h-4 ${accentText}`} />{p.bathrooms} Baths
                 </span>
                 <span className={`w-px h-4 ${accentDiv}`} />
-                <span className="flex items-center gap-1.5 text-xs font-bold text-[#111111]/60">
+                <span className="flex items-center gap-1.5 text-xs font-bold text-[#0c2417]/60">
                   <Maximize2 className={`w-4 h-4 ${accentText}`} />{p.area.toLocaleString()} sq.ft
                 </span>
               </div>
@@ -844,8 +876,8 @@ function PropertyDetailModal({ p, onClose }: { p: Property; onClose: () => void 
                         .map(({ label, value }) => (
                           <div key={label} className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 text-center">
                             <p className="text-lg font-black text-emerald-700" style={{ fontFamily: "Outfit, sans-serif" }}>{value!.toLocaleString()}</p>
-                            <p className="text-[10px] font-bold text-[#111111]/35 mt-0.5">{label}</p>
-                            <p className="text-[9px] font-medium text-[#111111]/25">sq.ft</p>
+                            <p className="text-[10px] font-bold text-[#0c2417]/35 mt-0.5">{label}</p>
+                            <p className="text-[9px] font-medium text-[#0c2417]/25">sq.ft</p>
                           </div>
                         ))}
                     </div>
@@ -931,23 +963,23 @@ function PropertyDetailModal({ p, onClose }: { p: Property; onClose: () => void 
             {p.description && (
               <div>
                 <SectionHeading label="Description" color={accentColor} />
-                <p className="text-sm text-[#111111]/60 leading-relaxed font-medium bg-gray-50/60 rounded-2xl p-4 border border-gray-100">{p.description}</p>
+                <p className="text-sm text-[#0c2417]/60 leading-relaxed font-medium bg-gray-50/60 rounded-2xl p-4 border border-gray-100">{p.description}</p>
               </div>
             )}
 
             {/* ── Meta ── */}
             <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-gray-100">
-              <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#111111]/35">
+              <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#0c2417]/35">
                 <Eye className="w-3.5 h-3.5" />{p.views} views
               </span>
-              <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#111111]/35">
+              <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#0c2417]/35">
                 <MessageSquare className="w-3.5 h-3.5" />{p.inquiries} inquiries
               </span>
-              <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#111111]/35">
+              <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#0c2417]/35">
                 <Calendar className="w-3.5 h-3.5" />Listed {fmtDate(p.createdAt)}
               </span>
               <Link to={`/properties/${p.id}/edit`}
-                className="ml-auto flex items-center gap-1.5 text-xs font-black text-[#5b21b6] hover:underline">
+                className="ml-auto flex items-center gap-1.5 text-xs font-black text-[#166534] hover:underline">
                 <Pencil className="w-3.5 h-3.5" />Edit Property
               </Link>
             </div>
@@ -976,6 +1008,7 @@ export function PropertiesPage() {
   const [viewersTarget, setViewersTarget] = useState<ModalTarget>(null);
   const [inquiriesTarget, setInquiriesTarget] = useState<ModalTarget>(null);
   const [detailTarget, setDetailTarget] = useState<Property | null>(null);
+  const [highlightingIds, setHighlightingIds] = useState<Set<string>>(new Set());
 
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -1020,10 +1053,52 @@ export function PropertiesPage() {
   };
 
   const handleStatusChange = async (id: string, status: PropertyStatus) => {
+    const property = properties.find((p) => p.id === id);
     try {
       if (token) await propertiesApi.update(token, id, { status });
-      setProperties((prev) => prev.map((p) => p.id === id ? { ...p, status } : p));
+      if (token && property?.isHighlighted && !canHighlightProperty(status)) {
+        await propertiesApi.setHighlighted(token, id, false);
+      }
+      setProperties((prev) => prev.map((p) => {
+        if (p.id !== id) return p;
+        const next = { ...p, status };
+        if (!canHighlightProperty(status)) {
+          next.isHighlighted = false;
+          next.highlightedAt = undefined;
+        }
+        return next;
+      }));
     } catch { /* silently ignore */ }
+  };
+
+  const handleHighlightToggle = async (id: string, highlighted: boolean) => {
+    if (!token || highlightingIds.has(id)) return;
+
+    const previous = properties.find((p) => p.id === id);
+    setHighlightingIds((prev) => new Set(prev).add(id));
+    setProperties((prev) =>
+      prev.map((p) =>
+        p.id === id
+          ? { ...p, isHighlighted: highlighted, highlightedAt: highlighted ? new Date().toISOString() : undefined }
+          : p,
+      ),
+    );
+
+    try {
+      await propertiesApi.setHighlighted(token, id, highlighted);
+    } catch {
+      if (previous) {
+        setProperties((prev) =>
+          prev.map((p) => (p.id === id ? { ...previous } : p)),
+        );
+      }
+    } finally {
+      setHighlightingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }
   };
 
   const openViewers   = (p: Property) => setViewersTarget({ propertyId: p.id, propertyTitle: p.title });
@@ -1039,17 +1114,17 @@ export function PropertiesPage() {
       {/* ── Header ── */}
       <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-black text-[#111111] tracking-tight" style={{ fontFamily: "Outfit, sans-serif" }}>My Properties</h1>
+          <h1 className="text-2xl font-black text-[#0c2417] tracking-tight" style={{ fontFamily: "Outfit, sans-serif" }}>My Properties</h1>
           <div className="flex items-center gap-4 mt-1 flex-wrap">
-            <p className="text-sm font-medium text-[#111111]/40">{properties.length} listings</p>
-            <span className="flex items-center gap-1 text-xs font-medium text-[#111111]/30">
+            <p className="text-sm font-medium text-[#0c2417]/40">{properties.length} listings</p>
+            <span className="flex items-center gap-1 text-xs font-medium text-[#0c2417]/30">
               <MessageSquare className="w-3.5 h-3.5" />{totalInquiries} inquiries
             </span>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={fetchProperties} disabled={loading}
-            className="p-2.5 rounded-xl border border-[rgba(91,33,182,0.08)] text-[#111111]/30 hover:text-[#5b21b6] hover:border-[rgba(91,33,182,0.2)] transition-all disabled:opacity-40" title="Refresh">
+            className="p-2.5 rounded-xl border border-[rgba(22,101,52,0.08)] text-[#0c2417]/30 hover:text-[#166534] hover:border-[rgba(22,101,52,0.2)] transition-all disabled:opacity-40" title="Refresh">
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           </button>
           <Link to={ROUTES.PROPERTY_ADD} className="premium-btn flex items-center gap-2 px-5 h-11 text-xs tracking-widest shrink-0">
@@ -1060,26 +1135,26 @@ export function PropertiesPage() {
 
       {/* ── Controls bar ── */}
       <div className="flex items-center gap-3 mb-6 flex-wrap">
-        <div className="flex gap-1 bg-white border border-[rgba(91,33,182,0.06)] rounded-xl p-1"
-          style={{ boxShadow: "0 2px 8px -4px rgba(91,33,182,0.08)" }}>
+        <div className="flex gap-1 bg-white border border-[rgba(22,101,52,0.06)] rounded-xl p-1"
+          style={{ boxShadow: "0 2px 8px -4px rgba(22,101,52,0.08)" }}>
           {STATUS_TABS.map((tab) => (
             <button key={tab.value} onClick={() => setActiveTab(tab.value)}
               className="px-3 py-1.5 rounded-lg text-xs font-black capitalize transition-all duration-200 whitespace-nowrap"
               style={activeTab === tab.value
-                ? { background: "#5b21b6", color: "#fff", boxShadow: "0 2px 8px -2px rgba(91,33,182,0.4)" }
+                ? { background: "#166534", color: "#fff", boxShadow: "0 2px 8px -2px rgba(22,101,52,0.4)" }
                 : { color: "rgba(17,17,17,0.4)" }}>
               {tab.label}
             </button>
           ))}
         </div>
 
-        <div className="flex gap-1 bg-white border border-[rgba(91,33,182,0.06)] rounded-xl p-1"
-          style={{ boxShadow: "0 2px 8px -4px rgba(91,33,182,0.08)" }}>
+        <div className="flex gap-1 bg-white border border-[rgba(22,101,52,0.06)] rounded-xl p-1"
+          style={{ boxShadow: "0 2px 8px -4px rgba(22,101,52,0.08)" }}>
           {LISTING_TABS.map((tab) => (
             <button key={tab.value} onClick={() => setListingFilter(tab.value)}
               className="px-3 py-1.5 rounded-lg text-xs font-black transition-all duration-200 whitespace-nowrap"
               style={listingFilter === tab.value
-                ? { background: tab.value === "sale" ? "#059669" : tab.value === "rent" ? "#2563eb" : "#5b21b6", color: "#fff", boxShadow: "0 2px 8px -2px rgba(0,0,0,0.25)" }
+                ? { background: tab.value === "sale" ? "#059669" : tab.value === "rent" ? "#2563eb" : "#166534", color: "#fff", boxShadow: "0 2px 8px -2px rgba(0,0,0,0.25)" }
                 : { color: "rgba(17,17,17,0.4)" }}>
               {tab.label}
             </button>
@@ -1097,17 +1172,17 @@ export function PropertiesPage() {
 
         <div className="relative">
           <button onClick={() => setSortOpen((o) => !o)}
-            className="flex items-center gap-1.5 h-9 px-3 rounded-xl text-xs font-black text-[#111111]/50 bg-white border border-[rgba(91,33,182,0.08)] hover:border-[rgba(91,33,182,0.2)] hover:text-[#5b21b6] transition-all whitespace-nowrap">
+            className="flex items-center gap-1.5 h-9 px-3 rounded-xl text-xs font-black text-[#0c2417]/50 bg-white border border-[rgba(22,101,52,0.08)] hover:border-[rgba(22,101,52,0.2)] hover:text-[#166534] transition-all whitespace-nowrap">
             {sortLabel} <ChevronDown className="w-3.5 h-3.5" />
           </button>
           {sortOpen && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setSortOpen(false)} />
-              <div className="absolute right-0 top-full mt-1 z-20 bg-white rounded-xl border border-[rgba(91,33,182,0.1)] shadow-xl overflow-hidden min-w-[160px]"
-                style={{ boxShadow: "0 12px 32px -8px rgba(91,33,182,0.15)" }}>
+              <div className="absolute right-0 top-full mt-1 z-20 bg-white rounded-xl border border-[rgba(22,101,52,0.1)] shadow-xl overflow-hidden min-w-[160px]"
+                style={{ boxShadow: "0 12px 32px -8px rgba(22,101,52,0.15)" }}>
                 {SORT_OPTIONS.map((o) => (
                   <button key={o.value} onClick={() => { setSort(o.value); setSortOpen(false); }}
-                    className={`flex items-center justify-between w-full px-4 py-2.5 text-xs font-bold text-left hover:bg-[#f8f9fa] transition-colors ${sort === o.value ? "text-[#5b21b6]" : "text-[#111111]/60"}`}>
+                    className={`flex items-center justify-between w-full px-4 py-2.5 text-xs font-bold text-left hover:bg-[#f4f9f6] transition-colors ${sort === o.value ? "text-[#166534]" : "text-[#0c2417]/60"}`}>
                     {o.label}
                     {sort === o.value && <Check className="w-3.5 h-3.5" />}
                   </button>
@@ -1117,12 +1192,12 @@ export function PropertiesPage() {
           )}
         </div>
 
-        <div className="flex gap-0.5 bg-white border border-[rgba(91,33,182,0.08)] rounded-xl p-1">
+        <div className="flex gap-0.5 bg-white border border-[rgba(22,101,52,0.08)] rounded-xl p-1">
           {([["grid", LayoutGrid], ["list", List]] as const).map(([mode, Icon]) => (
             <button key={mode} onClick={() => setViewMode(mode)}
               className="p-1.5 rounded-lg transition-all duration-200"
               style={viewMode === mode
-                ? { background: "#5b21b6", color: "#fff", boxShadow: "0 1px 6px -1px rgba(91,33,182,0.4)" }
+                ? { background: "#166534", color: "#fff", boxShadow: "0 1px 6px -1px rgba(22,101,52,0.4)" }
                 : { color: "rgba(17,17,17,0.3)" }}>
               <Icon className="w-4 h-4" />
             </button>
@@ -1132,8 +1207,8 @@ export function PropertiesPage() {
 
       {loading && (
         <div className="flex flex-col items-center justify-center py-24 gap-3">
-          <Loader2 className="w-8 h-8 text-[#5b21b6] animate-spin" />
-          <p className="text-sm font-medium text-[#111111]/40">Loading properties…</p>
+          <Loader2 className="w-8 h-8 text-[#166534] animate-spin" />
+          <p className="text-sm font-medium text-[#0c2417]/40">Loading properties…</p>
         </div>
       )}
 
@@ -1148,11 +1223,11 @@ export function PropertiesPage() {
 
       {!loading && !error && sorted.length === 0 && (
         <div className="dp-card flex flex-col items-center justify-center py-24 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-[#5b21b6]/8 border border-[rgba(91,33,182,0.1)] flex items-center justify-center mb-4">
-            <Home className="w-7 h-7 text-[#5b21b6]/30" />
+          <div className="w-16 h-16 rounded-2xl bg-[#166534]/8 border border-[rgba(22,101,52,0.1)] flex items-center justify-center mb-4">
+            <Home className="w-7 h-7 text-[#166534]/30" />
           </div>
-          <p className="text-base font-black text-[#111111] mb-1" style={{ fontFamily: "Outfit, sans-serif" }}>No properties found</p>
-          <p className="text-sm font-medium text-[#111111]/40 mb-6">
+          <p className="text-base font-black text-[#0c2417] mb-1" style={{ fontFamily: "Outfit, sans-serif" }}>No properties found</p>
+          <p className="text-sm font-medium text-[#0c2417]/40 mb-6">
             {search ? `No results for "${search}"` : listingFilter !== "all" ? `No properties for ${listingFilter === "sale" ? "sale" : "rent"} match this filter.` : activeTab !== "all" ? `No ${activeTab} properties yet.` : "Add your first listing to get started."}
           </p>
           {!search && activeTab === "all" && (
@@ -1169,7 +1244,9 @@ export function PropertiesPage() {
             <PropertyCard key={p.id} p={p} confirmDelete={confirmDelete}
               onDelete={handleDelete} onStatusChange={handleStatusChange}
               onViewClick={openViewers} onInquiryClick={openInquiries}
-              onDetailClick={openDetail} />
+              onDetailClick={openDetail}
+              onHighlightToggle={handleHighlightToggle}
+              highlightLoading={highlightingIds.has(p.id)} />
           ))}
         </div>
       )}
@@ -1180,13 +1257,15 @@ export function PropertiesPage() {
             <PropertyRow key={p.id} p={p} confirmDelete={confirmDelete} isLast={i === sorted.length - 1}
               onDelete={handleDelete} onStatusChange={handleStatusChange}
               onViewClick={openViewers} onInquiryClick={openInquiries}
-              onDetailClick={openDetail} />
+              onDetailClick={openDetail}
+              onHighlightToggle={handleHighlightToggle}
+              highlightLoading={highlightingIds.has(p.id)} />
           ))}
         </div>
       )}
 
       {!loading && !error && sorted.length > 0 && (
-        <p className="text-xs font-medium text-[#111111]/30 mt-4 text-center">
+        <p className="text-xs font-medium text-[#0c2417]/30 mt-4 text-center">
           Showing {sorted.length} {sorted.length === 1 ? "property" : "properties"}
         </p>
       )}

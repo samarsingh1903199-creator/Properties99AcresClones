@@ -45,6 +45,12 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
     res.status(409).json({ success: false, message: "Email already registered" });
     return;
   }
+  if (phone && phone.trim()) {
+    if (await UserModel.findOne({ phone: phone.trim() })) {
+      res.status(409).json({ success: false, message: "Phone number already registered" });
+      return;
+    }
+  }
   const passwordHash = await bcrypt.hash(password, 10);
   const user = await UserModel.create({
     name, email, passwordHash,

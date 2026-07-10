@@ -7,11 +7,11 @@ import { ROUTES } from "../../constants/routes";
 
 const ROLE_OPTIONS: { value: UserRole; label: string; description: string; icon: React.ElementType; color: string }[] = [
   { value: "visitor", label: "Visitor",  description: "Browse and enquire about properties",      icon: Eye,         color: "#6b7280" },
-  { value: "dealer",  label: "Dealer",   description: "List and manage property listings",         icon: Building2,   color: "#5b21b6" },
+  { value: "dealer",  label: "Dealer",   description: "List and manage property listings",         icon: Building2,   color: "#166534" },
   { value: "admin",   label: "Admin",    description: "Full platform access and management",        icon: ShieldCheck, color: "#059669" },
 ];
 
-const label = "block text-xs font-bold text-[#111111]/50 mb-1.5 uppercase tracking-wide";
+const label = "block text-xs font-bold text-[#0c2417]/50 mb-1.5 uppercase tracking-wide";
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -53,23 +53,23 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] flex items-center justify-center px-4 py-10 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-96 h-96 bg-[#5b21b6]/[0.08] rounded-full blur-[120px] translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#5b21b6]/[0.08] rounded-full blur-[120px] -translate-x-1/2 translate-y-1/2 pointer-events-none" />
+    <div className="min-h-screen bg-[#f4f9f6] flex items-center justify-center px-4 py-10 relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-96 h-96 bg-[#166534]/[0.08] rounded-full blur-[120px] translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#166534]/[0.08] rounded-full blur-[120px] -translate-x-1/2 translate-y-1/2 pointer-events-none" />
 
       <div className="w-full max-w-lg relative z-10">
         <div className="flex flex-col items-center mb-8 text-center">
-          <div className="w-14 h-14 bg-[#5b21b6] rounded-2xl flex items-center justify-center mb-5 shadow-lg"
-            style={{ boxShadow: "0 8px 24px -6px rgba(91,33,182,0.4)" }}>
+          <div className="w-14 h-14 bg-[#166534] rounded-2xl flex items-center justify-center mb-5 shadow-lg"
+            style={{ boxShadow: "0 8px 24px -6px rgba(22,101,52,0.4)" }}>
             <Building2 className="w-7 h-7 text-white" />
           </div>
-          <h1 className="text-3xl font-black text-[#111111] tracking-tight mb-1.5"
+          <h1 className="text-3xl font-black text-[#0c2417] tracking-tight mb-1.5"
             style={{ fontFamily: "Outfit, sans-serif" }}>Create account</h1>
           <p className="text-sm text-gray-400 font-medium">Join the Luxury Real Estate platform.</p>
         </div>
 
         <div className="bg-white rounded-3xl border border-gray-100 p-8"
-          style={{ boxShadow: "0 20px 60px -20px rgba(91,33,182,0.12), 0 4px 20px -4px rgba(0,0,0,0.06)" }}>
+          style={{ boxShadow: "0 20px 60px -20px rgba(22,101,52,0.12), 0 4px 20px -4px rgba(0,0,0,0.06)" }}>
           <form onSubmit={handleSubmit} className="space-y-4">
 
             {/* ── Role dropdown ── */}
@@ -89,11 +89,11 @@ export function RegisterPage() {
                     <selectedRole.icon className="w-3.5 h-3.5" style={{ color: selectedRole.color }} />
                   </span>
                   <span className="flex-1">
-                    <span className="block text-sm font-bold text-[#111111]">{selectedRole.label}</span>
-                    <span className="block text-[11px] text-[#111111]/40 font-medium">{selectedRole.description}</span>
+                    <span className="block text-sm font-bold text-[#0c2417]">{selectedRole.label}</span>
+                    <span className="block text-[11px] text-[#0c2417]/40 font-medium">{selectedRole.description}</span>
                   </span>
                   <ChevronDown
-                    className="w-4 h-4 text-[#111111]/30 shrink-0 transition-transform duration-200"
+                    className="w-4 h-4 text-[#0c2417]/30 shrink-0 transition-transform duration-200"
                     style={{ transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)" }}
                   />
                 </button>
@@ -102,8 +102,8 @@ export function RegisterPage() {
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setDropdownOpen(false)} />
                     <div
-                      className="absolute left-0 right-0 top-full mt-1.5 z-20 bg-white rounded-2xl border border-[rgba(91,33,182,0.1)] overflow-hidden"
-                      style={{ boxShadow: "0 16px 40px -8px rgba(91,33,182,0.18)" }}
+                      className="absolute left-0 right-0 top-full mt-1.5 z-20 bg-white rounded-2xl border border-[rgba(22,101,52,0.1)] overflow-hidden"
+                      style={{ boxShadow: "0 16px 40px -8px rgba(22,101,52,0.18)" }}
                     >
                       {ROLE_OPTIONS.map((opt) => {
                         const active = form.role === opt.value;
@@ -112,7 +112,7 @@ export function RegisterPage() {
                             key={opt.value}
                             type="button"
                             onClick={() => { set("role", opt.value); setDropdownOpen(false); }}
-                            className="w-full flex items-center gap-3 px-4 py-3 transition-colors text-left hover:bg-[#f8f9fa]"
+                            className="w-full flex items-center gap-3 px-4 py-3 transition-colors text-left hover:bg-[#f4f9f6]"
                             style={active ? { background: `${opt.color}08` } : {}}
                           >
                             <span
@@ -122,10 +122,10 @@ export function RegisterPage() {
                               <opt.icon className="w-4 h-4" style={{ color: opt.color }} />
                             </span>
                             <span className="flex-1">
-                              <span className="block text-sm font-bold" style={{ color: active ? opt.color : "#111111" }}>
+                              <span className="block text-sm font-bold" style={{ color: active ? opt.color : "#0c2417" }}>
                                 {opt.label}
                               </span>
-                              <span className="block text-[11px] text-[#111111]/40 font-medium">{opt.description}</span>
+                              <span className="block text-[11px] text-[#0c2417]/40 font-medium">{opt.description}</span>
                             </span>
                             {active && (
                               <span
@@ -151,13 +151,13 @@ export function RegisterPage() {
               <div>
                 <label className={label}>Mobile number</label>
                 <div className="flex items-stretch" style={{ borderRadius: "0.875rem", border: "1px solid #e5e7eb", overflow: "hidden", background: "#fff" }}
-                  onFocusCapture={(e) => (e.currentTarget.style.borderColor = "rgba(91,33,182,0.5)")}
+                  onFocusCapture={(e) => (e.currentTarget.style.borderColor = "rgba(22,101,52,0.5)")}
                   onBlurCapture={(e) => (e.currentTarget.style.borderColor = "#e5e7eb")}
                 >
                   {/* Country prefix */}
-                  <div className="flex items-center gap-1.5 px-3 bg-[#f8f9fa] border-r border-gray-200 shrink-0">
+                  <div className="flex items-center gap-1.5 px-3 bg-[#f4f9f6] border-r border-gray-200 shrink-0">
                     <span className="text-base leading-none">🇮🇳</span>
-                    <span className="text-xs font-black text-[#5b21b6]">+91</span>
+                    <span className="text-xs font-black text-[#166534]">+91</span>
                   </div>
                   {/* Digits only, max 10 */}
                   <input
@@ -170,11 +170,11 @@ export function RegisterPage() {
                       set("phone", digits);
                     }}
                     placeholder="9876543210"
-                    className="flex-1 px-3 py-[0.65rem] text-sm font-medium text-[#111111] outline-none bg-white placeholder:text-gray-300"
+                    className="flex-1 px-3 py-[0.65rem] text-sm font-medium text-[#0c2417] outline-none bg-white placeholder:text-gray-300"
                   />
                   {/* Digit counter */}
                   <div className="flex items-center pr-3 shrink-0">
-                    <span className={`text-[10px] font-bold tabular-nums ${form.phone.length === 10 ? "text-emerald-500" : "text-[#111111]/20"}`}>
+                    <span className={`text-[10px] font-bold tabular-nums ${form.phone.length === 10 ? "text-emerald-500" : "text-[#0c2417]/20"}`}>
                       {form.phone.length}/10
                     </span>
                   </div>
@@ -231,7 +231,7 @@ export function RegisterPage() {
 
           <p className="mt-5 text-center text-sm text-gray-400">
             Already have an account?{" "}
-            <Link to={ROUTES.LOGIN} className="text-[#5b21b6] font-bold hover:underline underline-offset-4">Sign in</Link>
+            <Link to={ROUTES.LOGIN} className="text-[#166534] font-bold hover:underline underline-offset-4">Sign in</Link>
           </p>
         </div>
       </div>

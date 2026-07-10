@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useWishlistStore } from "@/src/store/useWishlistStore";
 import { useAuthStore } from "@/src/store/useAuthStore";
 import { likedApi, propertiesApi, type ApiProperty } from "@/src/services/api";
+import { mapApiProperty } from "@/src/lib/listingCategory";
 import { PropertyCard } from "@/src/components/ui/PropertyCard";
 import { Button } from "@/src/components/ui/Button";
 import { ROUTES } from "@/src/constants/routes";
@@ -188,22 +189,7 @@ export const WishlistPage = () => {
                       transition={{ delay: idx * 0.04 }}
                     >
                       <PropertyCard
-                        property={{
-                          id: property._id,
-                          title: property.title,
-                          type: property.type,
-                          listingType: property.listingType === "sale" ? "buy" : "rent",
-                          price: property.price,
-                          sqft: property.area,
-                          beds: property.bedrooms,
-                          baths: property.bathrooms,
-                          location: `${property.location}, ${property.city}`,
-                          description: property.description,
-                          images: property.images,
-                          status: property.status,
-                          features: [],
-                          agentId: property.ownerId,
-                        }}
+                        property={mapApiProperty(property)}
                         index={idx}
                       />
                     </motion.div>

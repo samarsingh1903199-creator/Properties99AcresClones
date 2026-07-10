@@ -7,6 +7,7 @@ import { LoginPage } from "./pages/auth/LoginPage";
 import { RegisterPage } from "./pages/auth/RegisterPage";
 import { DashboardPage } from "./pages/dashboard/DashboardPage";
 import { PropertiesPage } from "./pages/properties/PropertiesPage";
+import { HighlightedPropertiesPage } from "./pages/properties/HighlightedPropertiesPage";
 import { AddPropertyPage } from "./pages/properties/AddPropertyPage";
 import { EditPropertyPage } from "./pages/properties/EditPropertyPage";
 import { InquiriesPage } from "./pages/inquiries/InquiriesPage";
@@ -36,6 +37,7 @@ export function AppRoutes() {
         <Route index element={<Navigate to={ROUTES.DASHBOARD} replace />} />
         <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
         <Route path={ROUTES.PROPERTIES} element={<PropertiesPage />} />
+        <Route path={ROUTES.HIGHLIGHTED_PROPERTIES} element={<HighlightedPropertiesPage />} />
         <Route path={ROUTES.PROPERTY_ADD} element={<AddPropertyPage />} />
         <Route path="/properties/:id/edit" element={<EditPropertyPage />} />
         <Route path={ROUTES.INQUIRIES} element={<InquiriesPage />} />

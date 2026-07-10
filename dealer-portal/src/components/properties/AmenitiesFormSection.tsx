@@ -103,7 +103,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
     <button
       type="button"
       onClick={onChange}
-      className={`relative shrink-0 w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#5b21b6]/30 ${checked ? "bg-[#5b21b6]" : "bg-gray-200"}`}
+      className={`relative shrink-0 w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#166534]/30 ${checked ? "bg-[#166534]" : "bg-gray-200"}`}
       aria-checked={checked}
       role="switch"
     >
@@ -121,15 +121,15 @@ function AmenityRow({
     <div
       onClick={onChange}
       className={`flex items-center gap-3 p-3.5 rounded-2xl border cursor-pointer transition-all select-none ${
-        checked ? "bg-[#5b21b6]/[0.05] border-[#5b21b6]/20" : "bg-white border-gray-100 hover:border-[#5b21b6]/15 hover:bg-gray-50/60"
+        checked ? "bg-[#166534]/[0.05] border-[#166534]/20" : "bg-white border-gray-100 hover:border-[#166534]/15 hover:bg-gray-50/60"
       }`}
     >
-      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${checked ? "bg-[#5b21b6]/15" : "bg-gray-100"}`}>
-        <Icon className={`w-4 h-4 transition-colors ${checked ? "text-[#5b21b6]" : "text-[#111111]/35"}`} />
+      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${checked ? "bg-[#166534]/15" : "bg-gray-100"}`}>
+        <Icon className={`w-4 h-4 transition-colors ${checked ? "text-[#166534]" : "text-[#0c2417]/35"}`} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-bold text-[#111111]">{label}</p>
-        {sub && <p className="text-[11px] text-[#111111]/35 font-medium">{sub}</p>}
+        <p className="text-[13px] font-bold text-[#0c2417]">{label}</p>
+        {sub && <p className="text-[11px] text-[#0c2417]/35 font-medium">{sub}</p>}
       </div>
       <Toggle checked={checked} onChange={() => {}} />
     </div>
@@ -141,7 +141,7 @@ function ParkingChip({ value, selected, onClick }: { value: 0 | 1 | 2 | 3; selec
   return (
     <button type="button" onClick={onClick}
       className={`flex-1 py-3 rounded-2xl text-[13px] font-bold transition-all border ${
-        selected ? "bg-[#5b21b6] text-white border-[#5b21b6] shadow-sm" : "bg-white text-[#111111]/50 border-gray-200 hover:border-[#5b21b6]/30 hover:text-[#5b21b6]"
+        selected ? "bg-[#166534] text-white border-[#166534] shadow-sm" : "bg-white text-[#0c2417]/50 border-gray-200 hover:border-[#166534]/30 hover:text-[#166534]"
       }`}
     >
       <span className="block text-lg font-black" style={{ fontFamily: "Outfit, sans-serif" }}>{value === 0 ? "✗" : value}</span>
@@ -151,8 +151,8 @@ function ParkingChip({ value, selected, onClick }: { value: 0 | 1 | 2 | 3; selec
 }
 
 /* ── Section heading style ─────────────────────────────────── */
-const SH = "text-sm font-black text-[#111111] uppercase tracking-widest";
-const label = "block text-xs font-black text-[#111111]/50 uppercase tracking-wide mb-1.5";
+const SH = "text-sm font-black text-[#0c2417] uppercase tracking-widest";
+const label = "block text-xs font-black text-[#0c2417]/50 uppercase tracking-wide mb-1.5";
 
 /* ── Props ─────────────────────────────────────────────────── */
 interface AmenitiesFormSectionProps {
@@ -199,12 +199,12 @@ export function AmenitiesFormSection({
       {listingType !== "sale" && (
         <div className="dp-card p-6">
           <div className="flex items-center gap-2.5 mb-4">
-            <div className="w-8 h-8 rounded-xl bg-[#5b21b6]/10 flex items-center justify-center">
-              <Users className="w-4 h-4 text-[#5b21b6]" />
+            <div className="w-8 h-8 rounded-xl bg-[#166534]/10 flex items-center justify-center">
+              <Users className="w-4 h-4 text-[#166534]" />
             </div>
             <div>
               <h3 className={SH} style={{ fontFamily: "Outfit, sans-serif" }}>Preferred Tenants</h3>
-              <p className="text-[11px] text-[#111111]/35 font-medium mt-0.5">Select all tenant types suitable for this property</p>
+              <p className="text-[11px] text-[#0c2417]/35 font-medium mt-0.5">Select all tenant types suitable for this property</p>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -222,8 +222,8 @@ export function AmenitiesFormSection({
                   }}
                   className={`px-4 py-2 rounded-2xl text-[13px] font-bold border transition-all ${
                     selected
-                      ? "bg-[#5b21b6] text-white border-[#5b21b6] shadow-sm"
-                      : "bg-white text-[#111111]/50 border-gray-200 hover:border-[#5b21b6]/30 hover:text-[#5b21b6]"
+                      ? "bg-[#166534] text-white border-[#166534] shadow-sm"
+                      : "bg-white text-[#0c2417]/50 border-gray-200 hover:border-[#166534]/30 hover:text-[#166534]"
                   }`}
                 >
                   {selected && <Check className="w-3 h-3 inline mr-1.5 -mt-0.5" />}
@@ -233,7 +233,7 @@ export function AmenitiesFormSection({
             })}
           </div>
           {form.preferred_tenants.length === 0 && (
-            <p className="text-[11px] text-[#111111]/30 font-medium mt-3">No preference selected — property will be open to all tenant types</p>
+            <p className="text-[11px] text-[#0c2417]/30 font-medium mt-3">No preference selected — property will be open to all tenant types</p>
           )}
         </div>
       )}
@@ -241,12 +241,12 @@ export function AmenitiesFormSection({
       {/* ── 2. Parking ── */}
       <div className="dp-card p-6">
         <div className="flex items-center gap-2.5 mb-4">
-          <div className="w-8 h-8 rounded-xl bg-[#5b21b6]/10 flex items-center justify-center">
-            <Car className="w-4 h-4 text-[#5b21b6]" />
+          <div className="w-8 h-8 rounded-xl bg-[#166534]/10 flex items-center justify-center">
+            <Car className="w-4 h-4 text-[#166534]" />
           </div>
           <div>
             <h3 className={SH} style={{ fontFamily: "Outfit, sans-serif" }}>Parking Availability</h3>
-            <p className="text-[11px] text-[#111111]/35 font-medium mt-0.5">Number of dedicated parking spots</p>
+            <p className="text-[11px] text-[#0c2417]/35 font-medium mt-0.5">Number of dedicated parking spots</p>
           </div>
         </div>
         <div className="grid grid-cols-4 gap-2">
@@ -259,12 +259,12 @@ export function AmenitiesFormSection({
       {/* ── 3. Basic Amenities ── */}
       <div className="dp-card p-6">
         <div className="flex items-center gap-2.5 mb-4">
-          <div className="w-8 h-8 rounded-xl bg-[#5b21b6]/10 flex items-center justify-center">
-            <Check className="w-4 h-4 text-[#5b21b6]" />
+          <div className="w-8 h-8 rounded-xl bg-[#166534]/10 flex items-center justify-center">
+            <Check className="w-4 h-4 text-[#166534]" />
           </div>
           <div>
             <h3 className={SH} style={{ fontFamily: "Outfit, sans-serif" }}>Basic Amenities</h3>
-            <p className="text-[11px] text-[#111111]/35 font-medium mt-0.5">Tap to toggle available amenities</p>
+            <p className="text-[11px] text-[#0c2417]/35 font-medium mt-0.5">Tap to toggle available amenities</p>
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -281,23 +281,23 @@ export function AmenitiesFormSection({
       {/* ── 4. Air Conditioning ── */}
       <div className="dp-card p-6">
         <div className="flex items-center gap-2.5 mb-4">
-          <div className="w-8 h-8 rounded-xl bg-[#5b21b6]/10 flex items-center justify-center">
-            <Wind className="w-4 h-4 text-[#5b21b6]" />
+          <div className="w-8 h-8 rounded-xl bg-[#166534]/10 flex items-center justify-center">
+            <Wind className="w-4 h-4 text-[#166534]" />
           </div>
           <div>
             <h3 className={SH} style={{ fontFamily: "Outfit, sans-serif" }}>Air Conditioning</h3>
-            <p className="text-[11px] text-[#111111]/35 font-medium mt-0.5">AC availability and unit count</p>
+            <p className="text-[11px] text-[#0c2417]/35 font-medium mt-0.5">AC availability and unit count</p>
           </div>
         </div>
         <div
           onClick={() => { set("airConditioning", !form.airConditioning); if (form.airConditioning) set("acCount", 0); }}
           className={`flex items-center justify-between p-4 rounded-2xl border cursor-pointer select-none mb-3 transition-all ${
-            form.airConditioning ? "bg-[#5b21b6]/[0.05] border-[#5b21b6]/20" : "bg-gray-50/60 border-gray-100"
+            form.airConditioning ? "bg-[#166534]/[0.05] border-[#166534]/20" : "bg-gray-50/60 border-gray-100"
           }`}
         >
           <div>
-            <p className="text-[13px] font-bold text-[#111111]">Air Conditioning Installed</p>
-            <p className="text-[11px] text-[#111111]/35 font-medium">AC units available in property</p>
+            <p className="text-[13px] font-bold text-[#0c2417]">Air Conditioning Installed</p>
+            <p className="text-[11px] text-[#0c2417]/35 font-medium">AC units available in property</p>
           </div>
           <Toggle checked={form.airConditioning} onChange={() => {}} />
         </div>
@@ -308,7 +308,7 @@ export function AmenitiesFormSection({
               {[1, 2, 3, 4, 5].map(n => (
                 <button key={n} type="button" onClick={() => set("acCount", n)}
                   className={`py-3 rounded-2xl text-sm font-black transition-all border ${
-                    form.acCount === n ? "bg-[#5b21b6] text-white border-[#5b21b6]" : "bg-white text-[#111111]/50 border-gray-200 hover:border-[#5b21b6]/30 hover:text-[#5b21b6]"
+                    form.acCount === n ? "bg-[#166534] text-white border-[#166534]" : "bg-white text-[#0c2417]/50 border-gray-200 hover:border-[#166534]/30 hover:text-[#166534]"
                   }`}
                 >
                   {n}{n === 5 ? "+" : ""}
@@ -322,19 +322,19 @@ export function AmenitiesFormSection({
       {/* ── 5. Furnishing ── */}
       <div className="dp-card p-6">
         <div className="flex items-center gap-2.5 mb-4">
-          <div className="w-8 h-8 rounded-xl bg-[#5b21b6]/10 flex items-center justify-center">
-            <BedDouble className="w-4 h-4 text-[#5b21b6]" />
+          <div className="w-8 h-8 rounded-xl bg-[#166534]/10 flex items-center justify-center">
+            <BedDouble className="w-4 h-4 text-[#166534]" />
           </div>
           <div>
             <h3 className={SH} style={{ fontFamily: "Outfit, sans-serif" }}>Furnishing Details</h3>
-            <p className="text-[11px] text-[#111111]/35 font-medium mt-0.5">Furnishing level and inventory</p>
+            <p className="text-[11px] text-[#0c2417]/35 font-medium mt-0.5">Furnishing level and inventory</p>
           </div>
         </div>
         <div className="grid grid-cols-3 gap-2 mb-4">
           {(["unfurnished", "semi-furnished", "fully-furnished"] as const).map(fs => (
             <button key={fs} type="button" onClick={() => set("furnishingStatus", fs)}
               className={`py-3 rounded-2xl text-[12px] font-bold transition-all border ${
-                form.furnishingStatus === fs ? "bg-[#5b21b6] text-white border-[#5b21b6] shadow-sm" : "bg-white text-[#111111]/50 border-gray-200 hover:border-[#5b21b6]/30 hover:text-[#5b21b6]"
+                form.furnishingStatus === fs ? "bg-[#166534] text-white border-[#166534] shadow-sm" : "bg-white text-[#0c2417]/50 border-gray-200 hover:border-[#166534]/30 hover:text-[#166534]"
               }`}
             >
               {fs === "unfurnished" ? "Unfurnished" : fs === "semi-furnished" ? "Semi-Furnished" : "Fully Furnished"}
@@ -342,16 +342,16 @@ export function AmenitiesFormSection({
           ))}
         </div>
         {form.furnishingStatus !== "unfurnished" && listingType !== "sale" && (
-          <div className="space-y-3 pt-3 border-t border-[rgba(91,33,182,0.06)]">
+          <div className="space-y-3 pt-3 border-t border-[rgba(22,101,52,0.06)]">
             <div>
               <label className={label}>Total Beds Across All Rooms</label>
               <div className="flex items-center gap-3">
                 <button type="button" onClick={() => set("bedsCount", Math.max(0, form.bedsCount - 1))}
-                  className="w-10 h-10 rounded-xl border border-gray-200 font-black text-[#111111]/40 hover:border-[#5b21b6]/30 hover:text-[#5b21b6] transition-all flex items-center justify-center text-lg">−</button>
-                <span className="text-2xl font-black text-[#111111] w-10 text-center" style={{ fontFamily: "Outfit, sans-serif" }}>{form.bedsCount}</span>
+                  className="w-10 h-10 rounded-xl border border-gray-200 font-black text-[#0c2417]/40 hover:border-[#166534]/30 hover:text-[#166534] transition-all flex items-center justify-center text-lg">−</button>
+                <span className="text-2xl font-black text-[#0c2417] w-10 text-center" style={{ fontFamily: "Outfit, sans-serif" }}>{form.bedsCount}</span>
                 <button type="button" onClick={() => set("bedsCount", Math.min(20, form.bedsCount + 1))}
-                  className="w-10 h-10 rounded-xl border border-gray-200 font-black text-[#111111]/40 hover:border-[#5b21b6]/30 hover:text-[#5b21b6] transition-all flex items-center justify-center text-lg">+</button>
-                <span className="text-sm font-medium text-[#111111]/35">beds</span>
+                  className="w-10 h-10 rounded-xl border border-gray-200 font-black text-[#0c2417]/40 hover:border-[#166534]/30 hover:text-[#166534] transition-all flex items-center justify-center text-lg">+</button>
+                <span className="text-sm font-medium text-[#0c2417]/35">beds</span>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -365,12 +365,12 @@ export function AmenitiesFormSection({
       {/* ── 6. Water Supply ── */}
       <div className="dp-card p-6">
         <div className="flex items-center gap-2.5 mb-4">
-          <div className="w-8 h-8 rounded-xl bg-[#5b21b6]/10 flex items-center justify-center">
-            <Droplets className="w-4 h-4 text-[#5b21b6]" />
+          <div className="w-8 h-8 rounded-xl bg-[#166534]/10 flex items-center justify-center">
+            <Droplets className="w-4 h-4 text-[#166534]" />
           </div>
           <div>
             <h3 className={SH} style={{ fontFamily: "Outfit, sans-serif" }}>Water Supply</h3>
-            <p className="text-[11px] text-[#111111]/35 font-medium mt-0.5">Primary water source for the property</p>
+            <p className="text-[11px] text-[#0c2417]/35 font-medium mt-0.5">Primary water source for the property</p>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2">
@@ -382,17 +382,17 @@ export function AmenitiesFormSection({
           ]).map(({ value, label: l, sub }) => (
             <button key={value} type="button" onClick={() => set("waterSupply", value)}
               className={`flex items-start gap-2.5 p-3.5 rounded-2xl border text-left transition-all ${
-                form.waterSupply === value ? "bg-[#5b21b6]/[0.05] border-[#5b21b6]/20" : "bg-white border-gray-100 hover:border-[#5b21b6]/15 hover:bg-gray-50/60"
+                form.waterSupply === value ? "bg-[#166534]/[0.05] border-[#166534]/20" : "bg-white border-gray-100 hover:border-[#166534]/15 hover:bg-gray-50/60"
               }`}
             >
               <div className={`w-4 h-4 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center transition-colors ${
-                form.waterSupply === value ? "border-[#5b21b6] bg-[#5b21b6]" : "border-gray-300"
+                form.waterSupply === value ? "border-[#166534] bg-[#166534]" : "border-gray-300"
               }`}>
                 {form.waterSupply === value && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
               </div>
               <div>
-                <p className={`text-[13px] font-bold transition-colors ${form.waterSupply === value ? "text-[#5b21b6]" : "text-[#111111]"}`}>{l}</p>
-                <p className="text-[11px] text-[#111111]/35 font-medium mt-0.5">{sub}</p>
+                <p className={`text-[13px] font-bold transition-colors ${form.waterSupply === value ? "text-[#166534]" : "text-[#0c2417]"}`}>{l}</p>
+                <p className="text-[11px] text-[#0c2417]/35 font-medium mt-0.5">{sub}</p>
               </div>
             </button>
           ))}
@@ -407,22 +407,22 @@ export function AmenitiesFormSection({
         {listingType !== "sale" && (
           <div>
             <div className="flex items-center gap-2 mb-1.5">
-              <Lock className="w-3.5 h-3.5 text-[#5b21b6]/60" />
+              <Lock className="w-3.5 h-3.5 text-[#166534]/60" />
               <label className={label.replace("mb-1.5", "mb-0")}>Security Deposit Amount (₹)</label>
             </div>
             <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#111111]/30 font-bold text-sm">₹</span>
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#0c2417]/30 font-bold text-sm">₹</span>
               <input type="number" min="0" value={form.securityDeposit}
                 onChange={e => set("securityDeposit", e.target.value)}
                 placeholder="Enter security deposit amount"
                 className="dp-input pl-8" style={{ borderRadius: "0.875rem" }} />
             </div>
-            <p className="text-[11px] text-[#111111]/30 font-medium mt-1.5">Refundable amount collected from tenant</p>
+            <p className="text-[11px] text-[#0c2417]/30 font-medium mt-1.5">Refundable amount collected from tenant</p>
           </div>
         )}
         <div>
           <div className="flex items-center gap-2 mb-1.5">
-            <MapPin className="w-3.5 h-3.5 text-[#5b21b6]/60" />
+            <MapPin className="w-3.5 h-3.5 text-[#166534]/60" />
             <label className={label.replace("mb-1.5", "mb-0")}>Distance from Nearest Landmark</label>
           </div>
           <div className="relative">
@@ -430,9 +430,9 @@ export function AmenitiesFormSection({
               onChange={e => set("distanceFromLocation", e.target.value)}
               placeholder="e.g. 2"
               className="dp-input pr-14" style={{ borderRadius: "0.875rem" }} />
-            <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#111111]/30 font-bold text-sm">km</span>
+            <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#0c2417]/30 font-bold text-sm">km</span>
           </div>
-          <p className="text-[11px] text-[#111111]/30 font-medium mt-1.5">Distance from metro, school, or major landmark</p>
+          <p className="text-[11px] text-[#0c2417]/30 font-medium mt-1.5">Distance from metro, school, or major landmark</p>
         </div>
       </div>
 
@@ -441,7 +441,7 @@ export function AmenitiesFormSection({
       )}
 
       {/* Sticky footer */}
-      <div className="fixed bottom-0 left-0 right-0 z-20 bg-white/90 backdrop-blur-md border-t border-[rgba(91,33,182,0.08)] px-4 py-3 flex items-center justify-end gap-3 lg:left-64">
+      <div className="fixed bottom-0 left-0 right-0 z-20 bg-white/90 backdrop-blur-md border-t border-[rgba(22,101,52,0.08)] px-4 py-3 flex items-center justify-end gap-3 lg:left-64">
         {saved && (
           <span className="flex items-center gap-1.5 text-emerald-600 text-[12px] font-bold mr-auto">
             <Check className="w-3.5 h-3.5" />
@@ -450,7 +450,7 @@ export function AmenitiesFormSection({
         )}
         {onSkip && (
           <button type="button" onClick={onSkip}
-            className="px-5 h-11 flex items-center gap-2 rounded-xl text-sm font-bold text-[#111111]/40 border border-[rgba(91,33,182,0.08)] hover:bg-[#f8f9fa] hover:text-[#111111] transition-all">
+            className="px-5 h-11 flex items-center gap-2 rounded-xl text-sm font-bold text-[#0c2417]/40 border border-[rgba(22,101,52,0.08)] hover:bg-[#f4f9f6] hover:text-[#0c2417] transition-all">
             <SkipForward className="w-4 h-4" />Skip for now
           </button>
         )}

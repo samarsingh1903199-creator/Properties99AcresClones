@@ -29,6 +29,23 @@ export const getProperties = asyncHandler(async (req: Request, res: Response) =>
   res.json({ success: true, count: list.length, data: list });
 });
 
+/** Authenticated dealer/admin: list highlighted properties owned by the user */
+export const getMyHighlightedProperties = asyncHandler(async (req: Request, res: Response) => {
+  const authReq = req as AuthRequest;
+  const take = Math.min(Number(req.query.limit) || 50, 100);
+
+  const filter: Record<string, unknown> = { isHighlighted: true };
+  if (authReq.user?.role !== "admin") {
+    filter.ownerId = authReq.user?.userId;
+  }
+
+  const list = await PropertyModel.find(filter)
+    .sort({ highlightedAt: -1, createdAt: -1 })
+    .limit(take);
+
+  res.json({ success: true, count: list.length, data: list });
+});
+
 export const getProperty = asyncHandler(async (req: Request, res: Response) => {
   const authReq = req as AuthRequest;
   const property = await PropertyModel.findOneAndUpdate(
@@ -42,16 +59,23 @@ export const getProperty = asyncHandler(async (req: Request, res: Response) => {
 
 export const createProperty = asyncHandler(async (req: Request, res: Response) => {
   const authReq = req as AuthRequest;
-  const { title, type, listingType, price, area, bedrooms, bathrooms, location, city, description, images, status, amenities, saleDetails } = req.body;
+  const { title, type, listingType, price, area, bedrooms, bathrooms, address, description, images, status, amenities, saleDetails } = req.body;
 
-  if (!title || !type || !listingType || !price || !area || !location || !city) {
-    res.status(400).json({ success: false, message: "title, type, listingType, price, area, location and city are required" });
+  if (!title || !type || !listingType || !price || !area) {
+    res.status(400).json({ success: false, message: "title, type, listingType, price, and area are required" });
     return;
   }
 
-  const VALID_TYPES = ["apartment", "villa", "plot", "commercial", "penthouse"];
-  if (!VALID_TYPES.includes(type)) {
-    res.status(400).json({ success: false, message: `type must be one of: ${VALID_TYPES.join(", ")}` });
+  if (!address || typeof address !== "object") {
+    res.status(400).json({ success: false, message: "address object is required" });
+    return;
+  }
+  if (!String(address.city  ?? "").trim()) {
+    res.status(400).json({ success: false, message: "address.city is required" });
+    return;
+  }
+  if (!String(address.street ?? "").trim()) {
+    res.status(400).json({ success: false, message: "address.street is required" });
     return;
   }
 
@@ -59,7 +83,9 @@ export const createProperty = asyncHandler(async (req: Request, res: Response) =
     title, type: type as PropertyType, listingType: listingType as ListingType,
     price: Number(price), area: Number(area),
     bedrooms: Number(bedrooms ?? 1), bathrooms: Number(bathrooms ?? 1),
-    location, city,
+    location: String(address.street).trim(),
+    city:     String(address.city).trim(),
+    address,
     description: description ?? "",
     images: images ?? [],
     status: (status ?? "draft") as PropertyStatus,
@@ -73,9 +99,15 @@ export const createProperty = asyncHandler(async (req: Request, res: Response) =
 
 export const updateProperty = asyncHandler(async (req: Request, res: Response) => {
   const authReq = req as AuthRequest;
-  const allowed = ["title","type","listingType","price","area","bedrooms","bathrooms","location","city","description","images","status","amenities","saleDetails"];
+  const allowed = ["title","type","listingType","price","area","bedrooms","bathrooms","address","description","images","status","amenities","saleDetails"];
   const updates: Record<string, unknown> = {};
   allowed.forEach((k) => { if (req.body[k] !== undefined) updates[k] = req.body[k]; });
+
+  // Always derive flat location/city from address so both representations stay in sync
+  if (req.body.address) {
+    if (req.body.address.street) updates.location = String(req.body.address.street).trim();
+    if (req.body.address.city)   updates.city     = String(req.body.address.city).trim();
+  }
 
   const property = await PropertyModel.findOneAndUpdate(
     { _id: req.params.id, ownerId: authReq.user?.userId },
@@ -145,4 +177,44 @@ export const upsertPropertyAmenities = asyncHandler(async (req: Request, res: Re
   );
   if (!property) { res.status(404).json({ success: false, message: "Property not found" }); return; }
   res.json({ success: true, propertyId: req.params.id, data: property.amenities });
+});
+
+/** Mark or unmark a property as highlighted (dealer: own listings; admin: any) */
+export const setPropertyHighlighted = asyncHandler(async (req: Request, res: Response) => {
+  const authReq = req as AuthRequest;
+  const { highlighted } = req.body;
+
+  if (typeof highlighted !== "boolean") {
+    res.status(400).json({ success: false, message: "highlighted (boolean) is required" });
+    return;
+  }
+
+  const filter: Record<string, unknown> = { _id: req.params.id };
+  if (authReq.user?.role !== "admin") {
+    filter.ownerId = authReq.user?.userId;
+  }
+
+  const property = await PropertyModel.findOne(filter);
+  if (!property) {
+    res.status(404).json({ success: false, message: "Property not found" });
+    return;
+  }
+
+  if (highlighted && !["active", "pending"].includes(property.status)) {
+    res.status(400).json({
+      success: false,
+      message: "Only active or pending properties can be highlighted",
+    });
+    return;
+  }
+
+  property.isHighlighted = highlighted;
+  property.highlightedAt = highlighted ? new Date() : undefined;
+  await property.save();
+
+  res.json({
+    success: true,
+    message: highlighted ? "Property marked as highlighted" : "Property removed from highlights",
+    data: property,
+  });
 });

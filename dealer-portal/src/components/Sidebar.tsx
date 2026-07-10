@@ -1,14 +1,16 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Building2, LayoutDashboard, Home, MessageSquare,
-  BarChart3, User, LogOut, ShieldCheck, Tag,
+  BarChart3, User, LogOut, ShieldCheck, Tag, Sparkles,
 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { ROUTES } from "../constants/routes";
+import { isSidebarNavActive } from "../lib/navMatch";
 
 const NAV = [
   { to: ROUTES.DASHBOARD,  icon: LayoutDashboard, label: "Dashboard"     },
   { to: ROUTES.PROPERTIES, icon: Home,             label: "My Properties" },
+  { to: ROUTES.HIGHLIGHTED_PROPERTIES, icon: Sparkles, label: "Highlighted" },
   { to: ROUTES.CATEGORIES, icon: Tag,              label: "Categories"    },
   { to: ROUTES.INQUIRIES,  icon: MessageSquare,    label: "Inquiries"     },
   { to: ROUTES.ANALYTICS,  icon: BarChart3,        label: "Analytics"     },
@@ -17,72 +19,81 @@ const NAV = [
 
 export function Sidebar() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useAuthStore();
 
   return (
-    <aside className="w-[240px] shrink-0 flex flex-col bg-white border-r border-[rgba(91,33,182,0.06)]"
-      style={{ boxShadow: "2px 0 20px -8px rgba(91,33,182,0.08)" }}>
+    <aside className="dp-sidebar w-[240px] shrink-0 flex flex-col shadow-xl">
 
       {/* Brand */}
-      <div className="flex items-center gap-3 px-5 py-5 border-b border-[rgba(91,33,182,0.06)]">
-        <div className="w-9 h-9 rounded-xl bg-[#5b21b6] flex items-center justify-center shadow-lg"
-          style={{ boxShadow: "0 4px 14px -4px rgba(91,33,182,0.4)" }}>
+      <div className="flex items-center gap-3 px-5 py-5 border-b border-white/10">
+        <div
+          className="w-9 h-9 rounded-xl flex items-center justify-center"
+          style={{
+            background: "linear-gradient(135deg, #14532d, #15803d)",
+            boxShadow: "0 4px 14px -4px rgba(22,101,52,0.6)",
+          }}
+        >
           <Building2 className="w-4 h-4 text-white" />
         </div>
         <div>
-          <p className="font-black text-sm text-[#111111] tracking-tight leading-none"
-            style={{ fontFamily: "Outfit, sans-serif" }}>VEX</p>
-          <p className="text-[10px] text-[#111111]/40 mt-0.5 font-medium">Dealer Portal</p>
+          <p className="font-semibold text-sm text-white tracking-tight leading-none font-sans">
+            Aetheria
+          </p>
+          <p className="text-[10px] text-white/45 mt-0.5 font-medium font-sans">Dealer Portal</p>
         </div>
       </div>
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-0.5">
-        {NAV.map(({ to, icon: Icon, label }) => (
-          <NavLink
+        {NAV.map(({ to, icon: Icon, label }) => {
+          const active = isSidebarNavActive(location.pathname, to);
+          return (
+          <Link
             key={to}
             to={to}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                isActive
-                  ? "bg-[#5b21b6] text-white shadow-lg"
-                  : "text-[#111111]/50 hover:text-[#111111] hover:bg-[#f8f9fa]"
-              }`
-            }
-            style={({ isActive }) =>
-              isActive ? { boxShadow: "0 4px 14px -4px rgba(91,33,182,0.4)" } : {}
-            }
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 font-sans ${
+              active
+                ? "bg-accent text-on-primary shadow-lg"
+                : "text-white/55 hover:text-white hover:bg-white/8"
+            }`}
+            style={active ? { boxShadow: "0 4px 14px -4px rgba(22,101,52,0.5)" } : {}}
           >
             <Icon className="w-4 h-4 shrink-0" />
-            <span style={{ fontFamily: "Inter, sans-serif" }}>{label}</span>
-          </NavLink>
-        ))}
+            {label}
+          </Link>
+          );
+        })}
       </nav>
 
       {/* User footer */}
-      <div className="px-3 pb-4 pt-3 border-t border-[rgba(91,33,182,0.06)]">
+      <div className="px-3 pb-4 pt-3 border-t border-white/10">
         {user?.verified && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 mb-3 rounded-xl bg-emerald-50 border border-emerald-100">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-            <span className="text-xs font-bold text-emerald-700 capitalize">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 mb-3 rounded-xl bg-emerald-500/15 border border-emerald-400/25">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <span className="text-xs font-semibold text-emerald-300 capitalize font-sans">
               Verified {user.role}
             </span>
           </div>
         )}
         <div className="flex items-center gap-3 px-3 py-2 mb-1">
-          <div className="w-8 h-8 rounded-full bg-[#5b21b6] flex items-center justify-center shrink-0 shadow-md">
-            <span className="text-xs font-black text-white">
+          <div
+            className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+            style={{ background: "linear-gradient(135deg, #166534, #15803d)" }}
+          >
+            <span className="text-xs font-bold text-white font-sans">
               {user?.name?.charAt(0).toUpperCase()}
             </span>
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-bold text-[#111111] truncate">{user?.name}</p>
-            <p className="text-[10px] text-[#111111]/40 capitalize truncate font-medium">{user?.role}</p>
+            <p className="text-xs font-semibold text-white truncate font-sans">{user?.name}</p>
+            <p className="text-[10px] text-white/40 capitalize truncate font-sans">{user?.role}</p>
           </div>
         </div>
         <button
+          type="button"
           onClick={() => { logout(); navigate(ROUTES.LOGIN); }}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm w-full text-[#111111]/40 font-semibold hover:text-red-500 hover:bg-red-50 transition-all duration-200"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm w-full text-white/45 font-medium hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 font-sans"
         >
           <LogOut className="w-4 h-4" />
           Sign out

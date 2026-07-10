@@ -7,8 +7,7 @@ import { useAuthStore } from "@/src/store/useAuthStore";
 import { useWishlistStore } from "@/src/store/useWishlistStore";
 import { authApi } from "@/src/services/api";
 
-const inputBase =
-  "w-full bg-white border border-gray-200 rounded-2xl py-4 pl-12 pr-4 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-luxury-purple/50 focus:ring-2 focus:ring-luxury-purple/10 transition-all font-medium";
+const inputBase = "form-input pl-11 w-full";
 
 export const LoginPage = () => {
   const [email, setEmail]       = useState("");
@@ -36,34 +35,27 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-luxury-gray flex items-center justify-center px-4 py-12 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-96 h-96 bg-luxury-purple/8 rounded-full blur-[120px] translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-luxury-purple/8 rounded-full blur-[120px] -translate-x-1/2 translate-y-1/2 pointer-events-none" />
-
+    <div className="min-h-screen bg-canvas-soft flex items-center justify-center px-4 py-12">
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
         className="w-full max-w-md"
       >
-        {/* Logo + title */}
         <div className="flex flex-col items-center mb-8 text-center">
           <Link
             to="/"
-            className="w-14 h-14 bg-luxury-purple rounded-2xl flex items-center justify-center shadow-lg shadow-luxury-purple/25 mb-5 hover:rotate-6 transition-transform"
+            className="w-12 h-12 bg-ink rounded-lg flex items-center justify-center mb-5"
           >
-            <Landmark className="text-white w-7 h-7" />
+            <Landmark className="text-on-primary w-6 h-6" />
           </Link>
-          <h1 className="text-3xl font-display font-black tracking-tight text-luxury-black mb-1.5">
-            Welcome back
-          </h1>
-          <p className="text-sm text-gray-400 font-medium">
+          <h1 className="text-display-md mb-2">Welcome back.</h1>
+          <p className="text-body-sm text-body">
             Sign in to your Aetheria account.
           </p>
         </div>
 
-        {/* Card */}
-        <div className="bg-white rounded-3xl shadow-xl shadow-black/5 border border-gray-100 p-8">
+        <div className="card-marketing p-8">
           <form onSubmit={handleLogin} className="space-y-4">
 
             {/* Error */}
@@ -75,7 +67,7 @@ export const LoginPage = () => {
 
             {/* Email */}
             <div className="relative group">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-gray-300 group-focus-within:text-luxury-purple transition-colors" />
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-mute" />
               <input
                 type="email"
                 placeholder="Email address"
@@ -91,7 +83,7 @@ export const LoginPage = () => {
 
             {/* Password */}
             <div className="relative group">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-gray-300 group-focus-within:text-luxury-purple transition-colors" />
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-mute" />
               <input
                 type="password"
                 placeholder="Password"
@@ -109,7 +101,7 @@ export const LoginPage = () => {
             <div className="flex justify-end">
               <Link
                 to="#"
-                className="text-xs text-luxury-purple font-semibold hover:underline underline-offset-4"
+                className="text-xs text-link font-medium hover:underline underline-offset-4"
               >
                 Forgot password?
               </Link>
@@ -119,7 +111,7 @@ export const LoginPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-13 bg-luxury-purple hover:bg-luxury-purple/90 active:scale-[0.98] text-white text-sm font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-luxury-purple/25 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+              className="btn-primary w-full disabled:opacity-60"
             >
               {loading ? (
                 <>
@@ -134,14 +126,13 @@ export const LoginPage = () => {
 
           {/* Divider */}
           <div className="flex items-center gap-4 my-6">
-            <div className="flex-1 h-px bg-gray-100" />
-            <span className="text-xs text-gray-400 font-medium">or continue with</span>
-            <div className="flex-1 h-px bg-gray-100" />
+            <div className="flex-1 h-px bg-hairline" />
+            <span className="text-xs text-mute">or continue with</span>
+            <div className="flex-1 h-px bg-hairline" />
           </div>
 
-          {/* Social buttons */}
           <div className="grid grid-cols-2 gap-3">
-            <button type="button" className="flex items-center justify-center gap-2.5 h-12 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 active:scale-[0.97] transition-all text-sm font-semibold text-gray-700 shadow-sm">
+            <button type="button" className="btn-secondary h-11 text-sm w-full">
               <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -150,7 +141,7 @@ export const LoginPage = () => {
               </svg>
               Google
             </button>
-            <button type="button" className="flex items-center justify-center gap-2.5 h-12 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 active:scale-[0.97] transition-all text-sm font-semibold text-gray-700 shadow-sm">
+            <button type="button" className="btn-secondary h-11 text-sm w-full">
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="#1877F2">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
               </svg>
@@ -160,9 +151,9 @@ export const LoginPage = () => {
         </div>
 
         {/* Register link */}
-        <p className="text-center text-sm text-gray-400 mt-6">
+        <p className="text-center text-body-sm text-body mt-6">
           Don't have an account?{" "}
-          <Link to={ROUTES.AUTH.SIGNUP} className="text-luxury-purple font-bold hover:underline underline-offset-4">
+          <Link to={ROUTES.AUTH.SIGNUP} className="text-link font-medium hover:underline underline-offset-4">
             Sign up
           </Link>
         </p>

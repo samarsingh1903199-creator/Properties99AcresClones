@@ -5,24 +5,47 @@ import {
   Home, Key, Building2, Palmtree, Hotel, Warehouse,
   Tent, Trees, Layers, Sparkles, IndianRupee, Users, MapPin,
   Check, ChevronLeft, ChevronRight, ChevronDown,
-  SlidersHorizontal, RotateCcw, Bed, type LucideIcon,
+  SlidersHorizontal, RotateCcw, Bed, Crown, Briefcase, Map, LayoutGrid, type LucideIcon,
 } from "lucide-react";
+import { categoriesApi, type ApiCategory } from "@/src/services/api";
+import { ALL_CATEGORY_SLUG } from "@/src/lib/listingCategory";
+
+/* ─── Icon Mapping ─────────────────────────────────────────────── */
+const ICON_MAP: Record<string, LucideIcon> = {
+  "key": Key, "home": Home, "building2": Building2, "palmtree": Palmtree,
+  "hotel": Hotel, "warehouse": Warehouse, "tent": Tent, "trees": Trees,
+  "layers": Layers, "sparkles": Sparkles, "bed": Bed, "crown": Crown,
+  "tree-palm": Palmtree, "briefcase": Briefcase, "map": Map, "users": Users,
+};
+
+const getIcon = (iconName: string | null): LucideIcon => {
+  if (!iconName) return Home;
+  const icon = ICON_MAP[iconName.toLowerCase()];
+  return icon || Home;
+};
 
 /* ─── Data ───────────────────────────────────────────────────────── */
-const CATEGORIES = [
-  { id: "rent",       label: "For Rent",      icon: Key       },
-  { id: "sale",       label: "For Sale",      icon: Home      },
-  { id: "lease",      label: "Lease",         icon: Layers    },
-  { id: "luxury",     label: "Luxury Homes",  icon: Sparkles  },
-  { id: "apartments", label: "Apartments",    icon: Building2 },
-  { id: "villas",     label: "Villas",        icon: Palmtree  },
-  { id: "commercial", label: "Commercial",    icon: Warehouse },
-  { id: "plots",      label: "Plots",         icon: Trees     },
-  { id: "projects",   label: "New Projects",  icon: Hotel     },
-  { id: "co-living",  label: "PG / Co-Living",icon: Tent      },
+const FALLBACK_CATEGORIES = [
+  { id: "rent", label: "For Rent", icon: Key },
+  { id: "sale", label: "For Sale", icon: Home },
+  { id: "lease", label: "For Lease", icon: Briefcase },
 ] as const;
 
-export type HomeCategoryId   = (typeof CATEGORIES)[number]["id"];
+export type HomeCategoryId   = string;
+export { ALL_CATEGORY_SLUG } from "@/src/lib/listingCategory";
+
+const ALL_TAB = {
+  _id: "all",
+  name: "All",
+  slug: ALL_CATEGORY_SLUG,
+  categoryType: "listing" as const,
+  order: 0,
+  isActive: true,
+  matchValues: [] as string[],
+  icon: "layout-grid",
+  createdAt: new Date().toISOString(),
+  iconComponent: LayoutGrid,
+};
 export type SmartFilterGroup = "price" | "tenant" | "distance";
 export type SmartFilters     = Record<SmartFilterGroup, string>;
 
@@ -74,13 +97,62 @@ const GROUP_META: Record<SmartFilterGroup, {
 interface CategoryTabsProps {
   activeTab: HomeCategoryId;
   onTabChange: (tab: HomeCategoryId) => void;
+  listingCategories?: ApiCategory[];
+  tabCounts?: Record<string, number>;
 }
 
-export const CategoryTabs = ({ activeTab, onTabChange }: CategoryTabsProps) => {
+function buildTabsFromCategories(source: ApiCategory[]): (ApiCategory & { iconComponent: LucideIcon })[] {
+  return [
+    ALL_TAB,
+    ...source.map(cat => ({
+      ...cat,
+      iconComponent: getIcon(cat.icon),
+    })),
+  ];
+}
+
+function buildFallbackTabs(): (ApiCategory & { iconComponent: LucideIcon })[] {
+  return [
+    ALL_TAB,
+    ...FALLBACK_CATEGORIES.map(cat => ({
+      ...cat,
+      _id: cat.id,
+      name: cat.label,
+      slug: cat.id,
+      categoryType: "listing" as const,
+      order: 0,
+      isActive: true,
+      matchValues: cat.id === "rent" ? ["rent"] : cat.id === "lease" ? ["lease"] : ["buy", "sale"],
+      createdAt: new Date().toISOString(),
+      iconComponent: cat.icon,
+      icon: "",
+    })),
+  ];
+}
+
+export const CategoryTabs = ({ activeTab, onTabChange, listingCategories, tabCounts }: CategoryTabsProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft,  setCanScrollLeft]  = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const [hoveredId,      setHoveredId]      = useState<string | null>(null);
+  const [categories, setCategories] = useState<(ApiCategory & { iconComponent: LucideIcon })[]>(() =>
+    listingCategories?.length ? buildTabsFromCategories(listingCategories) : [],
+  );
+
+  useEffect(() => {
+    if (listingCategories?.length) {
+      setCategories(buildTabsFromCategories(listingCategories));
+      return;
+    }
+
+    categoriesApi.list("listing")
+      .then((res) => {
+        setCategories(buildTabsFromCategories(
+          res.data.filter(c => c.isActive !== false).sort((a, b) => a.order - b.order || a.name.localeCompare(b.name)),
+        ));
+      })
+      .catch(() => setCategories(buildFallbackTabs()));
+  }, [listingCategories]);
 
   const checkScroll = () => {
     const el = scrollRef.current;
@@ -113,22 +185,22 @@ export const CategoryTabs = ({ activeTab, onTabChange }: CategoryTabsProps) => {
       const offset = activeBtn.offsetLeft - el.clientWidth / 2 + activeBtn.offsetWidth / 2;
       el.scrollTo({ left: offset, behavior: "smooth" });
     }
-  }, [activeTab]);
+  }, [activeTab, categories]);
 
   return (
-    <div className="w-full bg-white border-b border-luxury-purple/5 py-4 shadow-sm">
-      <div className="relative px-4 md:px-8">
+    <div className="w-full py-1">
+      <div className="relative max-w-[1400px] mx-auto">
 
         <AnimatePresence>
           {canScrollLeft && (
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white via-white/90 to-transparent z-10 flex items-center pl-1 pointer-events-none"
+              className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-canvas via-canvas/90 to-transparent z-10 flex items-center pl-1 pointer-events-none"
             >
               <motion.button
                 onClick={() => scroll("left")}
                 whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.92 }}
-                className="pointer-events-auto w-8 h-8 rounded-xl bg-white border border-luxury-purple/10 shadow-md flex items-center justify-center text-luxury-black/40 hover:text-luxury-purple hover:border-luxury-purple/30 hover:shadow-lg transition-all"
+                className="pointer-events-auto w-8 h-8 rounded-full bg-canvas border border-hairline shadow-elevated-2 flex items-center justify-center text-mute hover:text-ink transition-all"
               >
                 <ChevronLeft size={15} />
               </motion.button>
@@ -140,12 +212,12 @@ export const CategoryTabs = ({ activeTab, onTabChange }: CategoryTabsProps) => {
           {canScrollRight && (
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white via-white/90 to-transparent z-10 flex items-center justify-end pr-1 pointer-events-none"
+              className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-canvas via-canvas/90 to-transparent z-10 flex items-center justify-end pr-1 pointer-events-none"
             >
               <motion.button
                 onClick={() => scroll("right")}
                 whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.92 }}
-                className="pointer-events-auto w-8 h-8 rounded-xl bg-white border border-luxury-purple/10 shadow-md flex items-center justify-center text-luxury-black/40 hover:text-luxury-purple hover:border-luxury-purple/30 hover:shadow-lg transition-all"
+                className="pointer-events-auto w-8 h-8 rounded-full bg-canvas border border-hairline shadow-elevated-2 flex items-center justify-center text-mute hover:text-ink transition-all"
               >
                 <ChevronRight size={15} />
               </motion.button>
@@ -154,65 +226,46 @@ export const CategoryTabs = ({ activeTab, onTabChange }: CategoryTabsProps) => {
         </AnimatePresence>
 
         <div ref={scrollRef} className="overflow-x-auto hide-scrollbar" onScroll={checkScroll}>
-          <div className="flex items-center gap-1 min-w-max py-1">
-            {CATEGORIES.map((cat) => {
-              const isActive  = activeTab === cat.id;
-              const isHovered = hoveredId === cat.id;
+          <div className="flex items-center justify-center gap-2 min-w-max py-1 mx-auto">
+            {categories.map((cat) => {
+              const isActive  = activeTab === cat.slug;
+              const isHovered = hoveredId === cat.slug;
 
               return (
                 <motion.button
-                  key={cat.id}
-                  data-cat={cat.id}
-                  onClick={() => onTabChange(cat.id)}
-                  onHoverStart={() => setHoveredId(cat.id)}
+                  key={cat._id}
+                  data-cat={cat.slug}
+                  onClick={() => onTabChange(cat.slug)}
+                  onHoverStart={() => setHoveredId(cat.slug)}
                   onHoverEnd={() => setHoveredId(null)}
-                  whileTap={{ scale: 0.95 }}
-                  className="relative flex items-center gap-2.5 px-5 py-2.5 rounded-xl whitespace-nowrap select-none outline-none focus-visible:ring-2 focus-visible:ring-luxury-purple/40"
+                  whileTap={{ scale: 0.98 }}
+                  className={cn(
+                    "tab-ghost gap-2",
+                    isActive && "tab-ghost-active shadow-elevated-2",
+                    !isActive && isHovered && "bg-canvas-soft-2"
+                  )}
                 >
-                  {isActive && (
-                    <motion.span
-                      layoutId="category-active-pill"
-                      className="absolute inset-0 rounded-xl bg-luxury-purple"
-                      style={{ boxShadow: "0 4px 20px rgba(91,33,182,0.35), 0 1px 4px rgba(91,33,182,0.2)" }}
-                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    />
-                  )}
-                  {!isActive && isHovered && (
-                    <motion.span
-                      layoutId="category-hover-pill"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      className="absolute inset-0 rounded-xl bg-luxury-purple/6 border border-luxury-purple/10"
-                      transition={{ duration: 0.18 }}
-                    />
-                  )}
-
-                  <motion.span
-                    className="relative z-10 flex-shrink-0"
-                    animate={{ scale: isActive ? 1.15 : isHovered ? 1.08 : 1, rotate: isActive ? 0 : isHovered ? -6 : 0 }}
-                    transition={{ type: "spring", stiffness: 420, damping: 22 }}
-                  >
-                    <cat.icon size={14} className={cn(
-                      "transition-colors duration-200",
-                      isActive ? "text-white" : isHovered ? "text-luxury-purple" : "text-luxury-black/30"
-                    )} />
-                  </motion.span>
-
+                  <cat.iconComponent
+                    size={15}
+                    className={cn(
+                      "transition-colors shrink-0",
+                      isActive ? "text-on-primary" : isHovered ? "text-ink" : "text-mute"
+                    )}
+                  />
                   <span className={cn(
-                    "relative z-10 text-[10px] font-black uppercase tracking-[0.18em] transition-colors duration-200",
-                    isActive ? "text-white" : isHovered ? "text-luxury-black" : "text-luxury-black/40"
+                    "text-sm transition-colors",
+                    isActive ? "text-on-primary font-medium" : isHovered ? "text-ink" : "text-body"
                   )}>
-                    {cat.label}
+                    {cat.name}
+                    {tabCounts && tabCounts[cat.slug] != null && cat.slug !== ALL_CATEGORY_SLUG && (
+                      <span className={cn(
+                        "ml-1.5 text-xs tabular-nums",
+                        isActive ? "text-on-primary/80" : "text-mute",
+                      )}>
+                        ({tabCounts[cat.slug]})
+                      </span>
+                    )}
                   </span>
-
-                  {isActive && (
-                    <motion.span
-                      layoutId="tab-dot"
-                      className="relative z-10 w-1.5 h-1.5 rounded-full bg-white/60 flex-shrink-0"
-                      transition={{ type: "spring", stiffness: 420, damping: 28 }}
-                    />
-                  )}
                 </motion.button>
               );
             })}
@@ -278,18 +331,13 @@ export const SmartFilterSidebar = ({ activeFilters, onFilterChange, onClearAll }
   const activeCount = Object.values(activeFilters).filter(Boolean).length;
 
   return (
-    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-      <div className="h-[3px] bg-gradient-to-r from-luxury-purple via-indigo-500 to-purple-400" />
-
-      {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-5 pb-3">
+    <div className="home-filter-panel">
+      <div className="home-filter-panel-header">
         <div className="flex items-center gap-2">
-          <SlidersHorizontal size={14} className="text-luxury-purple" />
-          <span className="text-[11px] font-black uppercase tracking-widest text-luxury-black">
-            Smart Filters
-          </span>
+          <SlidersHorizontal size={15} />
+          <span className="text-sm font-medium">Smart filters</span>
           {activeCount > 0 && (
-            <span className="w-5 h-5 rounded-full bg-luxury-purple text-white text-[9px] font-black flex items-center justify-center">
+            <span className="w-5 h-5 rounded-full bg-canvas text-accent text-[10px] font-semibold flex items-center justify-center">
               {activeCount}
             </span>
           )}
@@ -297,17 +345,15 @@ export const SmartFilterSidebar = ({ activeFilters, onFilterChange, onClearAll }
         {activeCount > 0 && (
           <button
             onClick={onClearAll}
-            className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-red-400 hover:text-red-500 transition-colors"
+            className="flex items-center gap-1 text-xs font-medium text-on-primary/80 hover:text-on-primary transition-colors"
           >
-            <RotateCcw size={11} /> Clear All
+            <RotateCcw size={11} /> Clear
           </button>
         )}
       </div>
 
-      {/* Accordion sections */}
-      <div className="px-5 pb-5 space-y-0 divide-y divide-gray-100">
+      <div className="px-5 pb-5 space-y-0 divide-y divide-hairline">
         {SMART_FILTERS.map((group) => {
-          const meta        = GROUP_META[group.id];
           const activeValue = activeFilters[group.id];
           const isOpen      = openSections[group.id];
 
@@ -317,21 +363,18 @@ export const SmartFilterSidebar = ({ activeFilters, onFilterChange, onClearAll }
                 onClick={() => toggle(group.id)}
                 className="w-full flex items-center justify-between py-4 text-left group"
               >
-                <span className="flex items-center gap-2.5 text-[11px] font-black uppercase tracking-widest text-luxury-black/70 group-hover:text-luxury-purple transition-colors">
-                  <group.icon size={13} className={cn(meta.iconColor, "group-hover:scale-110 transition-transform")} />
+                <span className="flex items-center gap-2.5 text-sm font-medium text-accent group-hover:text-accent-deep transition-colors">
+                  <group.icon size={14} className="text-accent/60" />
                   {group.label}
                   {activeValue && (
-                    <span
-                      className="w-4 h-4 rounded-full flex items-center justify-center text-white text-[8px] font-black"
-                      style={{ background: `linear-gradient(135deg, ${meta.activeFrom}, ${meta.activeTo})` }}
-                    >
+                    <span className="w-4 h-4 rounded-full bg-accent flex items-center justify-center text-on-primary text-[9px] font-medium">
                       1
                     </span>
                   )}
                 </span>
                 <ChevronDown
                   size={14}
-                  className={cn("text-luxury-black/30 transition-transform duration-200", isOpen && "rotate-180")}
+                  className={cn("text-mute transition-transform duration-200", isOpen && "rotate-180")}
                 />
               </button>
 
@@ -344,39 +387,20 @@ export const SmartFilterSidebar = ({ activeFilters, onFilterChange, onClearAll }
                     transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
                     className="overflow-hidden"
                   >
-                    <div className="flex flex-wrap gap-2 pb-4">
+                    <div className="grid grid-cols-2 gap-2 pb-4">
                       {group.options.map((option) => {
                         const isSelected = activeValue === option;
                         return (
                           <motion.button
                             key={option}
                             onClick={() => onFilterChange(group.id, option)}
-                            whileHover={{ scale: 1.04 }}
-                            whileTap={{ scale: 0.95 }}
+                            whileTap={{ scale: 0.98 }}
                             className={cn(
-                              "px-3 py-2 rounded-xl text-[11px] font-bold border transition-all flex items-center gap-1.5",
-                              isSelected
-                                ? "text-white border-transparent shadow-md"
-                                : "bg-gray-50 border-gray-100 text-luxury-black/55 hover:border-gray-200 hover:text-luxury-black",
+                              "filter-chip",
+                              isSelected && "filter-chip-active",
                             )}
-                            style={isSelected ? {
-                              background: `linear-gradient(135deg, ${meta.activeFrom}, ${meta.activeTo})`,
-                              boxShadow: `0 4px 12px ${meta.glowColor}`,
-                            } : {}}
                           >
-                            <AnimatePresence mode="wait">
-                              {isSelected && (
-                                <motion.span
-                                  key="check"
-                                  initial={{ width: 0, opacity: 0 }}
-                                  animate={{ width: 12, opacity: 1 }}
-                                  exit={{ width: 0, opacity: 0 }}
-                                  className="overflow-hidden flex items-center"
-                                >
-                                  <Check size={10} strokeWidth={3.5} />
-                                </motion.span>
-                              )}
-                            </AnimatePresence>
+                            {isSelected && <Check size={11} strokeWidth={2.5} className="shrink-0" />}
                             {option}
                           </motion.button>
                         );
@@ -398,9 +422,10 @@ interface SaleSmartFilterSidebarProps {
   activeFilters: SaleSmartFilters;
   onFilterChange: (groupId: SaleSmartFilterGroup, option: string) => void;
   onClearAll: () => void;
+  propertyTypeOptions?: { name: string; matchValues: string[] }[];
 }
 
-export const SaleSmartFilterSidebar = ({ activeFilters, onFilterChange, onClearAll }: SaleSmartFilterSidebarProps) => {
+export const SaleSmartFilterSidebar = ({ activeFilters, onFilterChange, onClearAll, propertyTypeOptions }: SaleSmartFilterSidebarProps) => {
   const [openSections, setOpenSections] = useState<Record<SaleSmartFilterGroup, boolean>>({
     salePrice: true, propertyType: true, bedrooms: true, saleDistance: false,
   });
@@ -411,16 +436,13 @@ export const SaleSmartFilterSidebar = ({ activeFilters, onFilterChange, onClearA
   const activeCount = Object.values(activeFilters).filter(Boolean).length;
 
   return (
-    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-      <div className="h-[3px] bg-gradient-to-r from-emerald-500 via-green-500 to-teal-400" />
-
-      {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-5 pb-3">
+    <div className="home-filter-panel">
+      <div className="home-filter-panel-header">
         <div className="flex items-center gap-2">
-          <SlidersHorizontal size={14} className="text-emerald-600" />
-          <span className="text-[11px] font-black uppercase tracking-widest text-luxury-black">Smart Filters</span>
+          <SlidersHorizontal size={15} />
+          <span className="text-sm font-medium">Smart filters</span>
           {activeCount > 0 && (
-            <span className="w-5 h-5 rounded-full bg-emerald-600 text-white text-[9px] font-black flex items-center justify-center">
+            <span className="w-5 h-5 rounded-full bg-canvas text-accent text-[10px] font-semibold flex items-center justify-center">
               {activeCount}
             </span>
           )}
@@ -428,19 +450,20 @@ export const SaleSmartFilterSidebar = ({ activeFilters, onFilterChange, onClearA
         {activeCount > 0 && (
           <button
             onClick={onClearAll}
-            className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-red-400 hover:text-red-500 transition-colors"
+            className="flex items-center gap-1 text-xs font-medium text-on-primary/80 hover:text-on-primary transition-colors"
           >
-            <RotateCcw size={11} /> Clear All
+            <RotateCcw size={11} /> Clear
           </button>
         )}
       </div>
 
-      {/* Accordion sections */}
-      <div className="px-5 pb-5 space-y-0 divide-y divide-gray-100">
+      <div className="px-5 pb-5 space-y-0 divide-y divide-hairline">
         {SALE_SMART_FILTERS.map((group) => {
-          const meta        = SALE_GROUP_META[group.id];
           const activeValue = activeFilters[group.id];
           const isOpen      = openSections[group.id];
+          const options     = group.id === "propertyType" && propertyTypeOptions?.length
+            ? propertyTypeOptions.map(c => c.name)
+            : group.options;
 
           return (
             <div key={group.id}>
@@ -448,21 +471,18 @@ export const SaleSmartFilterSidebar = ({ activeFilters, onFilterChange, onClearA
                 onClick={() => toggle(group.id)}
                 className="w-full flex items-center justify-between py-4 text-left group"
               >
-                <span className="flex items-center gap-2.5 text-[11px] font-black uppercase tracking-widest text-luxury-black/70 group-hover:text-emerald-600 transition-colors">
-                  <group.icon size={13} className={cn(meta.iconColor, "group-hover:scale-110 transition-transform")} />
+                <span className="flex items-center gap-2.5 text-sm font-medium text-accent group-hover:text-accent-deep transition-colors">
+                  <group.icon size={14} className="text-accent/60" />
                   {group.label}
                   {activeValue && (
-                    <span
-                      className="w-4 h-4 rounded-full flex items-center justify-center text-white text-[8px] font-black"
-                      style={{ background: `linear-gradient(135deg, ${meta.activeFrom}, ${meta.activeTo})` }}
-                    >
+                    <span className="w-4 h-4 rounded-full bg-accent flex items-center justify-center text-on-primary text-[9px] font-medium">
                       1
                     </span>
                   )}
                 </span>
                 <ChevronDown
                   size={14}
-                  className={cn("text-luxury-black/30 transition-transform duration-200", isOpen && "rotate-180")}
+                  className={cn("text-mute transition-transform duration-200", isOpen && "rotate-180")}
                 />
               </button>
 
@@ -475,39 +495,20 @@ export const SaleSmartFilterSidebar = ({ activeFilters, onFilterChange, onClearA
                     transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
                     className="overflow-hidden"
                   >
-                    <div className="flex flex-wrap gap-2 pb-4">
-                      {group.options.map((option) => {
+                    <div className="grid grid-cols-2 gap-2 pb-4">
+                      {options.map((option) => {
                         const isSelected = activeValue === option;
                         return (
                           <motion.button
                             key={option}
                             onClick={() => onFilterChange(group.id, option)}
-                            whileHover={{ scale: 1.04 }}
-                            whileTap={{ scale: 0.95 }}
+                            whileTap={{ scale: 0.98 }}
                             className={cn(
-                              "px-3 py-2 rounded-xl text-[11px] font-bold border transition-all flex items-center gap-1.5",
-                              isSelected
-                                ? "text-white border-transparent shadow-md"
-                                : "bg-gray-50 border-gray-100 text-luxury-black/55 hover:border-gray-200 hover:text-luxury-black",
+                              "filter-chip",
+                              isSelected && "filter-chip-active",
                             )}
-                            style={isSelected ? {
-                              background: `linear-gradient(135deg, ${meta.activeFrom}, ${meta.activeTo})`,
-                              boxShadow: `0 4px 12px ${meta.glowColor}`,
-                            } : {}}
                           >
-                            <AnimatePresence mode="wait">
-                              {isSelected && (
-                                <motion.span
-                                  key="check"
-                                  initial={{ width: 0, opacity: 0 }}
-                                  animate={{ width: 12, opacity: 1 }}
-                                  exit={{ width: 0, opacity: 0 }}
-                                  className="overflow-hidden flex items-center"
-                                >
-                                  <Check size={10} strokeWidth={3.5} />
-                                </motion.span>
-                              )}
-                            </AnimatePresence>
+                            {isSelected && <Check size={11} strokeWidth={2.5} className="shrink-0" />}
                             {option}
                           </motion.button>
                         );

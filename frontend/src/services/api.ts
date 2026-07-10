@@ -42,31 +42,110 @@ export interface ApiPropertyAmenities {
   preferred_tenants: string[];
 }
 
+export interface IAddress {
+  country?: string;
+  state?: string;
+  city?: string;
+  locality?: string;
+  street?: string;
+  landmark?: string;
+  postalCode?: string;
+  lat?: number;
+  lng?: number;
+}
+
+export interface ApiSaleDetails {
+  pricePerSqft?: number;
+  bookingAmount?: number;
+  maintenanceCharges?: number;
+  negotiable?: boolean;
+  loanAvailable?: boolean;
+  ownershipType?: "freehold" | "leasehold" | "builder-owned" | "resale";
+  propertyAge?: number;
+  possessionStatus?: "ready-to-move" | "under-construction";
+  possessionDate?: string;
+  floorNumber?: string;
+  totalFloors?: number;
+  facing?: string;
+  vastuCompliant?: boolean;
+  carpetArea?: number;
+  builtUpArea?: number;
+  superBuiltUpArea?: number;
+  reraNumber?: string;
+  registryStatus?: "clear" | "pending" | "disputed";
+  legalApprovals?: "approved" | "pending" | "disputed";
+}
+
 export interface ApiProperty {
   _id: string;
   title: string;
   type: string;
-  listingType: "sale" | "rent";
+  listingType: "sale" | "rent" | "lease";
   price: number;
   area: number;
   bedrooms: number;
   bathrooms: number;
   location: string;
   city: string;
+  address?: IAddress;
   description: string;
   images: string[];
   status: string;
   views: number;
   inquiries: number;
   ownerId: string;
+  isHighlighted?: boolean;
+  highlightedAt?: string;
   amenities?: ApiPropertyAmenities;
+  saleDetails?: ApiSaleDetails;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface ApiCategory {
+  _id: string;
+  name: string;
+  slug: string;
+  categoryType: "listing" | "property";
+  icon: string;
+  order: number;
+  isActive: boolean;
+  matchValues: string[];
   createdAt: string;
 }
+
+export interface ApiPublicDealer {
+  _id: string;
+  name: string;
+  company: string;
+  phone: string;
+  licenseNumber: string;
+  verified: boolean;
+  memberSince: string;
+  totalProperties: number;
+  totalInquiries: number;
+  cities: string[];
+}
+
+export const dealersApi = {
+  listPublic: (params?: { search?: string }) => {
+    const qs = params?.search ? `?${new URLSearchParams({ search: params.search }).toString()}` : "";
+    return request<{ success: boolean; count: number; data: ApiPublicDealer[] }>(`/api/public/dealers${qs}`);
+  },
+
+  getPublic: (id: string) =>
+    request<{ success: boolean; data: ApiPublicDealer }>(`/api/public/dealers/${id}`),
+};
 
 export const propertiesApi = {
   listPublic: (params?: Record<string, string>) => {
     const qs = params && Object.keys(params).length ? "?" + new URLSearchParams(params).toString() : "";
     return request<{ success: boolean; count: number; data: ApiProperty[] }>(`/api/public/properties${qs}`);
+  },
+
+  listHighlighted: (params?: { limit?: number }) => {
+    const qs = params?.limit ? `?limit=${params.limit}` : "";
+    return request<{ success: boolean; count: number; data: ApiProperty[] }>(`/api/public/properties/highlighted${qs}`);
   },
 
   getPublic: (id: string) =>
@@ -80,6 +159,13 @@ export const propertiesApi = {
       method: "POST",
       body: JSON.stringify(payload),
     }),
+};
+
+export const categoriesApi = {
+  list: (type?: "listing" | "property") => {
+    const qs = type ? `?type=${type}` : "";
+    return request<{ success: boolean; count: number; data: ApiCategory[] }>(`/api/categories${qs}`);
+  },
 };
 
 export interface ApiVisitEnquiry {

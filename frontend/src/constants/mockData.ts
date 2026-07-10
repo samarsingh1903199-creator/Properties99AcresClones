@@ -1,4 +1,4 @@
-import { Specialist, Project, Property } from "../types";
+﻿import { Specialist, Project, Property } from "../types";
 
 export const MOCK_PROPERTIES: Property[] = [
   {
@@ -30,7 +30,6 @@ export const MOCK_PROPERTIES: Property[] = [
     waterSupply: "Corporation Water + Borewell",
     electricityBackup: "Full Backup (Inverter)",
     internet: "Airtel Fiber Available",
-    address: "H.No. 456, Sector 70, SAS Nagar, Mohali – 160071, Punjab",
     images: [
         "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?w=1200&q=80",
         "https://images.unsplash.com/photo-1600121848594-d86cc4f59500?w=1200&q=80"
@@ -73,7 +72,6 @@ export const MOCK_PROPERTIES: Property[] = [
     waterSupply: "24/7 Municipality Water",
     electricityBackup: "DG Generator Backup",
     internet: "Jio Fiber, Airtel Available",
-    address: "Purab Premium Apartments, Sector 88, SAS Nagar, Mohali – 160070, Punjab",
     images: [
         "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=80"
     ],
@@ -115,7 +113,6 @@ export const MOCK_PROPERTIES: Property[] = [
     waterSupply: "Borewell + Tanker Backup",
     electricityBackup: "Inverter Backup",
     internet: "Airtel Broadband Available",
-    address: "Plot No. 234, Phase 3B2, SAS Nagar, Mohali – 160059, Punjab",
     images: [
         "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&q=80"
     ],
@@ -157,7 +154,6 @@ export const MOCK_PROPERTIES: Property[] = [
     waterSupply: "24/7 Municipal Water",
     electricityBackup: "Power Backup",
     internet: "Airtel Fiber Installed",
-    address: "Block C, Aerocity, SAS Nagar, Mohali - 140306, Punjab",
     images: [
       "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&q=80",
       "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1200&q=80"
@@ -199,7 +195,6 @@ export const MOCK_PROPERTIES: Property[] = [
     waterSupply: "24/7 Water",
     electricityBackup: "Inverter Backup",
     internet: "Wi-Fi Included",
-    address: "Gharuan Main Road, Near Chandigarh University, Kharar - 140413, Punjab",
     images: [
       "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=1200&q=80"
     ],
@@ -239,7 +234,6 @@ export const MOCK_PROPERTIES: Property[] = [
     waterSupply: "24/7 Society Water",
     electricityBackup: "DG Backup",
     internet: "Jio Fiber Available",
-    address: "Sector 82 Gated Society, SAS Nagar, Mohali - 160062, Punjab",
     images: [
       "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&q=80",
       "https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?w=1200&q=80"
@@ -281,7 +275,6 @@ export const MOCK_PROPERTIES: Property[] = [
     waterSupply: "24/7 Water",
     electricityBackup: "Inverter Backup",
     internet: "Wi-Fi Included",
-    address: "Phase 7 Market Road, SAS Nagar, Mohali - 160062, Punjab",
     images: [
       "https://images.unsplash.com/photo-1554995207-c18c203602cb?w=1200&q=80"
     ],
@@ -321,7 +314,6 @@ export const MOCK_PROPERTIES: Property[] = [
     waterSupply: "Municipal + Borewell",
     electricityBackup: "Inverter Backup",
     internet: "Fiber Ready",
-    address: "Sector 69, SAS Nagar, Mohali - 160062, Punjab",
     images: [
       "https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=1200&q=80",
       "https://images.unsplash.com/photo-1613977257363-707ba9348227?w=1200&q=80"
@@ -337,9 +329,9 @@ export const MOCK_PROPERTIES: Property[] = [
   {
     id: "1",
     title: "Amayra Sky City",
-    description: "RERA-approved premium 3 BHK apartments in a Vastu-friendly gated township on Kharar–Daun Majra Highway. Features a modern clubhouse, fully equipped gym, landscaped gardens, swimming pool, and children's play areas. RERA No: PBRERA-SAS80-PR1219.",
+    description: "RERA-approved premium 3 BHK apartments in a Vastu-friendly gated township on Khararâ€“Daun Majra Highway. Features a modern clubhouse, fully equipped gym, landscaped gardens, swimming pool, and children's play areas. RERA No: PBRERA-SAS80-PR1219.",
     price: 4200000,
-    location: "Kharar–Daun Majra Highway, Kharar, SAS Nagar Mohali",
+    location: "Khararâ€“Daun Majra Highway, Kharar, SAS Nagar Mohali",
     type: "apartment",
     status: "available",
     listingType: "buy",
@@ -357,7 +349,6 @@ export const MOCK_PROPERTIES: Property[] = [
     waterSupply: "24/7 Corporation Water + RO Plant",
     electricityBackup: "Full Power Backup",
     internet: "Fiber Optic Ready",
-    address: "Amayra Sky City, Kharar–Daun Majra Highway, Kharar, SAS Nagar – 140301, Punjab",
     images: [
         "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=1200&q=80",
         "https://images.unsplash.com/photo-1600585154526-990dcea4db0d?w=1200&q=80"
@@ -394,7 +385,6 @@ export const MOCK_PROPERTIES: Property[] = [
     waterSupply: "24/7 Municipality Water",
     electricityBackup: "Full Power Backup",
     internet: "Jio Fiber, Airtel Available",
-    address: "Nirwana The Moksha, Sector 125, Kharar, SAS Nagar – 140301, Punjab",
     images: [
         "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200&q=80",
         "https://images.unsplash.com/photo-1600585154526-990dcea4db0d?w=1200&q=80"
@@ -411,9 +401,9 @@ export const MOCK_PROPERTIES: Property[] = [
   {
     id: "4",
     title: "Golden Avenue",
-    description: "Ready-to-move 3 BHK apartments on Landran–Kharar Road with premium Italian marble flooring, large balconies, and unobstructed views. Gated complex with 24/7 security, covered parking, and rainwater harvesting.",
+    description: "Ready-to-move 3 BHK apartments on Landranâ€“Kharar Road with premium Italian marble flooring, large balconies, and unobstructed views. Gated complex with 24/7 security, covered parking, and rainwater harvesting.",
     price: 7290000,
-    location: "Sector 115, Landran–Kharar Road, Mohali",
+    location: "Sector 115, Landranâ€“Kharar Road, Mohali",
     type: "apartment",
     status: "available",
     listingType: "buy",
@@ -431,7 +421,6 @@ export const MOCK_PROPERTIES: Property[] = [
     waterSupply: "24/7 Corporation + Borewell",
     electricityBackup: "Full Power Backup + DG",
     internet: "Jio Fiber Available",
-    address: "Golden Avenue, Sector 115, Landran–Kharar Road, Mohali – 140301, Punjab",
     images: [
         "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80"
     ],
@@ -467,7 +456,6 @@ export const MOCK_PROPERTIES: Property[] = [
     waterSupply: "24/7 Corporation Water",
     electricityBackup: "Full Power Backup",
     internet: "Fiber Optic Ready",
-    address: "Ubber Mews Gate, Kharar Mohali Road, Kharar, SAS Nagar – 140301, Punjab",
     images: [
         "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200&q=80"
     ],
@@ -483,9 +471,9 @@ export const MOCK_PROPERTIES: Property[] = [
   {
     id: "7",
     title: "Nirwana Heights",
-    description: "Ultra-luxury 4 BHK apartments with private terraces on the Chandigarh–Kurali Highway. Featuring concierge service, a rooftop infinity pool, fully loaded gym, and smart home automation. A landmark address near the Chandigarh International Airport.",
+    description: "Ultra-luxury 4 BHK apartments with private terraces on the Chandigarhâ€“Kurali Highway. Featuring concierge service, a rooftop infinity pool, fully loaded gym, and smart home automation. A landmark address near the Chandigarh International Airport.",
     price: 10500000,
-    location: "Chandigarh–Kurali Highway, Kharar, SAS Nagar",
+    location: "Chandigarhâ€“Kurali Highway, Kharar, SAS Nagar",
     type: "apartment",
     status: "available",
     listingType: "buy",
@@ -503,7 +491,6 @@ export const MOCK_PROPERTIES: Property[] = [
     waterSupply: "24/7 RO + Softener System",
     electricityBackup: "Full Backup + Solar Panels",
     internet: "Dedicated Fiber + Smart Home Network",
-    address: "Nirwana Heights, Chandigarh–Kurali Highway, Kharar, SAS Nagar – 140301, Punjab",
     images: [
         "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&q=80"
     ],

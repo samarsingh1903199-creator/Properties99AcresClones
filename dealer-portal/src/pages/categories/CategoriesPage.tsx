@@ -88,21 +88,21 @@ function CategoryModal({ initial, onClose, onSaved }: ModalProps) {
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
       <div
         className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
-        style={{ boxShadow: "0 25px 60px -10px rgba(91,33,182,0.25)" }}
+        style={{ boxShadow: "0 25px 60px -10px rgba(22,101,52,0.25)" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(91,33,182,0.06)]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(22,101,52,0.06)]">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-[#5b21b6] flex items-center justify-center">
+            <div className="w-7 h-7 rounded-lg bg-[#166534] flex items-center justify-center">
               <Tag className="w-3.5 h-3.5 text-white" />
             </div>
-            <h2 className="text-base font-black text-[#111111]" style={{ fontFamily: "Outfit, sans-serif" }}>
+            <h2 className="text-base font-black text-[#0c2417]" style={{ fontFamily: "Outfit, sans-serif" }}>
               {isEdit ? "Edit Category" : "Add Category"}
             </h2>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[#f8f9fa] transition-colors">
-            <X className="w-4 h-4 text-[#111111]/40" />
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[#f4f9f6] transition-colors">
+            <X className="w-4 h-4 text-[#0c2417]/40" />
           </button>
         </div>
 
@@ -117,31 +117,31 @@ function CategoryModal({ initial, onClose, onSaved }: ModalProps) {
 
           {/* Name */}
           <div>
-            <label className="block text-xs font-black text-[#111111]/50 uppercase tracking-wider mb-1.5">Name</label>
+            <label className="block text-xs font-black text-[#0c2417]/50 uppercase tracking-wider mb-1.5">Name</label>
             <input
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
               placeholder="e.g. For Rent"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-[rgba(91,33,182,0.15)] bg-white text-sm font-semibold text-[#111111] placeholder:text-[#111111]/25 focus:outline-none focus:border-[#5b21b6] focus:ring-2 focus:ring-[#5b21b6]/10 transition-all"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-[rgba(22,101,52,0.15)] bg-white text-sm font-semibold text-[#0c2417] placeholder:text-[#0c2417]/25 focus:outline-none focus:border-[#166534] focus:ring-2 focus:ring-[#166534]/10 transition-all"
             />
           </div>
 
           {/* Slug */}
           <div>
-            <label className="block text-xs font-black text-[#111111]/50 uppercase tracking-wider mb-1.5">
-              Slug <span className="text-[#5b21b6]/50 normal-case font-semibold">(stored on properties)</span>
+            <label className="block text-xs font-black text-[#0c2417]/50 uppercase tracking-wider mb-1.5">
+              Slug <span className="text-[#166534]/50 normal-case font-semibold">(stored on properties)</span>
             </label>
             <input
               value={slug}
               onChange={(e) => { setSlugManual(true); setSlug(slugify(e.target.value)); }}
               placeholder="e.g. rent"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-[rgba(91,33,182,0.15)] bg-[#f8f9fa] text-sm font-mono font-semibold text-[#5b21b6] placeholder:text-[#111111]/25 focus:outline-none focus:border-[#5b21b6] focus:ring-2 focus:ring-[#5b21b6]/10 transition-all"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-[rgba(22,101,52,0.15)] bg-[#f4f9f6] text-sm font-mono font-semibold text-[#166534] placeholder:text-[#0c2417]/25 focus:outline-none focus:border-[#166534] focus:ring-2 focus:ring-[#166534]/10 transition-all"
             />
           </div>
 
           {/* Category Type */}
           <div>
-            <label className="block text-xs font-black text-[#111111]/50 uppercase tracking-wider mb-1.5">Category Type</label>
+            <label className="block text-xs font-black text-[#0c2417]/50 uppercase tracking-wider mb-1.5">Category Type</label>
             <div className="grid grid-cols-2 gap-2">
               {(["listing", "property"] as const).map((t) => (
                 <button
@@ -150,10 +150,10 @@ function CategoryModal({ initial, onClose, onSaved }: ModalProps) {
                   onClick={() => setCatType(t)}
                   className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-bold transition-all ${
                     catType === t
-                      ? "bg-[#5b21b6] border-[#5b21b6] text-white shadow-md"
-                      : "border-[rgba(91,33,182,0.15)] text-[#111111]/50 hover:border-[#5b21b6]/30"
+                      ? "bg-[#166534] border-[#166534] text-white shadow-md"
+                      : "border-[rgba(22,101,52,0.15)] text-[#0c2417]/50 hover:border-[#166534]/30"
                   }`}
-                  style={catType === t ? { boxShadow: "0 4px 14px -4px rgba(91,33,182,0.4)" } : {}}
+                  style={catType === t ? { boxShadow: "0 4px 14px -4px rgba(22,101,52,0.4)" } : {}}
                 >
                   {t === "listing" ? <Key className="w-3.5 h-3.5" /> : <Home className="w-3.5 h-3.5" />}
                   {t.charAt(0).toUpperCase() + t.slice(1)} Type
@@ -166,28 +166,28 @@ function CategoryModal({ initial, onClose, onSaved }: ModalProps) {
           <div className="grid grid-cols-2 gap-3">
             {/* Icon */}
             <div>
-              <label className="block text-xs font-black text-[#111111]/50 uppercase tracking-wider mb-1.5">Icon</label>
+              <label className="block text-xs font-black text-[#0c2417]/50 uppercase tracking-wider mb-1.5">Icon</label>
               <div className="relative">
                 <button
                   type="button"
                   onClick={() => setIconOpen((o) => !o)}
-                  className="w-full flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-[rgba(91,33,182,0.15)] bg-white text-sm font-semibold text-[#111111] focus:outline-none focus:border-[#5b21b6] transition-all"
+                  className="w-full flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-[rgba(22,101,52,0.15)] bg-white text-sm font-semibold text-[#0c2417] focus:outline-none focus:border-[#166534] transition-all"
                 >
-                  <div className="w-5 h-5 rounded-md bg-[#5b21b6]/10 flex items-center justify-center">
-                    <CategoryIcon name={icon} className="w-3 h-3 text-[#5b21b6]" />
+                  <div className="w-5 h-5 rounded-md bg-[#166534]/10 flex items-center justify-center">
+                    <CategoryIcon name={icon} className="w-3 h-3 text-[#166534]" />
                   </div>
                   <span className="flex-1 text-left text-xs">{icon}</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-[#111111]/30" />
+                  <ChevronDown className="w-3.5 h-3.5 text-[#0c2417]/30" />
                 </button>
                 {iconOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[rgba(91,33,182,0.12)] rounded-xl shadow-xl z-10 p-2 grid grid-cols-4 gap-1">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[rgba(22,101,52,0.12)] rounded-xl shadow-xl z-10 p-2 grid grid-cols-4 gap-1">
                     {ICON_OPTIONS.map(({ name: iName, Icon }) => (
                       <button
                         key={iName}
                         type="button"
                         onClick={() => { setIcon(iName); setIconOpen(false); }}
                         className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-all ${
-                          icon === iName ? "bg-[#5b21b6] text-white" : "hover:bg-[#f8f9fa] text-[#111111]/50"
+                          icon === iName ? "bg-[#166534] text-white" : "hover:bg-[#f4f9f6] text-[#0c2417]/50"
                         }`}
                         title={iName}
                       >
@@ -202,22 +202,22 @@ function CategoryModal({ initial, onClose, onSaved }: ModalProps) {
 
             {/* Order */}
             <div>
-              <label className="block text-xs font-black text-[#111111]/50 uppercase tracking-wider mb-1.5">Order</label>
+              <label className="block text-xs font-black text-[#0c2417]/50 uppercase tracking-wider mb-1.5">Order</label>
               <input
                 type="number"
                 value={order}
                 min={0}
                 onChange={(e) => setOrder(Number(e.target.value))}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-[rgba(91,33,182,0.15)] bg-white text-sm font-semibold text-[#111111] focus:outline-none focus:border-[#5b21b6] focus:ring-2 focus:ring-[#5b21b6]/10 transition-all"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-[rgba(22,101,52,0.15)] bg-white text-sm font-semibold text-[#0c2417] focus:outline-none focus:border-[#166534] focus:ring-2 focus:ring-[#166534]/10 transition-all"
               />
             </div>
           </div>
 
           {/* Active toggle */}
-          <div className="flex items-center justify-between p-3.5 rounded-xl bg-[#f8f9fa] border border-[rgba(91,33,182,0.06)]">
+          <div className="flex items-center justify-between p-3.5 rounded-xl bg-[#f4f9f6] border border-[rgba(22,101,52,0.06)]">
             <div>
-              <p className="text-sm font-bold text-[#111111]">Active</p>
-              <p className="text-xs text-[#111111]/40 font-medium">Visible on frontend</p>
+              <p className="text-sm font-bold text-[#0c2417]">Active</p>
+              <p className="text-xs text-[#0c2417]/40 font-medium">Visible on frontend</p>
             </div>
             <button
               type="button"
@@ -225,8 +225,8 @@ function CategoryModal({ initial, onClose, onSaved }: ModalProps) {
               className="transition-all"
             >
               {isActive
-                ? <ToggleRight className="w-8 h-8 text-[#5b21b6]" />
-                : <ToggleLeft className="w-8 h-8 text-[#111111]/20" />
+                ? <ToggleRight className="w-8 h-8 text-[#166534]" />
+                : <ToggleLeft className="w-8 h-8 text-[#0c2417]/20" />
               }
             </button>
           </div>
@@ -236,15 +236,15 @@ function CategoryModal({ initial, onClose, onSaved }: ModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl border border-[rgba(91,33,182,0.15)] text-sm font-bold text-[#111111]/50 hover:bg-[#f8f9fa] transition-all"
+              className="flex-1 py-2.5 rounded-xl border border-[rgba(22,101,52,0.15)] text-sm font-bold text-[#0c2417]/50 hover:bg-[#f4f9f6] transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 py-2.5 rounded-xl bg-[#5b21b6] text-white text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-60 transition-all hover:bg-[#4c1d95]"
-              style={{ boxShadow: "0 4px 14px -4px rgba(91,33,182,0.5)" }}
+              className="flex-1 py-2.5 rounded-xl bg-[#166534] text-white text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-60 transition-all hover:bg-[#14532d]"
+              style={{ boxShadow: "0 4px 14px -4px rgba(22,101,52,0.5)" }}
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
               {isEdit ? "Save Changes" : "Add Category"}
@@ -279,15 +279,15 @@ function DeleteConfirm({ cat, onClose, onDeleted }: { cat: ApiCategory; onClose:
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
       <div
         className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6"
-        style={{ boxShadow: "0 25px 60px -10px rgba(91,33,182,0.25)" }}
+        style={{ boxShadow: "0 25px 60px -10px rgba(22,101,52,0.25)" }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="w-12 h-12 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center mx-auto mb-4">
           <Trash2 className="w-5 h-5 text-red-500" />
         </div>
-        <h3 className="text-base font-black text-[#111111] text-center mb-1" style={{ fontFamily: "Outfit, sans-serif" }}>Delete Category</h3>
-        <p className="text-sm text-[#111111]/50 text-center font-medium mb-5">
-          Delete <span className="font-bold text-[#111111]">"{cat.name}"</span>? This cannot be undone.
+        <h3 className="text-base font-black text-[#0c2417] text-center mb-1" style={{ fontFamily: "Outfit, sans-serif" }}>Delete Category</h3>
+        <p className="text-sm text-[#0c2417]/50 text-center font-medium mb-5">
+          Delete <span className="font-bold text-[#0c2417]">"{cat.name}"</span>? This cannot be undone.
         </p>
         {error && (
           <div className="flex items-center gap-2 p-3 rounded-xl bg-red-50 border border-red-100 mb-4">
@@ -296,7 +296,7 @@ function DeleteConfirm({ cat, onClose, onDeleted }: { cat: ApiCategory; onClose:
           </div>
         )}
         <div className="flex gap-2">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-[rgba(91,33,182,0.15)] text-sm font-bold text-[#111111]/50 hover:bg-[#f8f9fa] transition-all">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-[rgba(22,101,52,0.15)] text-sm font-bold text-[#0c2417]/50 hover:bg-[#f4f9f6] transition-all">
             Cancel
           </button>
           <button
@@ -319,53 +319,53 @@ function CategoryCard({
 }: { cat: ApiCategory; onEdit: (c: ApiCategory) => void; onDelete: (c: ApiCategory) => void }) {
   return (
     <div className="dp-card p-4 flex items-center gap-4 group hover:-translate-y-0.5 transition-all duration-200">
-      <GripVertical className="w-4 h-4 text-[#111111]/15 shrink-0" />
+      <GripVertical className="w-4 h-4 text-[#0c2417]/15 shrink-0" />
 
       {/* Icon */}
-      <div className="w-10 h-10 rounded-xl bg-[#5b21b6]/8 border border-[rgba(91,33,182,0.12)] flex items-center justify-center shrink-0">
-        <CategoryIcon name={cat.icon} className="w-4 h-4 text-[#5b21b6]" />
+      <div className="w-10 h-10 rounded-xl bg-[#166534]/8 border border-[rgba(22,101,52,0.12)] flex items-center justify-center shrink-0">
+        <CategoryIcon name={cat.icon} className="w-4 h-4 text-[#166534]" />
       </div>
 
       {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
-          <p className="text-sm font-black text-[#111111] truncate" style={{ fontFamily: "Outfit, sans-serif" }}>{cat.name}</p>
+          <p className="text-sm font-black text-[#0c2417] truncate" style={{ fontFamily: "Outfit, sans-serif" }}>{cat.name}</p>
           {!cat.isActive && (
-            <span className="px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-[#111111]/5 text-[#111111]/30 border border-[#111111]/8 shrink-0">
+            <span className="px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-[#0c2417]/5 text-[#0c2417]/30 border border-[#0c2417]/8 shrink-0">
               Inactive
             </span>
           )}
         </div>
         <div className="flex items-center gap-2">
-          <code className="text-[10px] font-mono font-bold text-[#5b21b6]/70 bg-[#5b21b6]/5 px-1.5 py-0.5 rounded-md border border-[rgba(91,33,182,0.1)]">
+          <code className="text-[10px] font-mono font-bold text-[#166534]/70 bg-[#166534]/5 px-1.5 py-0.5 rounded-md border border-[rgba(22,101,52,0.1)]">
             {cat.slug}
           </code>
           <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md border ${
             cat.categoryType === "listing"
               ? "bg-amber-50 border-amber-200 text-amber-700"
-              : "bg-violet-50 border-violet-200 text-violet-700"
+              : "bg-emerald-50 border-emerald-200 text-emerald-800"
           }`}>
             {cat.categoryType}
           </span>
-          <span className="text-[10px] text-[#111111]/30 font-semibold">order: {cat.order}</span>
+          <span className="text-[10px] text-[#0c2417]/30 font-semibold">order: {cat.order}</span>
         </div>
       </div>
 
       {/* Active dot */}
-      <div className={`w-2 h-2 rounded-full shrink-0 ${cat.isActive ? "bg-emerald-400" : "bg-[#111111]/15"}`} />
+      <div className={`w-2 h-2 rounded-full shrink-0 ${cat.isActive ? "bg-emerald-400" : "bg-[#0c2417]/15"}`} />
 
       {/* Actions */}
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <button
           onClick={() => onEdit(cat)}
-          className="p-2 rounded-lg hover:bg-[#5b21b6]/8 text-[#111111]/30 hover:text-[#5b21b6] transition-all"
+          className="p-2 rounded-lg hover:bg-[#166534]/8 text-[#0c2417]/30 hover:text-[#166534] transition-all"
           title="Edit"
         >
           <Pencil className="w-3.5 h-3.5" />
         </button>
         <button
           onClick={() => onDelete(cat)}
-          className="p-2 rounded-lg hover:bg-red-50 text-[#111111]/30 hover:text-red-500 transition-all"
+          className="p-2 rounded-lg hover:bg-red-50 text-[#0c2417]/30 hover:text-red-500 transition-all"
           title="Delete"
         >
           <Trash2 className="w-3.5 h-3.5" />
@@ -433,13 +433,13 @@ export function CategoriesPage() {
       {/* Page header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-black text-[#111111] tracking-tight" style={{ fontFamily: "Outfit, sans-serif" }}>Categories</h1>
-          <p className="text-sm font-medium text-[#111111]/40 mt-0.5">Manage listing types and property types shown on the frontend</p>
+          <h1 className="text-2xl font-black text-[#0c2417] tracking-tight" style={{ fontFamily: "Outfit, sans-serif" }}>Categories</h1>
+          <p className="text-sm font-medium text-[#0c2417]/40 mt-0.5">Manage listing types and property types shown on the frontend</p>
         </div>
         <button
           onClick={() => setAddOpen(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#5b21b6] text-white text-sm font-bold hover:bg-[#4c1d95] transition-all"
-          style={{ boxShadow: "0 4px 14px -4px rgba(91,33,182,0.5)" }}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#166534] text-white text-sm font-bold hover:bg-[#14532d] transition-all"
+          style={{ boxShadow: "0 4px 14px -4px rgba(22,101,52,0.5)" }}
         >
           <Plus className="w-4 h-4" />
           Add Category
@@ -449,9 +449,9 @@ export function CategoriesPage() {
       {/* Stat pills */}
       <div className="grid grid-cols-3 gap-3 mb-6">
         {[
-          { label: "Total", value: categories.length, color: "bg-[#5b21b6]/8 border-[rgba(91,33,182,0.12)] text-[#5b21b6]" },
+          { label: "Total", value: categories.length, color: "bg-[#166534]/8 border-[rgba(22,101,52,0.12)] text-[#166534]" },
           { label: "Listing Types", value: listingCount, color: "bg-amber-50 border-amber-200 text-amber-700" },
-          { label: "Property Types", value: propertyCount, color: "bg-violet-50 border-violet-200 text-violet-700" },
+          { label: "Property Types", value: propertyCount, color: "bg-emerald-50 border-emerald-200 text-emerald-800" },
         ].map(({ label, value, color }) => (
           <div key={label} className={`dp-card p-4 border ${color}`}>
             <p className="text-2xl font-black" style={{ fontFamily: "Outfit, sans-serif" }}>{value}</p>
@@ -464,30 +464,30 @@ export function CategoriesPage() {
       <div className="flex items-center gap-3 mb-5">
         {/* Search */}
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#111111]/30" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#0c2417]/30" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search categories…"
-            className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-[rgba(91,33,182,0.12)] bg-white text-sm font-semibold text-[#111111] placeholder:text-[#111111]/25 focus:outline-none focus:border-[#5b21b6] focus:ring-2 focus:ring-[#5b21b6]/10 transition-all"
+            className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-[rgba(22,101,52,0.12)] bg-white text-sm font-semibold text-[#0c2417] placeholder:text-[#0c2417]/25 focus:outline-none focus:border-[#166534] focus:ring-2 focus:ring-[#166534]/10 transition-all"
           />
           {search && (
             <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
-              <X className="w-3.5 h-3.5 text-[#111111]/30" />
+              <X className="w-3.5 h-3.5 text-[#0c2417]/30" />
             </button>
           )}
         </div>
 
         {/* Tab pills */}
-        <div className="flex items-center bg-[#f8f9fa] border border-[rgba(91,33,182,0.08)] rounded-xl p-1 gap-0.5">
+        <div className="flex items-center bg-[#f4f9f6] border border-[rgba(22,101,52,0.08)] rounded-xl p-1 gap-0.5">
           {([["all", "All"], ["listing", "Listing"], ["property", "Property"]] as const).map(([v, label]) => (
             <button
               key={v}
               onClick={() => setTab(v)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                 tab === v
-                  ? "bg-white text-[#5b21b6] shadow-sm border border-[rgba(91,33,182,0.1)]"
-                  : "text-[#111111]/40 hover:text-[#111111]/70"
+                  ? "bg-white text-[#166534] shadow-sm border border-[rgba(22,101,52,0.1)]"
+                  : "text-[#0c2417]/40 hover:text-[#0c2417]/70"
               }`}
             >
               {label}
@@ -499,30 +499,30 @@ export function CategoriesPage() {
       {/* Content */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-24">
-          <Loader2 className="w-8 h-8 text-[#5b21b6] animate-spin mb-3" />
-          <p className="text-sm font-semibold text-[#111111]/40">Loading categories…</p>
+          <Loader2 className="w-8 h-8 text-[#166534] animate-spin mb-3" />
+          <p className="text-sm font-semibold text-[#0c2417]/40">Loading categories…</p>
         </div>
       ) : error ? (
         <div className="flex flex-col items-center justify-center py-24">
           <div className="w-12 h-12 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center mb-3">
             <AlertCircle className="w-5 h-5 text-red-400" />
           </div>
-          <p className="text-sm font-bold text-[#111111]/60 mb-1">Failed to load</p>
-          <p className="text-xs text-[#111111]/30 mb-4">{error}</p>
-          <button onClick={load} className="px-4 py-2 rounded-xl bg-[#5b21b6] text-white text-xs font-bold hover:bg-[#4c1d95] transition-all">
+          <p className="text-sm font-bold text-[#0c2417]/60 mb-1">Failed to load</p>
+          <p className="text-xs text-[#0c2417]/30 mb-4">{error}</p>
+          <button onClick={load} className="px-4 py-2 rounded-xl bg-[#166534] text-white text-xs font-bold hover:bg-[#14532d] transition-all">
             Retry
           </button>
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24">
-          <div className="w-12 h-12 rounded-2xl bg-[#5b21b6]/8 border border-[rgba(91,33,182,0.12)] flex items-center justify-center mb-3">
-            <Tag className="w-5 h-5 text-[#5b21b6]/50" />
+          <div className="w-12 h-12 rounded-2xl bg-[#166534]/8 border border-[rgba(22,101,52,0.12)] flex items-center justify-center mb-3">
+            <Tag className="w-5 h-5 text-[#166534]/50" />
           </div>
-          <p className="text-sm font-bold text-[#111111]/50">
+          <p className="text-sm font-bold text-[#0c2417]/50">
             {search ? "No categories match your search" : "No categories yet"}
           </p>
           {!search && (
-            <button onClick={() => setAddOpen(true)} className="mt-4 px-4 py-2 rounded-xl bg-[#5b21b6] text-white text-xs font-bold hover:bg-[#4c1d95] transition-all">
+            <button onClick={() => setAddOpen(true)} className="mt-4 px-4 py-2 rounded-xl bg-[#166534] text-white text-xs font-bold hover:bg-[#14532d] transition-all">
               Add your first category
             </button>
           )}
@@ -535,8 +535,8 @@ export function CategoriesPage() {
               {tab === "all" && (
                 <div className="flex items-center gap-2 mb-3">
                   <Key className="w-3.5 h-3.5 text-amber-600" />
-                  <h2 className="text-xs font-black text-[#111111]/40 uppercase tracking-widest">Listing Types</h2>
-                  <div className="flex-1 h-px bg-[#111111]/6" />
+                  <h2 className="text-xs font-black text-[#0c2417]/40 uppercase tracking-widest">Listing Types</h2>
+                  <div className="flex-1 h-px bg-[#0c2417]/6" />
                   <span className="text-xs font-bold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
                     {filtered.filter((c) => c.categoryType === "listing").length}
                   </span>
@@ -557,10 +557,10 @@ export function CategoriesPage() {
             <div>
               {tab === "all" && (
                 <div className="flex items-center gap-2 mb-3">
-                  <Home className="w-3.5 h-3.5 text-violet-600" />
-                  <h2 className="text-xs font-black text-[#111111]/40 uppercase tracking-widest">Property Types</h2>
-                  <div className="flex-1 h-px bg-[#111111]/6" />
-                  <span className="text-xs font-bold text-violet-600 bg-violet-50 border border-violet-200 px-2 py-0.5 rounded-full">
+                  <Home className="w-3.5 h-3.5 text-emerald-700" />
+                  <h2 className="text-xs font-black text-[#0c2417]/40 uppercase tracking-widest">Property Types</h2>
+                  <div className="flex-1 h-px bg-[#0c2417]/6" />
+                  <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
                     {filtered.filter((c) => c.categoryType === "property").length}
                   </span>
                 </div>

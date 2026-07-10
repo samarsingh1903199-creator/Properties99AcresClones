@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, type CSSProperties } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   PieChart, Pie, Cell, ResponsiveContainer,
@@ -58,7 +58,7 @@ const BANKS = [
   { name: "State Bank of India",   short: "SBI",   rate: 8.50, color: "#1e40af" },
   { name: "HDFC Bank",             short: "HDFC",  rate: 8.75, color: "#dc2626" },
   { name: "ICICI Bank",            short: "ICICI", rate: 8.75, color: "#ea580c" },
-  { name: "Axis Bank",             short: "Axis",  rate: 8.75, color: "#5b21b6" },
+  { name: "Axis Bank",             short: "Axis",  rate: 8.75, color: "#166534" },
   { name: "Punjab National Bank",  short: "PNB",   rate: 8.45, color: "#059669" },
   { name: "Bank of Baroda",        short: "BoB",   rate: 8.40, color: "#b45309" },
   { name: "Kotak Mahindra",        short: "Kotak", rate: 8.75, color: "#0369a1" },
@@ -95,25 +95,40 @@ interface SliderProps {
   onChange: (v: number) => void;
   min: number; max: number; step: number;
   display: string;
+  formatBound?: (n: number) => string;
 }
-const Slider = ({ label, value, onChange, min, max, step, display }: SliderProps) => (
-  <div className="mb-5">
-    <div className="flex justify-between items-center mb-2">
-      <label className="text-[10px] font-black uppercase tracking-widest text-white/40">{label}</label>
-      <span className="text-xs font-black text-white bg-white/10 px-3 py-1 rounded-lg">{display}</span>
+
+const Slider = ({ label, value, onChange, min, max, step, display, formatBound = fmtC }: SliderProps) => {
+  const progress = max > min ? ((value - min) / (max - min)) * 100 : 0;
+
+  return (
+    <div className="loan-slider-group">
+      <div className="loan-slider-header">
+        <label className="loan-slider-label">{label}</label>
+        <span className="loan-slider-value">{display}</span>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={e => onChange(Number(e.target.value))}
+        className="loan-range"
+        style={{ "--range-progress": `${progress}%` } as CSSProperties}
+        aria-label={label}
+        aria-valuemin={min}
+        aria-valuemax={max}
+        aria-valuenow={value}
+        aria-valuetext={display}
+      />
+      <div className="loan-slider-bounds">
+        <span>{formatBound(min)}</span>
+        <span>{formatBound(max)}</span>
+      </div>
     </div>
-    <input
-      type="range" min={min} max={max} step={step} value={value}
-      onChange={e => onChange(Number(e.target.value))}
-      className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
-      style={{ accentColor: "#5b21b6" }}
-    />
-    <div className="flex justify-between mt-1">
-      <span className="text-[9px] text-white/20">{fmtC(min)}</span>
-      <span className="text-[9px] text-white/20">{fmtC(max)}</span>
-    </div>
-  </div>
-);
+  );
+};
 
 // ── Tools tab sub-calculators ─────────────────────────────────────────────────
 
@@ -140,7 +155,7 @@ const AffordabilityCalc = () => {
       </div>
       <Slider label="Monthly Income" value={income} onChange={setIncome} min={30000} max={1000000} step={5000} display={fmtC(income)} />
       <Slider label="Existing Obligations" value={obligations} onChange={setObligations} min={0} max={income * 0.5} step={1000} display={fmtC(obligations)} />
-      <Slider label="Expected Rate (%)" value={rate} onChange={setRate} min={7} max={14} step={0.25} display={`${rate}% p.a.`} />
+      <Slider label="Expected Rate (%)" value={rate} onChange={setRate} min={7} max={14} step={0.25} display={`${rate}% p.a.`} formatBound={n => `${n}%`} />
       <div className="mt-4 bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 text-center">
         <p className="text-[9px] text-blue-400 font-black uppercase tracking-widest mb-1">Max Eligible Loan</p>
         <p className="text-2xl font-black text-blue-400">{fmtC(maxLoan)}</p>
@@ -171,7 +186,7 @@ const EligibilityChecker = () => {
         </div>
       </div>
       <Slider label="Monthly Income" value={income} onChange={setIncome} min={20000} max={500000} step={5000} display={fmtC(income)} />
-      <Slider label="Your Age" value={age} onChange={setAge} min={21} max={58} step={1} display={`${age} yrs`} />
+      <Slider label="Your Age" value={age} onChange={setAge} min={21} max={58} step={1} display={`${age} yrs`} formatBound={n => `${n} yrs`} />
       <div className="mb-5">
         <label className="text-[10px] font-black uppercase tracking-widest text-white/40 block mb-2">Employment Type</label>
         <div className="grid grid-cols-2 gap-2">
@@ -285,8 +300,8 @@ const ROICalc = () => {
         </div>
       </div>
       <Slider label="Purchase Price" value={purchasePrice} onChange={setPurchasePrice} min={1000000} max={50000000} step={500000} display={fmtC(purchasePrice)} />
-      <Slider label="Monthly Rental Income" value={monthlyRent} onChange={setMonthlyRent} min={5000} max={200000} step={1000} display={`₹${fmt(monthlyRent)}`} />
-      <Slider label="Annual Appreciation (%)" value={appreciation} onChange={setAppreciation} min={3} max={20} step={0.5} display={`${appreciation}% p.a.`} />
+      <Slider label="Monthly Rental Income" value={monthlyRent} onChange={setMonthlyRent} min={5000} max={200000} step={1000} display={`₹${fmt(monthlyRent)}`} formatBound={n => `₹${fmt(n)}`} />
+      <Slider label="Annual Appreciation (%)" value={appreciation} onChange={setAppreciation} min={3} max={20} step={0.5} display={`${appreciation}% p.a.`} formatBound={n => `${n}%`} />
       <div className="grid grid-cols-2 gap-2 mt-4">
         {[
           { label: "Gross Yield", value: `${grossYield.toFixed(2)}%`, color: "text-pink-400" },
@@ -354,7 +369,7 @@ export const SmartLoanCalculator = () => {
   );
 
   const pieData = [
-    { name: "Principal", value: loanAmount,     color: "#5b21b6" },
+    { name: "Principal", value: loanAmount,     color: "#166534" },
     { name: "Interest",  value: totalInterest,  color: "#a855f7" },
   ];
 
@@ -368,45 +383,39 @@ export const SmartLoanCalculator = () => {
   }, [original, accelerated]);
 
   return (
-    <section id="loan-calculator" className="relative bg-gradient-to-br from-[#0c0a1e] via-[#150f2e] to-[#0a0818] py-24 px-6 md:px-12 overflow-hidden">
-      {/* Background blobs */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-luxury-purple/10 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-purple-400/10 rounded-full blur-[120px] translate-x-1/2 translate-y-1/2" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-900/20 rounded-full blur-[100px]" />
-      </div>
+    <section id="loan-calculator" className="relative home-loan-section section-band overflow-hidden">
+      <div className="absolute inset-0 opacity-20 pointer-events-none"
+        style={{ background: "radial-gradient(ellipse 60% 50% at 80% 20%, #a78bfa 0%, transparent 60%)" }} />
 
-      <div className="relative max-w-[1400px] mx-auto">
+      <div className="relative page-container !px-0">
 
-        {/* ── Header ── */}
-        <div className="text-center mb-14">
+        <div className="text-center mb-14 max-w-2xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-            className="inline-flex items-center gap-2 bg-luxury-purple/15 border border-luxury-purple/25 text-purple-300 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest mb-6">
-            <Sparkles className="w-3 h-3" /> Smart Financial Tools
+            className="banner-marketing inline-flex items-center gap-2 bg-canvas/10 border-white/10 text-on-primary/80 mb-6">
+            <Sparkles className="w-3.5 h-3.5" /> Smart financial tools
           </motion.div>
 
           <motion.h2 initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.08 }}
-            className="text-4xl md:text-5xl xl:text-6xl font-display font-black text-white mb-4 leading-tight" style={{ letterSpacing: "-0.03em" }}>
-            Calculate Smarter.{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Own Faster.</span>
+            className="text-display-lg text-on-primary mb-4">
+            Calculate smarter. Own faster.
           </motion.h2>
 
           <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.14 }}
-            className="text-white/40 text-lg max-w-lg mx-auto leading-relaxed">
+            className="text-body-lg text-on-primary/70">
             Reduce your home loan by years with intelligent EMI planning and real-time bank comparisons.
           </motion.p>
         </div>
 
         {/* ── Tab bar ── */}
         <div className="flex justify-center mb-10">
-          <div className="flex items-center gap-1 p-1.5 bg-white/5 border border-white/10 rounded-2xl overflow-x-auto hide-scrollbar">
+          <div className="flex items-center gap-1 p-1.5 bg-canvas/5 border border-white/10 rounded-full overflow-x-auto hide-scrollbar">
             {TABS.map(t => {
               const Icon = t.icon;
               return (
                 <button key={t.id} onClick={() => setTab(t.id as TabId)}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all duration-300",
-                    tab === t.id ? "bg-luxury-purple text-white shadow-lg shadow-luxury-purple/30" : "text-white/40 hover:text-white/70"
+                    "flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all",
+                    tab === t.id ? "bg-canvas text-ink" : "text-on-primary/60 hover:text-on-primary"
                   )}>
                   <Icon className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">{t.label}</span>
@@ -425,43 +434,45 @@ export const SmartLoanCalculator = () => {
               className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
               {/* LEFT — inputs */}
-              <div className="bg-white/[0.04] border border-white/10 rounded-3xl p-8 backdrop-blur-sm">
-                <p className="text-white font-black text-xl mb-7">Loan Details</p>
+              <div className="loan-details-panel">
+                <p className="loan-details-title">Loan Details</p>
 
                 <Slider label="Property Price" value={propertyPrice} onChange={setPropertyPrice} min={500000} max={50000000} step={100000} display={fmtC(propertyPrice)} />
                 <Slider label="Down Payment" value={downPayment} onChange={v => setDownPayment(Math.min(v, propertyPrice - 500000))} min={0} max={propertyPrice * 0.8} step={50000} display={fmtC(downPayment)} />
 
                 {/* Loan amount bar */}
-                <div className="bg-luxury-purple/10 border border-luxury-purple/20 rounded-2xl p-4 mb-5">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-purple-300/70">Loan Amount</span>
-                    <span className="text-base font-black text-purple-300">{fmtC(loanAmount)}</span>
+                <div className="loan-amount-card">
+                  <div className="flex justify-between items-center mb-2.5">
+                    <span className="loan-amount-card-label">Loan Amount</span>
+                    <span className="loan-amount-card-value">{fmtC(loanAmount)}</span>
                   </div>
-                  <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                    <motion.div className="h-full bg-gradient-to-r from-luxury-purple to-purple-400 rounded-full"
-                      animate={{ width: `${Math.min(100, (loanAmount / propertyPrice) * 100)}%` }}
-                      transition={{ duration: 0.5 }} />
+                  <div className="loan-amount-track">
+                    <motion.div
+                      className="loan-amount-fill"
+                      animate={{ width: `${Math.min(100, propertyPrice > 0 ? (loanAmount / propertyPrice) * 100 : 0)}%` }}
+                      transition={{ duration: 0.5 }}
+                    />
                   </div>
-                  <div className="flex justify-between mt-1.5">
-                    <span className="text-[9px] text-purple-300/50">{Math.round((loanAmount / propertyPrice) * 100)}% financed</span>
-                    <span className="text-[9px] text-purple-300/50">{Math.round((downPayment / propertyPrice) * 100)}% own</span>
+                  <div className="loan-amount-meta">
+                    <span>{propertyPrice > 0 ? Math.round((loanAmount / propertyPrice) * 100) : 0}% financed</span>
+                    <span>{propertyPrice > 0 ? Math.round((downPayment / propertyPrice) * 100) : 0}% own funds</span>
                   </div>
                 </div>
 
-                <Slider label="Interest Rate" value={interestRate} onChange={setInterestRate} min={6} max={15} step={0.05} display={`${interestRate.toFixed(2)}% p.a.`} />
-                <Slider label="Loan Tenure" value={tenure} onChange={setTenure} min={5} max={30} step={1} display={`${tenure} Years`} />
+                <Slider label="Interest Rate" value={interestRate} onChange={setInterestRate} min={6} max={15} step={0.05} display={`${interestRate.toFixed(2)}% p.a.`} formatBound={n => `${n}%`} />
+                <Slider label="Loan Tenure" value={tenure} onChange={setTenure} min={5} max={30} step={1} display={`${tenure} Years`} formatBound={n => `${n} yrs`} />
 
                 {/* Smart insight */}
-                <div className="mt-4 p-4 bg-gradient-to-r from-amber-500/10 to-orange-500/5 border border-amber-500/20 rounded-2xl">
+                <div className="mt-2 p-4 bg-gradient-to-r from-amber-500/15 to-orange-500/10 border border-amber-400/30 rounded-2xl">
                   <div className="flex gap-3">
-                    <Sparkles className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
+                    <Sparkles className="w-4 h-4 text-amber-300 mt-0.5 shrink-0" />
                     <div>
-                      <p className="text-[9px] font-black text-amber-400 uppercase tracking-widest mb-1">Smart Insight</p>
-                      <p className="text-xs text-white/50 leading-relaxed">
+                      <p className="text-[10px] font-bold text-amber-300 uppercase tracking-widest mb-1.5">Smart Insight</p>
+                      <p className="text-sm text-white/80 leading-relaxed">
                         You pay{" "}
                         <span className="text-white font-bold">{fmtC(totalInterest)}</span>{" "}
-                        as interest — that's{" "}
-                        <span className="text-amber-400 font-bold">{((totalInterest / loanAmount) * 100).toFixed(0)}%</span>{" "}
+                        as interest — that&apos;s{" "}
+                        <span className="text-amber-300 font-bold">{loanAmount > 0 ? ((totalInterest / loanAmount) * 100).toFixed(0) : 0}%</span>{" "}
                         extra over the principal. Use the Loan Accelerator to reduce this.
                       </p>
                     </div>
@@ -472,7 +483,7 @@ export const SmartLoanCalculator = () => {
               {/* RIGHT — results */}
               <div className="flex flex-col gap-5">
                 {/* EMI hero card */}
-                <div className="bg-gradient-to-br from-luxury-purple/25 to-purple-900/20 border border-luxury-purple/25 rounded-3xl p-8">
+                <div className="bg-gradient-to-br from-luxury-purple/25 to-emerald-900/20 border border-luxury-purple/25 rounded-3xl p-8">
                   <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-2">Monthly EMI</p>
                   <motion.p key={Math.round(emi)} initial={{ scale: 0.88, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
                     className="text-5xl md:text-6xl font-black text-white mb-1">
@@ -522,7 +533,7 @@ export const SmartLoanCalculator = () => {
                       ))}
                       <div className="pt-3 border-t border-white/10 flex justify-between">
                         <span className="text-xs text-white/30">Total Cost</span>
-                        <span className="text-sm font-black text-purple-400">{fmtC(totalPayable)}</span>
+                        <span className="text-sm font-black text-emerald-400">{fmtC(totalPayable)}</span>
                       </div>
                     </div>
                   </div>
@@ -552,7 +563,7 @@ export const SmartLoanCalculator = () => {
                       i === 0 ? "bg-gradient-to-br from-luxury-purple/20 to-pink-900/10 border-luxury-purple/30" : "bg-white/[0.04] border-white/10"
                     )}>
                     {i === 0 && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-luxury-purple to-purple-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full whitespace-nowrap">
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-luxury-purple to-emerald-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full whitespace-nowrap">
                         Best Rate
                       </div>
                     )}
@@ -598,7 +609,7 @@ export const SmartLoanCalculator = () => {
                       <YAxis tickFormatter={v => `₹${(v / 1e5).toFixed(0)}L`} tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 10 }} axisLine={false} tickLine={false} />
                       <Tooltip content={<DarkTooltip />} />
                       <Bar dataKey="interest" radius={[6, 6, 0, 0]}>
-                        {bankData.map((b, i) => <Cell key={i} fill={i === 0 ? "#5b21b6" : "rgba(91,33,182,0.3)"} />)}
+                        {bankData.map((b, i) => <Cell key={i} fill={i === 0 ? "#166534" : "rgba(22,101,52,0.3)"} />)}
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
@@ -616,7 +627,7 @@ export const SmartLoanCalculator = () => {
               <div className="bg-white/[0.04] border border-white/10 rounded-3xl p-8 backdrop-blur-sm">
                 <div className="flex items-center gap-3 mb-7">
                   <div className="w-10 h-10 bg-luxury-purple/20 rounded-xl flex items-center justify-center">
-                    <Zap className="w-5 h-5 text-purple-400" />
+                    <Zap className="w-5 h-5 text-emerald-400" />
                   </div>
                   <div>
                     <p className="text-white font-black text-xl">Loan Accelerator</p>
@@ -638,8 +649,8 @@ export const SmartLoanCalculator = () => {
                   ))}
                 </div>
 
-                <Slider label="Extra Monthly Payment" value={extraMonthly} onChange={setExtraMonthly} min={0} max={100000} step={1000} display={extraMonthly > 0 ? `+${fmtC(extraMonthly)}/mo` : "₹0"} />
-                <Slider label="One-Time Prepayment" value={oneTimePre} onChange={setOneTimePre} min={0} max={loanAmount * 0.5} step={50000} display={oneTimePre > 0 ? fmtC(oneTimePre) : "₹0"} />
+                <Slider label="Extra Monthly Payment" value={extraMonthly} onChange={setExtraMonthly} min={0} max={100000} step={1000} display={extraMonthly > 0 ? `+${fmtC(extraMonthly)}/mo` : "₹0"} formatBound={n => (n > 0 ? fmtC(n) : "₹0")} />
+                <Slider label="One-Time Prepayment" value={oneTimePre} onChange={setOneTimePre} min={0} max={loanAmount * 0.5} step={50000} display={oneTimePre > 0 ? fmtC(oneTimePre) : "₹0"} formatBound={n => (n > 0 ? fmtC(n) : "₹0")} />
 
                 {/* Savings cards */}
                 {monthsSaved > 0 ? (
@@ -686,7 +697,7 @@ export const SmartLoanCalculator = () => {
                         <XAxis dataKey="year" tickFormatter={v => `Yr ${v}`} tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 10 }} axisLine={false} tickLine={false} />
                         <YAxis tickFormatter={v => fmtC(v)} tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 10 }} axisLine={false} tickLine={false} />
                         <Tooltip content={<DarkTooltip />} />
-                        <Area type="monotone" dataKey="Original"    stroke="rgba(91,33,182,0.5)"  fill="rgba(91,33,182,0.1)"   strokeWidth={2} />
+                        <Area type="monotone" dataKey="Original"    stroke="rgba(22,101,52,0.5)"  fill="rgba(22,101,52,0.1)"   strokeWidth={2} />
                         <Area type="monotone" dataKey="Accelerated" stroke="rgba(16,185,129,0.9)" fill="rgba(16,185,129,0.08)" strokeWidth={2} />
                       </AreaChart>
                     </ResponsiveContainer>

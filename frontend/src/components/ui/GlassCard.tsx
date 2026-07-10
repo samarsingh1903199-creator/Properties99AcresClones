@@ -11,8 +11,8 @@ export const GlassCard = ({ children, className, glow = false, ...props }: Glass
   return (
     <motion.div
       className={cn(
-        "glass-card p-6 relative overflow-hidden",
-        glow && "before:absolute before:inset-0 before:bg-linear-to-br before:from-luxury-purple/10 before:to-transparent before:opacity-0 hover:before:opacity-100 transition-opacity",
+        "card-marketing p-6 relative overflow-hidden",
+        glow && "hover:shadow-elevated-4 transition-shadow duration-300",
         className
       )}
       {...props}

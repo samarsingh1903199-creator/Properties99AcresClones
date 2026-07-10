@@ -11,44 +11,32 @@ import {
   type SaleSmartFilters,
 } from "@/src/components/home/CategoryTabs";
 import { PropertyCard } from "@/src/components/ui/PropertyCard";
-import { ArrowUpRight, Loader2, SlidersHorizontal, X } from "lucide-react";
+import { ArrowUpRight, Loader2, SlidersHorizontal, X, Key } from "lucide-react";
 import { Button } from "@/src/components/ui/Button";
-import { BGPattern } from "@/src/components/ui/bg-pattern";
 import { Hero } from "./sections/Hero";
+import { HomeStats } from "./sections/HomeStats";
+import { FeaturedCategories } from "./sections/FeaturedCategories";
+import { PopularCities } from "./sections/PopularCities";
+import { WhyAetheria } from "./sections/WhyAetheria";
+import { HowItWorks } from "./sections/HowItWorks";
+import { Testimonials } from "./sections/Testimonials";
 import { SmartLoanCalculator } from "@/src/components/home/SmartLoanCalculator";
 import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/src/constants/routes";
 import { useHomeCategoryStore } from "@/src/store/useHomeCategoryStore";
 import { usePropertiesStore } from "@/src/store/usePropertiesStore";
-import { propertiesApi, type ApiProperty } from "@/src/services/api";
+import { propertiesApi } from "@/src/services/api";
+import {
+  mapApiProperty,
+  propertyMatchesListingTab,
+  getListingFilterKind,
+  countPropertiesByTab,
+} from "@/src/lib/listingCategory";
+import { useListingCategories } from "@/src/hooks/useListingCategories";
 import type { Property } from "@/src/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/src/lib/utils";
-
-function mapApiProperty(p: ApiProperty): Property {
-  return {
-    id:          p._id,
-    title:       p.title,
-    description: p.description,
-    price:       p.price,
-    rent:        p.listingType === "rent" ? p.price : undefined,
-    location:    `${p.location}, ${p.city}`,
-    images:      p.images.length ? p.images : ["https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80"],
-    beds:        p.bedrooms,
-    baths:       p.bathrooms,
-    sqft:        p.area,
-    type:        p.type,
-    status:      p.status,
-    listingType: p.listingType === "sale" ? "buy" : "rent",
-    features:    [],
-    agentId:     p.ownerId,
-    totalViews:  p.views,
-    verified:    true,
-    tenantTypes: p.amenities?.preferred_tenants ?? [],
-    distanceKm:  p.amenities?.distanceFromLocation,
-  };
-}
 
 const PRICE_RANGES: Record<string, [number, number]> = {
   "₹10K - ₹15K": [10000, 15000],
@@ -72,45 +60,22 @@ const SALE_DISTANCE_LIMITS: Record<string, number> = {
   "Near Me": 5, "Within 5 KM": 5, "Within 10 KM": 10, "Within 20 KM": 20,
 };
 
-const SALE_PROPERTY_TYPE_MAP: Record<string, string> = {
-  "Apartment": "apartment", "Villa": "villa", "Plot": "plot",
-  "Commercial": "commercial", "Penthouse": "penthouse",
-};
-
-const categoryMatches = (category: HomeCategoryId, propertyType: string, listingType?: string) => {
-  if (category === "rent")        return listingType === "rent";
-  if (category === "sale")        return listingType === "buy";
-  // Lease = long-term rent (backend stores as "rent")
-  if (category === "lease")       return listingType === "rent";
-  if (category === "apartments")  return propertyType === "apartment";
-  if (category === "co-living")   return ["pg", "co-living"].includes(propertyType);
-  if (category === "villas" || category === "luxury") return ["villa", "independent"].includes(propertyType);
-  if (category === "commercial")  return propertyType === "commercial";
-  if (category === "plots")       return propertyType === "plot";
-  // "projects" tab has its own page — show nothing here
-  if (category === "projects")    return false;
-  return false;
-};
 
 export const Home = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab]           = useState<HomeCategoryId>("rent");
+  const [activeTab, setActiveTab]           = useState<HomeCategoryId>("all");
   const [activeFilters, setActiveFilters]   = useState<SmartFilters>(DEFAULT_SMART_FILTERS);
   const [activeSaleFilters, setActiveSaleFilters] = useState<SaleSmartFilters>(DEFAULT_SALE_SMART_FILTERS);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const { pendingCategory, setPendingCategory }  = useHomeCategoryStore();
 
-  const { properties: cachedProperties, lastFetched, setProperties } = usePropertiesStore();
+  const { properties: cachedProperties, setProperties } = usePropertiesStore();
+  const { listingCategories, propertyCategories } = useListingCategories();
 
-  // Use cached data immediately — no spinner flash on return visits
   const [allProperties, setAllProperties] = useState<Property[]>(cachedProperties);
   const [loading, setLoading] = useState(cachedProperties.length === 0);
 
   useEffect(() => {
-    const CACHE_TTL = 60_000; // 1 minute
-    const isFresh = lastFetched && Date.now() - lastFetched < CACHE_TTL;
-    if (isFresh && cachedProperties.length > 0) return; // already fresh
-
     propertiesApi.listPublic()
       .then((res) => {
         const mapped = res.data.map(mapApiProperty);
@@ -119,13 +84,13 @@ export const Home = () => {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [setProperties]);
 
   useEffect(() => {
     if (pendingCategory) {
       setActiveTab(pendingCategory);
       setActiveFilters(DEFAULT_SMART_FILTERS);
+      setActiveSaleFilters(DEFAULT_SALE_SMART_FILTERS);
       setPendingCategory(null);
     }
   }, [pendingCategory, setPendingCategory]);
@@ -150,16 +115,24 @@ export const Home = () => {
     }));
 
   const handleClearAll = () => {
-    if (activeTab === "sale") setActiveSaleFilters(DEFAULT_SALE_SMART_FILTERS);
+    const filterKind = getListingFilterKind(activeTab, listingCategories);
+    if (filterKind === "sale") setActiveSaleFilters(DEFAULT_SALE_SMART_FILTERS);
     else setActiveFilters(DEFAULT_SMART_FILTERS);
   };
 
+  const filterKind = getListingFilterKind(activeTab, listingCategories);
+  const tabCounts = useMemo(
+    () => countPropertiesByTab(allProperties, listingCategories),
+    [allProperties, listingCategories],
+  );
+
   const filteredProperties = useMemo(() => {
     return allProperties.filter((property) => {
-      if (!categoryMatches(activeTab, property.type, property.listingType)) return false;
+      if (!propertyMatchesListingTab(property.listingType, activeTab, listingCategories)) {
+        return false;
+      }
 
-      /* ── Rent filters ── */
-      if (activeTab === "rent") {
+      if (filterKind === "rent") {
         const rent = property.rent || property.price;
         const selectedPrice    = activeFilters.price    ? PRICE_RANGES[activeFilters.price]       : null;
         const selectedDistance = activeFilters.distance ? DISTANCE_LIMITS[activeFilters.distance] : null;
@@ -171,55 +144,88 @@ export const Home = () => {
         return matchesPrice && matchesTenant && matchesDistance;
       }
 
-      /* ── Sale filters ── */
-      if (activeTab === "sale") {
+      if (filterKind === "sale") {
         const price = property.price;
 
-        const selectedSalePrice  = activeSaleFilters.salePrice    ? SALE_PRICE_RANGES[activeSaleFilters.salePrice]       : null;
-        const selectedPropType   = activeSaleFilters.propertyType ? SALE_PROPERTY_TYPE_MAP[activeSaleFilters.propertyType] : null;
-        const selectedBedrooms   = activeSaleFilters.bedrooms;
-        const selectedSaleDist   = activeSaleFilters.saleDistance  ? SALE_DISTANCE_LIMITS[activeSaleFilters.saleDistance] : null;
+        const selectedSalePrice = activeSaleFilters.salePrice
+          ? SALE_PRICE_RANGES[activeSaleFilters.salePrice] : null;
+        const selectedPropCat   = activeSaleFilters.propertyType
+          ? propertyCategories.find(c => c.name === activeSaleFilters.propertyType) ?? null : null;
+        const selectedBedrooms  = activeSaleFilters.bedrooms;
+        const selectedSaleDist  = activeSaleFilters.saleDistance
+          ? SALE_DISTANCE_LIMITS[activeSaleFilters.saleDistance] : null;
 
-        const matchesSalePrice   = !selectedSalePrice  || (price >= selectedSalePrice[0] && price <= selectedSalePrice[1]);
-        const matchesPropType    = !selectedPropType   || (property.type ?? "").toLowerCase() === selectedPropType;
-        const matchesBedrooms    = !selectedBedrooms   || (() => {
+        const matchesSalePrice  = !selectedSalePrice || (price >= selectedSalePrice[0] && price <= selectedSalePrice[1]);
+        const matchesPropType   = !selectedPropCat   || selectedPropCat.matchValues.includes((property.type ?? "").toLowerCase());
+        const matchesBedrooms   = !selectedBedrooms  || (() => {
           const beds = property.beds ?? 0;
           if (selectedBedrooms === "5+ BHK") return beds >= 5;
           return beds === parseInt(selectedBedrooms.replace(" BHK", ""), 10);
         })();
-        const matchesSaleDist    = selectedSaleDist == null || (property.distanceKm ?? Infinity) <= selectedSaleDist;
+        const matchesSaleDist   = selectedSaleDist == null || (property.distanceKm ?? Infinity) <= selectedSaleDist;
 
         return matchesSalePrice && matchesPropType && matchesBedrooms && matchesSaleDist;
       }
 
       return true;
     });
-  }, [allProperties, activeFilters, activeSaleFilters, activeTab]);
+  }, [allProperties, activeFilters, activeSaleFilters, activeTab, listingCategories, propertyCategories, filterKind]);
 
-  const activeFilterCount = activeTab === "sale"
+  const activeFilterCount = filterKind === "sale"
     ? Object.values(activeSaleFilters).filter(Boolean).length
-    : Object.values(activeFilters).filter(Boolean).length;
-  const showSidebar = activeTab === "rent" || activeTab === "sale";
+    : filterKind === "rent"
+      ? Object.values(activeFilters).filter(Boolean).length
+      : 0;
+  const showSidebar = filterKind === "rent" || filterKind === "sale";
+
+  const activeCategory = listingCategories.find(c => c.slug === activeTab);
+  const resultsLabel = activeTab === "all"
+    ? "All properties"
+    : activeCategory
+      ? activeCategory.name
+      : "Properties";
 
   return (
     <div className="overflow-x-hidden">
       <Hero />
 
-      <div id="properties-listing" className="relative isolate overflow-hidden bg-luxury-gray pb-20">
-        <BGPattern
-          variant="grid"
-          mask="fade-y"
-          size={48}
-          fill="rgba(91, 33, 182, 0.12)"
-        />
-
-        {/* ── Category tab strip (full width, sticky) ── */}
-        <div className="sticky top-0 z-40">
-          <CategoryTabs activeTab={activeTab} onTabChange={handleTabChange} />
+      <div id="properties-listing" className="home-listings pb-16 md:pb-20">
+        {/* Section intro */}
+        <div className="page-container pt-8 md:pt-10 pb-2">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+            <div>
+              <p className="text-eyebrow mb-2">Live inventory</p>
+              <h2 className="text-display-lg text-ink">Browse verified properties</h2>
+              <p className="text-body-md text-body mt-2 max-w-lg">
+                Filter by rent, sale, or lease — every listing is owner-verified and ready to explore.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate(ROUTES.PROPERTIES)}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent-deep transition-colors font-sans shrink-0"
+            >
+              Full directory
+              <ArrowUpRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
-        <div className="relative z-10 max-w-[1700px] mx-auto px-6 md:px-12 pt-8">
-          <div className={cn("flex gap-8", showSidebar && "xl:grid xl:grid-cols-[280px_1fr]")}>
+        <div className="home-sticky-bar">
+          <div className="page-container py-3 md:py-4">
+            <div className="home-tabs-panel">
+              <CategoryTabs
+                activeTab={activeTab}
+                onTabChange={handleTabChange}
+                listingCategories={listingCategories}
+                tabCounts={tabCounts}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="page-container pt-6 md:pt-8">
+          <div className={cn("flex gap-8 lg:gap-10", showSidebar && "xl:grid xl:grid-cols-[320px_1fr] xl:gap-10")}>
 
             {/* ── Left sidebar (desktop, rent only) ── */}
             <AnimatePresence>
@@ -232,12 +238,13 @@ export const Home = () => {
                   transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                   className="hidden xl:block"
                 >
-                  <div className="sticky top-20">
-                    {activeTab === "sale" ? (
+                  <div className="sticky top-24">
+                    {filterKind === "sale" ? (
                       <SaleSmartFilterSidebar
                         activeFilters={activeSaleFilters}
                         onFilterChange={handleSaleFilterChange}
                         onClearAll={handleClearAll}
+                        propertyTypeOptions={propertyCategories}
                       />
                     ) : (
                       <SmartFilterSidebar
@@ -254,33 +261,35 @@ export const Home = () => {
             {/* ── Property grid ── */}
             <div className="flex-1 min-w-0">
               {/* Results meta */}
-              <div className="flex items-center justify-between mb-6">
+              <div className="home-results-header flex items-end justify-between gap-4">
                 <div>
-                  <p className="text-[11px] font-black uppercase tracking-[0.2em] text-luxury-purple mb-1">
-                    {activeTab === "rent" ? "Available Rentals" : activeTab === "sale" ? "Sale Properties" : "Properties"}
+                  <p className="text-eyebrow mb-2 flex items-center gap-1.5">
+                    <Key className="w-3.5 h-3.5 text-accent" />
+                    {resultsLabel}
                   </p>
-                  <p className="text-[13px] font-medium text-luxury-black/45">
-                    {loading ? "Loading…" : `${filteredProperties.length} ${filteredProperties.length === 1 ? "property" : "properties"} found`}
-                    {activeFilterCount > 0 && (
-                      <span className="text-luxury-purple ml-1.5">
-                        · {activeFilterCount} filter{activeFilterCount !== 1 ? "s" : ""} applied
-                      </span>
+                  <h2 className="text-display-md text-accent">
+                    {loading ? "Loading listings…" : (
+                      <>{filteredProperties.length} <span className="gradient-text">{filteredProperties.length === 1 ? "home" : "homes"}</span> found</>
                     )}
-                  </p>
+                  </h2>
+                  {activeFilterCount > 0 && (
+                    <p className="text-body-sm text-body mt-1">
+                      {activeFilterCount} filter{activeFilterCount !== 1 ? "s" : ""} applied
+                    </p>
+                  )}
                 </div>
 
-                {/* Mobile filter button (inline, xl hidden) */}
                 {showSidebar && (
                   <button
                     onClick={() => setMobileFilterOpen(true)}
                     className={cn(
-                      "xl:hidden flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-[12px] font-bold transition-all",
+                      "xl:hidden flex items-center gap-2 px-4 py-2.5 rounded-full border text-sm font-medium transition-all shrink-0",
                       activeFilterCount > 0
-                        ? "bg-luxury-purple text-white border-luxury-purple shadow-md shadow-luxury-purple/20"
-                        : "bg-white border-gray-200 text-luxury-black/60 hover:border-luxury-purple/30",
+                        ? "bg-accent text-on-primary border-accent"
+                        : "bg-canvas border-hairline text-body hover:text-accent hover:border-accent/30",
                     )}
                   >
-                    <SlidersHorizontal size={14} />
+                    <SlidersHorizontal size={15} />
                     Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
                   </button>
                 )}
@@ -289,14 +298,19 @@ export const Home = () => {
               {/* Grid */}
               <div className="min-h-[360px] transition-opacity duration-150">
                 {loading ? (
-                  <div className="min-h-[320px] flex flex-col items-center justify-center gap-4">
-                    <Loader2 className="w-8 h-8 text-luxury-purple animate-spin" />
-                    <p className="text-sm text-luxury-black/40 font-medium">Loading properties…</p>
+                  <div className="min-h-[360px] flex flex-col items-center justify-center gap-4">
+                    <Loader2 className="w-7 h-7 text-accent animate-spin" />
+                    <p className="text-body-sm text-body">Loading properties…</p>
                   </div>
                 ) : filteredProperties.length > 0 ? (
                   <motion.div
                     layout
-                    className="grid gap-6 md:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3"
+                    className={cn(
+                      "grid gap-6 lg:gap-8",
+                      showSidebar
+                        ? "grid-cols-1 lg:grid-cols-2"
+                        : "grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
+                    )}
                   >
                     {filteredProperties.map((property, idx) => (
                       <motion.div
@@ -311,35 +325,29 @@ export const Home = () => {
                     ))}
                   </motion.div>
                 ) : (
-                  <div className="min-h-[320px] rounded-2xl bg-white border border-luxury-purple/5 flex items-center justify-center text-center px-6 shadow-sm">
+                  <div className="home-empty-state">
                     <div>
                       {activeTab === "projects" ? (
                         <>
-                          <p className="text-xl font-display font-black text-luxury-black">Explore New Projects</p>
-                          <p className="text-sm text-luxury-black/45 mt-2 mb-5">
+                          <p className="text-display-sm text-accent">Explore new projects</p>
+                          <p className="text-body-sm text-body mt-3 mb-6 max-w-sm mx-auto">
                             Browse upcoming and under-construction developments.
                           </p>
-                          <button
-                            onClick={() => navigate("/projects")}
-                            className="px-5 py-2.5 rounded-xl bg-luxury-purple text-white text-[12px] font-bold hover:opacity-90 transition-opacity"
-                          >
-                            View All Projects
+                          <button onClick={() => navigate("/projects")} className="btn-primary-sm px-6">
+                            View all projects
                           </button>
                         </>
                       ) : (
                         <>
-                          <p className="text-xl font-display font-black text-luxury-black">No matching properties</p>
-                          <p className="text-sm text-luxury-black/45 mt-2">
+                          <p className="text-display-sm text-accent">No matching properties</p>
+                          <p className="text-body-sm text-body mt-3 max-w-sm mx-auto">
                             {allProperties.length === 0
                               ? "No active listings found. Check back soon."
                               : "Try another filter or category."}
                           </p>
                           {activeFilterCount > 0 && (
-                            <button
-                              onClick={handleClearAll}
-                              className="mt-4 px-5 py-2.5 rounded-xl bg-luxury-purple text-white text-[12px] font-bold hover:opacity-90 transition-opacity"
-                            >
-                              Clear Filters
+                            <button onClick={handleClearAll} className="btn-primary-sm px-6 mt-6">
+                              Clear filters
                             </button>
                           )}
                         </>
@@ -349,16 +357,19 @@ export const Home = () => {
                 )}
               </div>
 
-              {/* Load more */}
-              <div className="mt-16 flex flex-col items-center">
-                <div className="w-24 h-1 bg-luxury-purple/20 rounded-full mb-10" />
+              {/* CTA + load more */}
+              <div className="home-cta-banner">
+                <h3 className="text-xl md:text-2xl font-semibold mb-2">Ready to find your next home?</h3>
+                <p className="text-sm text-on-primary/80 mb-6 max-w-md mx-auto">
+                  Browse our full directory of verified rentals and properties for sale.
+                </p>
                 <Button
                   variant="outline"
                   onClick={() => navigate(ROUTES.PROPERTIES)}
-                  className="px-10 py-7 rounded-2xl border-luxury-purple/10 font-display font-black text-lg hover:border-luxury-purple hover:bg-white transition-all group shadow-sm hover:shadow-xl hover:shadow-luxury-purple/10"
+                  className="bg-canvas text-accent border-canvas hover:bg-canvas/90 px-8 group"
                 >
-                  Explore More Properties{" "}
-                  <ArrowUpRight className="ml-3 w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                  Explore all properties
+                  <ArrowUpRight className="ml-2 w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                 </Button>
               </div>
             </div>
@@ -386,7 +397,7 @@ export const Home = () => {
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
                 transition={{ type: "spring", stiffness: 320, damping: 34 }}
-                className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl max-h-[88vh] flex flex-col overflow-hidden"
+                className="absolute bottom-0 left-0 right-0 bg-canvas rounded-t-2xl max-h-[88vh] flex flex-col overflow-hidden shadow-elevated-5"
               >
                 {/* Handle */}
                 <div className="flex justify-center pt-3 pb-1 shrink-0">
@@ -394,31 +405,32 @@ export const Home = () => {
                 </div>
 
                 {/* Sheet header */}
-                <div className="px-5 py-3 flex items-center justify-between border-b border-gray-100 shrink-0">
+                <div className="px-5 py-4 flex items-center justify-between border-b border-hairline shrink-0">
                   <div className="flex items-center gap-2">
-                    <SlidersHorizontal size={15} className="text-luxury-purple" />
-                    <span className="text-[13px] font-black text-luxury-black uppercase tracking-wider">Smart Filters</span>
+                    <SlidersHorizontal size={15} className="text-ink" />
+                    <span className="text-sm font-medium text-ink">Filters</span>
                     {activeFilterCount > 0 && (
-                      <span className="w-5 h-5 rounded-full bg-luxury-purple text-white text-[9px] font-black flex items-center justify-center">
+                      <span className="w-5 h-5 rounded-full bg-accent text-on-primary text-[10px] font-medium flex items-center justify-center">
                         {activeFilterCount}
                       </span>
                     )}
                   </div>
                   <button
                     onClick={() => setMobileFilterOpen(false)}
-                    className="w-9 h-9 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                    className="w-9 h-9 rounded-full bg-canvas-soft border border-hairline flex items-center justify-center hover:bg-canvas-soft-2 transition-colors"
                   >
-                    <X size={16} className="text-luxury-black/50" />
+                    <X size={16} className="text-mute" />
                   </button>
                 </div>
 
                 {/* Sheet body */}
                 <div className="flex-1 overflow-y-auto">
-                  {activeTab === "sale" ? (
+                  {filterKind === "sale" ? (
                     <SaleSmartFilterSidebar
                       activeFilters={activeSaleFilters}
                       onFilterChange={handleSaleFilterChange}
                       onClearAll={handleClearAll}
+                      propertyTypeOptions={propertyCategories}
                     />
                   ) : (
                     <SmartFilterSidebar
@@ -430,19 +442,19 @@ export const Home = () => {
                 </div>
 
                 {/* Sheet footer */}
-                <div className="px-5 pb-8 pt-4 border-t border-gray-100 shrink-0 space-y-2.5">
+                <div className="px-5 pb-8 pt-4 border-t border-hairline shrink-0 space-y-2.5">
                   <button
                     onClick={() => setMobileFilterOpen(false)}
-                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-luxury-purple to-indigo-600 text-white text-[13px] font-bold shadow-lg shadow-luxury-purple/25 hover:opacity-90 active:scale-[0.98] transition-all"
+                    className="w-full py-3.5 rounded-full bg-accent text-on-primary text-sm font-medium hover:opacity-90 transition-opacity"
                   >
-                    Show {filteredProperties.length} {filteredProperties.length === 1 ? "Property" : "Properties"}
+                    Show {filteredProperties.length} {filteredProperties.length === 1 ? "property" : "properties"}
                   </button>
                   {activeFilterCount > 0 && (
                     <button
                       onClick={() => { handleClearAll(); setMobileFilterOpen(false); }}
-                      className="w-full py-3 rounded-2xl border border-gray-200 text-[12px] font-bold text-luxury-black/60 hover:border-red-200 hover:text-red-400 transition-all"
+                      className="w-full py-3 rounded-full border border-hairline text-sm font-medium text-body hover:text-error transition-colors"
                     >
-                      Clear All Filters
+                      Clear all filters
                     </button>
                   )}
                 </div>
@@ -453,6 +465,13 @@ export const Home = () => {
 
       </div>
 
+      <HomeStats />
+      <FeaturedCategories />
+      <PopularCities />
+
+      <WhyAetheria />
+      <HowItWorks />
+      <Testimonials />
       <SmartLoanCalculator />
     </div>
   );

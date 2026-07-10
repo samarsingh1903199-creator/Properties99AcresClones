@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/src/components/ui/Button";
 import { ROUTES } from "@/src/constants/routes";
 import { cn } from "@/src/lib/utils";
+import { isMainNavActive } from "@/src/lib/navMatch";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/src/store/useAuthStore";
 import { useWishlistStore } from "@/src/store/useWishlistStore";
@@ -32,136 +33,126 @@ export const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Home page has its own built-in navbar inside the hero section
   if (location.pathname === "/") return null;
 
   const navLinks = [
     { label: "Marketplace", href: ROUTES.HOME },
     { label: "New Projects", href: ROUTES.PROPERTIES },
-    { label: "Specialists", href: ROUTES.AGENTS },
+    { label: "Dealers", href: ROUTES.AGENTS },
   ];
 
   return (
     <nav
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-500 py-3 px-6 md:px-12",
-        isScrolled
-          ? "bg-white/80 backdrop-blur-xl border-b border-luxury-purple/5 shadow-premium"
-          : "bg-transparent"
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+        isScrolled ? "nav-bar shadow-elevated-2" : "bg-canvas/80 backdrop-blur-md border-b border-transparent"
       )}
     >
-      <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-8">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 group shrink-0">
-          <div className="w-10 h-10 bg-luxury-purple rounded-xl flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform">
-            <Landmark className="text-white w-5 h-5" />
+      <div className="max-w-[1400px] mx-auto h-16 px-6 md:px-12 flex items-center justify-between gap-6">
+        <Link to="/" className="flex items-center gap-2.5 group shrink-0">
+          <div className="w-9 h-9 logo-gradient rounded-md flex items-center justify-center shadow-sm">
+            <Landmark className="text-on-primary w-4 h-4" />
           </div>
-          <span className="text-xl font-display font-black tracking-tighter text-luxury-black hidden sm:block">
-            AETHERIA
+          <span className="text-lg font-semibold tracking-tight text-ink hidden sm:block">
+            Aetheria
           </span>
         </Link>
 
-        {/* Search Bar - Desktop */}
-        <div className="hidden lg:flex items-center flex-1 max-w-md relative group">
-          <Search className="absolute left-4 w-4 h-4 text-luxury-black/30 group-focus-within:text-luxury-purple transition-colors" />
+        <div className="hidden lg:flex items-center flex-1 max-w-md relative group mx-4">
+          <Search className="absolute left-3.5 w-4 h-4 text-mute group-focus-within:text-ink transition-colors" />
           <input
             type="text"
-            placeholder="Search luxury estates..."
-            className="w-full bg-luxury-gray border border-transparent rounded-2xl py-3 pl-11 pr-4 text-sm focus:outline-none focus:bg-white focus:border-luxury-purple/30 transition-all placeholder:text-luxury-black/20 font-medium"
-            autoCorrect="on"
-            autoCapitalize="sentences"
+            placeholder="Search properties, areas, cities…"
+            className="form-input pl-10 w-full bg-canvas-soft border-hairline"
           />
         </div>
 
-        {/* Desktop Links & Actions */}
-        <div className="flex items-center gap-3 md:gap-6">
-          <div className="hidden md:flex items-center gap-8 mr-2">
-            {navLinks.map((link) => (
+        <div className="flex items-center gap-2 md:gap-4">
+          <div className="hidden md:flex items-center gap-1 mr-2">
+            {navLinks.map((link) => {
+              const active = isMainNavActive(location.pathname, link.href);
+              return (
               <Link
                 key={link.href}
                 to={link.href}
-                onClick={() => {
+                onClick={(e) => {
                   if (link.href === ROUTES.HOME && location.pathname === ROUTES.HOME) {
+                    e.preventDefault();
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }
                 }}
+                aria-current={active ? "page" : undefined}
                 className={cn(
-                  "text-[10px] font-black uppercase tracking-widest hover:text-luxury-purple transition-colors",
-                  location.pathname === link.href ? "text-luxury-purple" : "text-luxury-black/40"
+                  "text-sm px-3 py-1.5 rounded-full transition-colors outline-none focus-visible:ring-2 focus-visible:ring-accent/30",
+                  active
+                    ? "text-accent bg-accent-soft font-medium"
+                    : "text-body hover:text-accent hover:bg-accent-soft/50",
                 )}
               >
                 {link.label}
               </Link>
-            ))}
+              );
+            })}
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
-             {/* Saved */}
-             <Button variant="ghost" size="icon" className="text-luxury-black/40 relative hover:text-luxury-purple" asChild>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <Button variant="ghost" size="icon" className="text-body relative" asChild>
               <Link to={ROUTES.DASHBOARD.SAVED}>
-                <Heart className={cn("w-5 h-5", savedCount > 0 && "text-red-500 fill-current")} />
+                <Heart className={cn("w-5 h-5", savedCount > 0 && "text-error fill-current")} />
                 {savedCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border-2 border-white">
+                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-ink text-on-primary text-[9px] font-medium rounded-full flex items-center justify-center">
                     {savedCount}
                   </span>
                 )}
               </Link>
             </Button>
 
-            {/* Notifications */}
-            <div className="relative">
-                <Button variant="ghost" size="icon" className="text-luxury-black/40 hover:text-luxury-purple">
-                    <Bell className="w-5 h-5" />
-                </Button>
-                <span className="absolute top-2 right-3 w-2 h-2 bg-luxury-purple rounded-full border-2 border-white" />
-            </div>
+            <Button variant="ghost" size="icon" className="text-body relative">
+              <Bell className="w-5 h-5" />
+            </Button>
 
-            <div className="h-6 w-[1px] bg-luxury-purple/10 hidden sm:block mx-1" />
+            <div className="h-5 w-px bg-hairline hidden sm:block mx-1" />
 
-            {/* User Profile */}
             {isAuthenticated && user ? (
-                <div className="flex items-center gap-4">
-                  <Link to={ROUTES.DASHBOARD.PROFILE} className="flex items-center gap-3 group">
-                      <div className="hidden sm:block text-right leading-none">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-luxury-black/20 mb-1 leading-none">Profile</p>
-                          <p className="text-sm font-bold text-luxury-black group-hover:text-luxury-purple transition-colors">{user.name.split(' ')[0]}</p>
-                      </div>
-                      <div className="w-10 h-10 rounded-xl bg-luxury-purple/5 border border-luxury-purple/10 flex items-center justify-center p-0.5 overflow-hidden group-hover:border-luxury-purple/30 transition-all relative shrink-0">
-                          <img 
-                              src={user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} 
-                              alt="Avatar" 
-                              className="w-full h-full rounded-lg object-cover"
-                          />
-                          <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white" />
-                      </div>
-                  </Link>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleLogout}
-                    className="text-[9px] font-black uppercase tracking-wider text-luxury-black/30 hover:text-red-500 hidden sm:block"
-                  >
-                    Logout
-                  </Button>
-                </div>
+              <div className="flex items-center gap-3">
+                <Link to={ROUTES.DASHBOARD.PROFILE} className="flex items-center gap-2.5 group">
+                  <div className="hidden sm:block text-right leading-tight">
+                    <p className="text-caption-mono text-mute">Profile</p>
+                    <p className="text-sm font-medium text-ink group-hover:text-link transition-colors">
+                      {user.name.split(" ")[0]}
+                    </p>
+                  </div>
+                  <div className="w-9 h-9 rounded-md border border-hairline overflow-hidden shrink-0">
+                    <img
+                      src={user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
+                      alt="Avatar"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </Link>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="text-mute hover:text-error hidden sm:inline-flex"
+                >
+                  Logout
+                </Button>
+              </div>
             ) : (
-                <div className="flex items-center gap-2">
-                  <Link to={ROUTES.AUTH.LOGIN}>
-                      <Button variant="premium" size="sm" className="rounded-xl px-4 sm:px-6 h-10 text-[10px] font-black tracking-widest">
-                          SIGN IN
-                      </Button>
-                  </Link>
-                  <Link to={ROUTES.AUTH.SIGNUP} className="hidden sm:block">
-                    <Button variant="outline" size="sm" className="rounded-xl px-5 h-10 text-[10px] font-black tracking-widest border-luxury-purple/10">
-                        JOIN
-                    </Button>
-                  </Link>
-                </div>
+              <div className="flex items-center gap-2">
+                <Link to={ROUTES.AUTH.LOGIN}>
+                  <Button variant="outline" size="nav">Log in</Button>
+                </Link>
+                <Link to={ROUTES.AUTH.SIGNUP} className="hidden sm:block">
+                  <Button variant="default" size="nav">Sign up</Button>
+                </Link>
+              </div>
             )}
           </div>
 
           <button
-            className="md:hidden text-luxury-black p-2"
+            className="md:hidden text-ink p-2 rounded-md hover:bg-canvas-soft-2"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -169,76 +160,83 @@ export const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="absolute top-full left-0 right-0 bg-white backdrop-blur-2xl border-b border-luxury-purple/5 p-8 md:hidden shadow-2xl rounded-b-[2rem]"
+            exit={{ opacity: 0, y: -12 }}
+            className="absolute top-full left-0 right-0 bg-canvas border-b border-hairline p-6 md:hidden shadow-elevated-5"
           >
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-6 max-w-[1400px] mx-auto">
               {isAuthenticated && user ? (
-                <div className="flex items-center gap-4 p-5 rounded-2xl bg-luxury-gray border border-luxury-purple/5">
-                  <img 
-                      src={user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} 
-                      alt="Avatar" 
-                      className="w-14 h-14 rounded-2xl border-2 border-white shadow-sm"
+                <div className="flex items-center gap-4 p-4 rounded-lg bg-canvas-soft border border-hairline">
+                  <img
+                    src={user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
+                    alt="Avatar"
+                    className="w-12 h-12 rounded-md border border-hairline"
                   />
                   <div>
-                      <p className="font-bold text-luxury-black">{user.name}</p>
-                      <p className="text-[10px] text-luxury-black/40 uppercase tracking-widest font-black">Elite Member</p>
+                    <p className="font-medium text-ink">{user.name}</p>
+                    <p className="text-caption-mono text-mute">Member</p>
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-4 p-5 rounded-2xl bg-luxury-gray border border-luxury-purple/5 opacity-60">
-                  <div className="w-14 h-14 rounded-2xl bg-white border border-luxury-purple/5 flex items-center justify-center text-luxury-black/20">
-                    <User size={28} />
+                <div className="flex items-center gap-4 p-4 rounded-lg bg-canvas-soft border border-hairline">
+                  <div className="w-12 h-12 rounded-md bg-canvas border border-hairline flex items-center justify-center text-mute">
+                    <User size={22} />
                   </div>
                   <div>
-                    <p className="font-bold text-luxury-black">Guest Identity</p>
-                    <p className="text-[10px] text-luxury-black/40 uppercase tracking-widest font-black">Not Synchronized</p>
+                    <p className="font-medium text-ink">Guest</p>
+                    <p className="text-caption-mono text-mute">Sign in to save properties</p>
                   </div>
                 </div>
               )}
-              <div className="space-y-4 pt-2">
-                {navLinks.map((link) => (
+
+              <div className="space-y-2">
+                {navLinks.map((link) => {
+                  const active = isMainNavActive(location.pathname, link.href);
+                  return (
                   <Link
                     key={link.href}
                     to={link.href}
-                    className="block text-lg font-bold text-luxury-black hover:text-luxury-purple transition-colors"
+                    aria-current={active ? "page" : undefined}
+                    className={cn(
+                      "block text-base font-medium py-2 transition-colors",
+                      active ? "text-accent font-semibold" : "text-ink hover:text-link",
+                    )}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {link.label}
                   </Link>
-                ))}
+                  );
+                })}
               </div>
-              <hr className="border-luxury-purple/5" />
-              <div className="grid grid-cols-2 gap-4">
-                  {isAuthenticated ? (
-                    <>
-                      <Button variant="outline" className="w-full text-[10px] uppercase tracking-widest font-black" asChild onClick={() => setIsMobileMenuOpen(false)}>
-                        <Link to={ROUTES.DASHBOARD.PROFILE}>Profile</Link>
-                      </Button>
-                      <Button
-                        variant="premium"
-                        className="w-full text-[10px] uppercase tracking-widest font-black"
-                        onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}
-                      >
-                        LOGOUT
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button variant="outline" className="w-full text-[10px] uppercase tracking-widest font-black" asChild onClick={() => setIsMobileMenuOpen(false)}>
-                        <Link to={ROUTES.AUTH.LOGIN}>Login</Link>
-                      </Button>
-                      <Button variant="premium" className="w-full text-[10px] uppercase tracking-widest font-black" asChild onClick={() => setIsMobileMenuOpen(false)}>
-                        <Link to={ROUTES.AUTH.SIGNUP}>Join</Link>
-                      </Button>
-                    </>
-                  )}
+
+              <div className="border-t border-hairline pt-4 grid grid-cols-2 gap-3">
+                {isAuthenticated ? (
+                  <>
+                    <Button variant="outline" className="w-full" asChild onClick={() => setIsMobileMenuOpen(false)}>
+                      <Link to={ROUTES.DASHBOARD.PROFILE}>Profile</Link>
+                    </Button>
+                    <Button
+                      variant="default"
+                      className="w-full"
+                      onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}
+                    >
+                      Logout
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="outline" className="w-full" asChild onClick={() => setIsMobileMenuOpen(false)}>
+                      <Link to={ROUTES.AUTH.LOGIN}>Log in</Link>
+                    </Button>
+                    <Button variant="default" className="w-full" asChild onClick={() => setIsMobileMenuOpen(false)}>
+                      <Link to={ROUTES.AUTH.SIGNUP}>Sign up</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>

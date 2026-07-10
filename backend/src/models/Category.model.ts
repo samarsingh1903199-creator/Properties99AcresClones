@@ -9,6 +9,7 @@ export interface ICategory extends Document {
   icon: string;
   order: number;
   isActive: boolean;
+  matchValues: string[];
 }
 
 const CategorySchema = new Schema<ICategory>(
@@ -19,6 +20,7 @@ const CategorySchema = new Schema<ICategory>(
     icon:         { type: String, default: "" },
     order:        { type: Number, default: 0 },
     isActive:     { type: Boolean, default: true },
+    matchValues:  { type: [String], default: [] },
   },
   { timestamps: true }
 );
